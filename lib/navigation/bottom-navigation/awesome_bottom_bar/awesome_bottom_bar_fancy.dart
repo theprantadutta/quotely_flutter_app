@@ -1,13 +1,16 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
-class AwesomeBottomBarSoloman extends StatefulWidget {
+import '../../../main.dart';
+import '../../../packages/awesome_bottom_bar/src/bottom_bar_inspired_fancy.dart';
+import '../../../packages/awesome_bottom_bar/tab_item.dart';
+
+class AwesomeBottomBarFancy extends StatefulWidget {
   final int selectedIndex;
   final Function(int) updateCurrentPageIndex;
   final StyleIconFooter styleIconFooter;
 
-  const AwesomeBottomBarSoloman({
+  const AwesomeBottomBarFancy({
     super.key,
     required this.selectedIndex,
     required this.updateCurrentPageIndex,
@@ -15,23 +18,22 @@ class AwesomeBottomBarSoloman extends StatefulWidget {
   });
 
   @override
-  State<AwesomeBottomBarSoloman> createState() =>
+  State<AwesomeBottomBarFancy> createState() =>
       _AwesomeBottomBarFancyBorderLayoutState();
 }
 
 class _AwesomeBottomBarFancyBorderLayoutState
-    extends State<AwesomeBottomBarSoloman> {
+    extends State<AwesomeBottomBarFancy> {
   @override
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
-    // final isDarkTheme = MyApp.of(context).isDarkMode;
+    final isDarkTheme = MyApp.of(context).isDarkMode;
     return FadeInUp(
       duration: const Duration(milliseconds: 500),
       child: BottomBarInspiredFancy(
         backgroundColor: kPrimaryColor.withOpacity(0.05),
         colorSelected: kPrimaryColor,
-        // color: isDarkTheme ? Colors.white : Colors.black,
-        color: Colors.black,
+        color: isDarkTheme ? Colors.white : Colors.black,
         // borderRadius: BorderRadius.circular(50),
         iconSize: 20,
         onTap: widget.updateCurrentPageIndex,

@@ -2,7 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quotely_flutter_app/navigation/bottom-navigation/awesome_bottom_bar/awesome_bottom_bar_soloman.dart';
+import 'package:quotely_flutter_app/navigation/bottom-navigation/awesome_bottom_bar/awesome_bottom_bar_fancy.dart';
 
 import '../../constants/selectors.dart';
 import 'awesome_bottom_bar/top_level_page_view.dart';
@@ -149,7 +149,7 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
                 right: 10,
                 left: 10,
               ),
-              child: AwesomeBottomBarSoloman(
+              child: AwesomeBottomBarFancy(
                 selectedIndex: selectedIndex,
                 updateCurrentPageIndex: _updateCurrentPageIndex,
               ),
