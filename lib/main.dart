@@ -87,12 +87,12 @@ class _MyAppState extends State<MyApp> {
       theme: FlexThemeData.light(
         scheme: _flexScheme,
         useMaterial3: true,
-        fontFamily: GoogleFonts.nunito().fontFamily,
+        fontFamily: GoogleFonts.firaCode().fontFamily,
       ),
       darkTheme: FlexThemeData.dark(
         scheme: _flexScheme,
         useMaterial3: true,
-        fontFamily: GoogleFonts.nunito().fontFamily,
+        fontFamily: GoogleFonts.firaCode().fontFamily,
       ).copyWith(
         brightness: Brightness.dark,
       ),

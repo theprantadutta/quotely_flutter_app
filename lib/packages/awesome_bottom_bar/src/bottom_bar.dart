@@ -108,12 +108,12 @@ class BuildLayout extends StatelessWidget {
   final Clip? clipBehavior;
 
   const BuildLayout({
-    Key? key,
+    super.key,
     this.child,
     this.decoration,
     this.blur,
     this.clipBehavior,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -38,12 +38,12 @@ class HomeScreenGridViewButton extends StatelessWidget {
           children: [
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(width: 3),
+            const SizedBox(width: 3),
             Icon(
               iconData,
               size: 18,

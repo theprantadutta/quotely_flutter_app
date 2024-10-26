@@ -30,28 +30,26 @@ class TransitionContainer extends StatefulWidget {
   final int? data;
 
   TransitionContainer.scale({
-    Key? key,
+    super.key,
     required Widget child,
     required Curve curve,
     this.duration,
     this.data,
-  })  : builder = ScaleBuilder(curve: curve, child: child),
-        super(key: key);
+  }) : builder = ScaleBuilder(curve: curve, child: child);
 
   /// Wrap a widget with flip transition.
   TransitionContainer.flip({
-    Key? key,
+    super.key,
     required Widget bottomChild,
     required Curve curve,
     required double height,
     this.duration,
     this.data,
-  })  : builder = FlipBuilder(
+  }) : builder = FlipBuilder(
           height,
           curve: curve,
           bottomChild: bottomChild,
-        ),
-        super(key: key);
+        );
 
   @override
   _State createState() {

@@ -25,7 +25,7 @@ class HomeScreenQuoteFilters extends StatelessWidget {
             child: Center(
               child: Text(
                 'Index ${index + 1}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),

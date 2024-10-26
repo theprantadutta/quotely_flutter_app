@@ -25,8 +25,8 @@ class HomeScreenTopBar extends StatelessWidget {
                 'assets/quotely_icon.png',
                 height: MediaQuery.sizeOf(context).height * 0.04,
               ),
-              SizedBox(width: 10),
-              Text(
+              const SizedBox(width: 10),
+              const Text(
                 'Quotely',
                 style: TextStyle(
                   fontSize: 18,
@@ -48,7 +48,7 @@ class HomeScreenTopBar extends StatelessWidget {
                           : Colors.grey.shade400,
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               GestureDetector(
                 onTap: onViewChanged,
                 child: Icon(

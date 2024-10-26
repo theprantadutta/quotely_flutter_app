@@ -19,20 +19,13 @@ import 'package:flutter/widgets.dart' as widget;
 class Stack extends widget.Stack {
   /// Create stack instance
   const Stack({
-    widget.Key? key,
-    AlignmentGeometry alignment = AlignmentDirectional.topStart,
-    TextDirection? textDirection,
-    StackFit fit = StackFit.loose,
-    Clip clipBehavior = Clip.hardEdge,
-    List<widget.Widget> children = const <widget.Widget>[],
-  }) : super(
-          key: key,
-          alignment: alignment,
-          textDirection: textDirection,
-          fit: fit,
-          clipBehavior: clipBehavior,
-          children: children,
-        );
+    super.key,
+    super.alignment,
+    super.textDirection,
+    super.fit,
+    super.clipBehavior,
+    super.children,
+  });
 
   @override
   RenderStack createRenderObject(widget.BuildContext context) {
@@ -48,18 +41,11 @@ class Stack extends widget.Stack {
 /// Enable overflow hitTest
 class _RenderStack extends RenderStack {
   _RenderStack({
-    List<RenderBox>? children,
-    AlignmentGeometry alignment = AlignmentDirectional.topStart,
-    TextDirection? textDirection,
-    StackFit fit = StackFit.loose,
-    Clip clipBehavior = Clip.hardEdge,
-  }) : super(
-          children: children,
-          alignment: alignment,
-          textDirection: textDirection,
-          clipBehavior: clipBehavior,
-          fit: fit,
-        );
+    super.alignment,
+    super.textDirection,
+    super.fit,
+    super.clipBehavior,
+  });
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {

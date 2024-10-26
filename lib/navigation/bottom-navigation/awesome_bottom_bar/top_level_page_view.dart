@@ -27,10 +27,10 @@ class TopLevelPageView extends StatelessWidget {
         // Todo: Undo this if felt necessary
         // const BackgroundDecoration(),
         if (!kReleaseMode)
-          Positioned(
+          const Positioned(
             right: 10,
             bottom: 10,
-            child: const FloatingThemeChangeButton(),
+            child: FloatingThemeChangeButton(),
           ),
       ],
     );

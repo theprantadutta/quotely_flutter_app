@@ -1,6 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:quotely_flutter_app/components/home_screen/home_screen_grid_view/home_screen_grid_view_button.dart';
+
+import '../../../components/home_screen/home_screen_grid_view/home_screen_grid_content.dart';
+import '../../../components/home_screen/home_screen_grid_view/home_screen_grid_view_button.dart';
 
 class HomeScreenQuoteGridView extends StatelessWidget {
   const HomeScreenQuoteGridView({super.key});
@@ -43,7 +45,7 @@ class HomeScreenQuoteGridView extends StatelessWidget {
                 stops: const [0.1, 0.4, 0.9, 1.0],
               ),
             ),
-            child: Stack(
+            child: const Stack(
               children: [
                 HomeScreenGridViewButton(
                   bottom: 5,
@@ -57,6 +59,7 @@ class HomeScreenQuoteGridView extends StatelessWidget {
                   title: 'Like',
                   iconData: Icons.favorite_outline,
                 ),
+                HomeScreenGridContent(),
               ],
             ),
           );

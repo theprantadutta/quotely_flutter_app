@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
-import '../../components/home_screen/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_quote_list_view.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
 
@@ -32,8 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 () => isGridView = !isGridView,
               ),
             ),
-            HomeScreenQuoteFilters(),
-            isGridView ? HomeScreenQuoteGridView() : HomeScreenQuoteListView(),
+            const HomeScreenQuoteFilters(),
+            isGridView
+                ? const HomeScreenQuoteGridView()
+                : const HomeScreenQuoteListView(),
           ],
         ),
       ),

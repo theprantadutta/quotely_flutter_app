@@ -10,7 +10,7 @@ double ratio = (sqrt(3) / 2);
 
 class HexagonWidget extends StatelessWidget {
   const HexagonWidget({
-    Key? key,
+    super.key,
     this.width = 48,
     this.height = 48,
     required this.color,
@@ -19,8 +19,7 @@ class HexagonWidget extends StatelessWidget {
     this.cornerRadius = 14,
     this.elevation = 0,
     this.inBounds = true,
-  })  : assert(elevation >= 0),
-        super(key: key);
+  }) : assert(elevation >= 0);
 
   final double width;
   final double height;
@@ -44,7 +43,8 @@ class HexagonWidget extends StatelessWidget {
     var innerSize = _innerSize();
     var contentSize = _contentSize();
 
-    HexagonPathBuilder pathBuilder = HexagonPathBuilder(inBounds: inBounds, borderRadius: cornerRadius);
+    HexagonPathBuilder pathBuilder =
+        HexagonPathBuilder(inBounds: inBounds, borderRadius: cornerRadius);
 
     return Align(
       child: Container(
