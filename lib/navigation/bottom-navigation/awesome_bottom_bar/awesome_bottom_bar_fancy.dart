@@ -31,23 +31,18 @@ class _AwesomeBottomBarFancyBorderLayoutState
     return FadeInUp(
       duration: const Duration(milliseconds: 500),
       child: BottomBarInspiredFancy(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(15),
+          topRight: Radius.circular(15),
+        ),
         backgroundColor: kPrimaryColor.withOpacity(0.05),
         colorSelected: kPrimaryColor,
         color: isDarkTheme ? Colors.white : Colors.black,
-        // borderRadius: BorderRadius.circular(50),
         iconSize: 20,
         onTap: widget.updateCurrentPageIndex,
         animated: true,
         indexSelected: widget.selectedIndex,
         styleIconFooter: StyleIconFooter.dot,
-        borderRadius: BorderRadius.circular(15),
-        // styleIconFooter: widget.styleIconFooter,
-        // itemStyle: ItemStyle.circle,
-        // chipStyle: ChipStyle(
-        //   convexBridge: true,
-        //   background: kPrimaryColor,
-        // ),
-        // radius: 20.0,
         pad: 2,
         items: const [
           TabItem(

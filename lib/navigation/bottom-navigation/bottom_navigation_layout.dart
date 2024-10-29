@@ -126,9 +126,20 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
         resizeToAvoidBottomInset: false,
         body: AnnotatedRegion(
           value: getDefaultSystemUiStyle(isDarkTheme),
-          child: TopLevelPageView(
-            pageController: pageController,
-            onPageChanged: _handlePageViewChanged,
+          child: Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                kPrimaryColor.withOpacity(0.2),
+                kPrimaryColor.withOpacity(0.1),
+              ],
+            )),
+            child: TopLevelPageView(
+              pageController: pageController,
+              onPageChanged: _handlePageViewChanged,
+            ),
           ),
         ),
         extendBody: false,
@@ -142,12 +153,21 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
           ),
           child: FadeInUp(
             duration: const Duration(milliseconds: 500),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 2,
-                // bottom: 10,
-                right: 10,
-                left: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    kPrimaryColor.withOpacity(0.2),
+                    kPrimaryColor.withOpacity(0.25),
+                    kPrimaryColor.withOpacity(0.3),
+                  ],
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  topRight: Radius.circular(15),
+                ),
               ),
               child: AwesomeBottomBarFancy(
                 selectedIndex: selectedIndex,

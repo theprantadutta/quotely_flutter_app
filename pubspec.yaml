@@ -19,6 +19,12 @@ dependencies:
   animate_do: ^3.3.4
   dot_navigation_bar: ^1.0.2
   carousel_slider: ^5.0.0
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  dio: ^5.7.0
+  json_annotation: ^4.9.0
+  json_serializable: ^6.8.0
+  skeletonizer: ^1.4.2
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +33,9 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   lint_staged: ^0.5.1
   husky: ^0.1.7
+  riverpod_generator: ^2.6.1
+  build_runner: ^2.4.13
+  riverpod_lint: ^2.6.1
 
 flutter:
   uses-material-design: true
