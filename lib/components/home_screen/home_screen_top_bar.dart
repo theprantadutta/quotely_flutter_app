@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class HomeScreenTopBar extends StatelessWidget {
   final bool isGridView;
   final VoidCallback onViewChanged;
+  final bool loading;
 
   const HomeScreenTopBar({
     super.key,
     required this.isGridView,
     required this.onViewChanged,
+    required this.loading,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final iconColor = Theme.of(context).iconTheme.color;
+    final kPrimaryColor = Theme.of(context).primaryColor;
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * 0.06,
       child: Row(
@@ -33,6 +37,12 @@ class HomeScreenTopBar extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              const SizedBox(width: 10),
+              if (loading)
+                LoadingAnimationWidget.hexagonDots(
+                  color: kPrimaryColor,
+                  size: 20,
+                ),
             ],
           ),
           Row(

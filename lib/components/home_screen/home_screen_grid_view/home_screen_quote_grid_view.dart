@@ -8,10 +8,14 @@ import '../../../dtos/quote_dto.dart';
 
 class HomeScreenQuoteGridView extends StatelessWidget {
   final List<QuoteDto> quotes;
+  final int quotePageNumber;
+  final Future Function() onLastItemScrolled;
 
   const HomeScreenQuoteGridView({
     super.key,
     required this.quotes,
+    required this.quotePageNumber,
+    required this.onLastItemScrolled,
   });
 
   @override
@@ -29,6 +33,12 @@ class HomeScreenQuoteGridView extends StatelessWidget {
           enableInfiniteScroll: false,
           height: defaultHeight,
           scrollDirection: Axis.vertical,
+          onPageChanged: (index, reason) async {
+            if (index == ((quotePageNumber - 1) * 10) - 4) {
+              debugPrint('Time to Refetch...');
+              await onLastItemScrolled();
+            }
+          },
         ),
         itemCount: quotes.length,
         itemBuilder: (

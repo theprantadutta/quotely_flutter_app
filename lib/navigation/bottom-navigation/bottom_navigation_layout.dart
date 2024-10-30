@@ -128,14 +128,16 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
           value: getDefaultSystemUiStyle(isDarkTheme),
           child: Container(
             decoration: BoxDecoration(
-                gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                kPrimaryColor.withOpacity(0.2),
-                kPrimaryColor.withOpacity(0.1),
-              ],
-            )),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  kPrimaryColor.withOpacity(0.12), // Soft start
+                  kPrimaryColor.withOpacity(0.06), // Lighter end
+                ],
+                stops: const [0.0, 1.0],
+              ),
+            ),
             child: TopLevelPageView(
               pageController: pageController,
               onPageChanged: _handlePageViewChanged,
@@ -156,18 +158,19 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                   colors: [
-                    kPrimaryColor.withOpacity(0.2),
-                    kPrimaryColor.withOpacity(0.25),
-                    kPrimaryColor.withOpacity(0.3),
+                    kPrimaryColor.withOpacity(0.15), // Soft start
+                    kPrimaryColor.withOpacity(0.1), // Light middle
+                    kPrimaryColor.withOpacity(0.05), // Very subtle end
                   ],
+                  stops: const [0.0, 0.5, 1.0],
                 ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  topRight: Radius.circular(15),
-                ),
+                // borderRadius: const BorderRadius.only(
+                //   topLeft: Radius.circular(15),
+                //   topRight: Radius.circular(15),
+                // ),
               ),
               child: AwesomeBottomBarFancy(
                 selectedIndex: selectedIndex,

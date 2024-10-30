@@ -53,7 +53,7 @@ class HomeScreenGridContent extends StatelessWidget {
               '- ${quote.author}',
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ),
