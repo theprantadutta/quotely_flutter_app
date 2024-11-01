@@ -11,7 +11,7 @@ class QuoteService {
     required int pageSize,
   }) async {
     final response = await HttpService.get('$kApiUrl/$kGetAllQuotes');
-    await Future.delayed(const Duration(seconds: 5));
+    // await Future.delayed(const Duration(seconds: 5));
     if (response.statusCode == 200) {
       return QuoteResponseDto.fromJson(json.decode(response.data));
     }

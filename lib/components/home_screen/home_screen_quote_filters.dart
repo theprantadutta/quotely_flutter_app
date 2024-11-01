@@ -13,7 +13,7 @@ class HomeScreenQuoteFilters extends ConsumerWidget {
     final tagsProvider = ref.watch(FetchAllTagsProvider(1, 10));
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
-      height: MediaQuery.sizeOf(context).height * 0.045,
+      height: MediaQuery.sizeOf(context).height * 0.038,
       child: tagsProvider.when(
         data: (data) {
           return ListView.builder(

@@ -58,8 +58,8 @@ class _AwesomeBottomBarFancyBorderLayoutState
             title: 'Quote',
           ),
           TabItem(
-            icon: Icons.info_outlined,
-            title: 'Info',
+            icon: Icons.settings_outlined,
+            title: 'Settings',
           ),
         ],
       ),

@@ -12,7 +12,7 @@ class HomeScreenQuoteSingleFilter extends StatelessWidget {
     final kPrimaryColor = Theme.of(context).primaryColor;
     return Container(
       margin: EdgeInsets.only(left: index == 0 ? 0 : 5),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         border: Border.all(
           color: kPrimaryColor.withOpacity(0.4),
@@ -23,7 +23,7 @@ class HomeScreenQuoteSingleFilter extends StatelessWidget {
         child: Text(
           title,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w700,
           ),
         ),

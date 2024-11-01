@@ -43,7 +43,9 @@ class HomeScreenGridContent extends StatelessWidget {
               style: TextStyle(
                 fontSize: calculateDynamicFontSize(context, quote.length),
                 fontWeight: FontWeight.w600,
+                overflow: TextOverflow.ellipsis,
               ),
+              maxLines: 10,
             ),
           ),
           const SizedBox(height: 20),

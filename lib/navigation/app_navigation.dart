@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../screens/tab_screens/favourites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
-import '../screens/tab_screens/other_screen.dart';
 import '../screens/tab_screens/quote_of_the_day_screen.dart';
+import '../screens/tab_screens/settings_screen.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
 
 class AppNavigation {
@@ -20,8 +20,8 @@ class AppNavigation {
       GlobalKey<NavigatorState>(debugLabel: 'shellFavourites');
   static final _shellNavigatorQuoteOfTheDay =
       GlobalKey<NavigatorState>(debugLabel: 'shellQuoteOfTheDay');
-  static final _shellNavigatorOther =
-      GlobalKey<NavigatorState>(debugLabel: 'shellOther');
+  static final _shellNavigatorSettings =
+      GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
   // GoRouter configuration
   static final GoRouter router = GoRouter(
@@ -101,14 +101,14 @@ class AppNavigation {
           ),
 
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorOther,
+            navigatorKey: _shellNavigatorSettings,
             routes: <RouteBase>[
               GoRoute(
-                path: OtherScreen.kRouteName,
+                path: SettingsScreen.kRouteName,
                 name: "Cart",
                 pageBuilder: (context, state) => reusableTransitionPage(
                   state: state,
-                  child: const OtherScreen(),
+                  child: const SettingsScreen(),
                 ),
               ),
             ],

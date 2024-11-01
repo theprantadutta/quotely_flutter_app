@@ -51,10 +51,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     } catch (e) {
       if (kDebugMode) print(e);
-      setState(() {
-        hasError = true;
-        isLoadingMore = false;
-      });
+      if (!mounted) {
+        setState(() {
+          hasError = true;
+          isLoadingMore = false;
+        });
+      }
     }
   }
 
