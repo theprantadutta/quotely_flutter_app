@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:quotely_flutter_app/navigation/bottom-navigation/awesome_bottom_bar/awesome_bottom_bar_fancy.dart';
 
 import '../../constants/selectors.dart';
@@ -151,7 +152,7 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
             splashColor: Colors.transparent,
             highlightColor: kPrimaryColor.withOpacity(0.1),
             primaryColor: kPrimaryColor,
-            // fontFamily: GoogleFonts.ubuntu().fontFamily,
+            fontFamily: GoogleFonts.firaCode().fontFamily,
           ),
           child: FadeInUp(
             duration: const Duration(milliseconds: 500),

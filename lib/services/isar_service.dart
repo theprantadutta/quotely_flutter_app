@@ -33,11 +33,7 @@ class IsarService {
       QuoteDto quoteDto, bool isFavourite) async {
     try {
       final isar = await openDB();
-      // check if quote exists
-      // final existingQuote =
-      //     await isar.quoteDtos.where().idEqualTo(quoteDto.id).findFirstAsync();
-      // if doesn't exist, create it
-      // if (existingQuote == null) {
+
       await isar.writeAsync((isarDb) async {
         final newQuote = QuoteDto(
           id: quoteDto.id,
@@ -52,28 +48,23 @@ class IsarService {
         );
         isarDb.quoteDtos.put(newQuote);
       });
-      // }
-      // // otherwise, just udpate it
-      // else {
-      //   await isar.writeAsync((isarDb) {
-      //     final updatedQuote = QuoteDto(
-      //       id: existingQuote.id,
-      //       author: existingQuote.author,
-      //       content: existingQuote.content,
-      //       tags: existingQuote.tags,
-      //       authorSlug: existingQuote.authorSlug,
-      //       length: existingQuote.length,
-      //       isFavourite: isFavourite,
-      //       dateAdded: existingQuote.dateAdded,
-      //       dateModified: existingQuote.dateModified,
-      //     );
-      //     isarDb.quoteDtos.put(updatedQuote);
-      //   });
-      // }
+
       return true;
     } catch (e) {
       if (kDebugMode) print(e);
       return false;
     }
+  }
+
+  Future<List<QuoteDto>> getAllFavouriteQuotes(List<String> tags) async {
+    final isar = await openDB();
+    return await isar.quoteDtos
+        .where()
+        .isFavouriteEqualTo(true)
+        .anyOf(
+          tags,
+          (q, element) => q.tagsElementEqualTo(element),
+        )
+        .findAllAsync();
   }
 }

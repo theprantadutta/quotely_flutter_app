@@ -65,12 +65,14 @@ class _HomeScreenQuoteSingleGridState extends State<HomeScreenQuoteSingleGrid>
             iconData: Icons.favorite_outline,
             isSelected: selectedQuote,
             onTap: () async {
+              debugPrint(
+                  "Making Quote with ID ${widget.currentQuote.id} as ${!selectedQuote}");
               setState(() {
                 selectedQuote = !selectedQuote;
               });
               await IsarService().changeQuoteUpdateStatus(
                 widget.currentQuote,
-                !selectedQuote,
+                selectedQuote,
               );
             },
           ),

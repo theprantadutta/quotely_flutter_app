@@ -9,17 +9,19 @@ class HomeScreenQuoteGridView extends StatelessWidget {
   final List<QuoteDto> quotes;
   final int quotePageNumber;
   final Future Function() onLastItemScrolled;
+  final double gridDefaultHeight;
 
   const HomeScreenQuoteGridView({
     super.key,
     required this.quotes,
     required this.quotePageNumber,
     required this.onLastItemScrolled,
+    this.gridDefaultHeight = 0.72,
   });
 
   @override
   Widget build(BuildContext context) {
-    final defaultHeight = MediaQuery.sizeOf(context).height * 0.72;
+    final defaultHeight = MediaQuery.sizeOf(context).height * gridDefaultHeight;
     return Padding(
       padding: const EdgeInsets.only(top: 5),
       child: CarouselSlider.builder(
