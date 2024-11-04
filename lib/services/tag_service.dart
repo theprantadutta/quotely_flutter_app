@@ -9,7 +9,8 @@ class TagService {
     required int pageNumber,
     required int pageSize,
   }) async {
-    final response = await HttpService.get('$kApiUrl/$kGetAllTags');
+    final response = await HttpService.get(
+        '$kApiUrl/$kGetAllTags?pageNumber=$pageNumber&pageSize=$pageSize');
     if (response.statusCode == 200) {
       return TagResponseDto.fromJson(json.decode(response.data));
     }

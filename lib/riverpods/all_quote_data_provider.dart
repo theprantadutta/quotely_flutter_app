@@ -10,9 +10,11 @@ Future<QuoteResponseDto> fetchAllQuotes(
   Ref ref,
   int pageNumber,
   int pageSize,
+  List<String> tags,
 ) async {
   return await QuoteService().getAllQuotesFromDatabase(
     pageNumber: pageNumber,
     pageSize: pageSize,
+    tags: tags,
   );
 }

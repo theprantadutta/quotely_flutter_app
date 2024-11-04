@@ -1,15 +1,19 @@
+import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part '../generated/dtos/quote_dto.g.dart';
 
 @JsonSerializable()
+@collection
 class QuoteDto {
+  @Id()
   final String id;
   final String author;
   final String content;
   final List<String> tags;
   final String authorSlug;
   final int length;
+  bool isFavourite;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
   final DateTime dateAdded;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
@@ -22,6 +26,7 @@ class QuoteDto {
     required this.tags,
     required this.authorSlug,
     required this.length,
+    this.isFavourite = false,
     required this.dateAdded,
     required this.dateModified,
   });

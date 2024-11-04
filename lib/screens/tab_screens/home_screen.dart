@@ -25,6 +25,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool isLoadingMore = false;
   List<QuoteDto> quotes = [];
 
+  List<String> allSelectedTags = [];
+
   @override
   void initState() {
     super.initState();
@@ -41,8 +43,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
-      final newQuotes =
-          await ref.read(fetchAllQuotesProvider(quotePageNumber, 10).future);
+      final newQuotes = await ref.read(fetchAllQuotesProvider(
+        quotePageNumber,
+        10,
+        allSelectedTags,
+      ).future);
       setState(() {
         hasMoreData = newQuotes.quotes.length == 10;
         quotePageNumber++;
@@ -75,8 +80,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onViewChanged: () => setState(() => isGridView = !isGridView),
               loading: isLoadingMore,
             ),
-            const HomeScreenQuoteFilters(),
+            HomeScreenQuoteFilters(
+              allSelectedTags: allSelectedTags,
+              onSelectedTagChange: (String currentTag) async {
+                setState(() {
+                  if (allSelectedTags.contains(currentTag)) {
+                    // Remove the tag if it already exists
+                    allSelectedTags.remove(currentTag);
+                  } else {
+                    // Add the tag if it does not exist
+                    allSelectedTags.add(currentTag);
+                  }
+                  quotePageNumber = 1;
+                  quotes = [];
+                });
 
+                ref.invalidate(fetchAllQuotesProvider);
+                await _fetchQuotes();
+              },
+            ),
             // Display skeleton loaders when there’s no error and no data
             if (!hasError && quotes.isEmpty)
               isGridView
@@ -99,7 +121,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           } else {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Center(child: CircularProgressIndicator()),
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
                             );
                           }
                         },

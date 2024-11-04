@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 class HomeScreenQuoteSingleFilter extends StatelessWidget {
   final int index;
   final String title;
+  final bool doesTagExist;
 
-  const HomeScreenQuoteSingleFilter(
-      {super.key, required this.index, required this.title});
+  const HomeScreenQuoteSingleFilter({
+    super.key,
+    required this.index,
+    required this.title,
+    required this.doesTagExist,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,17 +19,24 @@ class HomeScreenQuoteSingleFilter extends StatelessWidget {
       margin: EdgeInsets.only(left: index == 0 ? 0 : 5),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
+        color:
+            doesTagExist ? kPrimaryColor.withOpacity(0.7) : Colors.transparent,
         border: Border.all(
-          color: kPrimaryColor.withOpacity(0.4),
+          color: doesTagExist
+              ? Colors.transparent
+              : kPrimaryColor.withOpacity(0.4),
         ),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Center(
         child: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
+            color: doesTagExist
+                ? Colors.white
+                : Theme.of(context).textTheme.bodyLarge?.color,
           ),
         ),
       ),
