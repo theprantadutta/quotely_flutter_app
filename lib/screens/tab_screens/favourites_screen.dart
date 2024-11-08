@@ -23,7 +23,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           vertical: 8,
-          horizontal: 15,
+          horizontal: 10,
         ),
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,

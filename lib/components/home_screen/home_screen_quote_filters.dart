@@ -67,6 +67,7 @@ class _HomeScreenQuoteFiltersState
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => isLoadingMore = false); // Handle error
     }
   }

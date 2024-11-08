@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
+import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
 
 import '../screens/tab_screens/favourites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
-import '../screens/tab_screens/quote_of_the_day_screen.dart';
 import '../screens/tab_screens/settings_screen.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
 
@@ -18,8 +19,8 @@ class AppNavigation {
       GlobalKey<NavigatorState>(debugLabel: 'shellHome');
   static final _shellNavigatorFavourites =
       GlobalKey<NavigatorState>(debugLabel: 'shellFavourites');
-  static final _shellNavigatorQuoteOfTheDay =
-      GlobalKey<NavigatorState>(debugLabel: 'shellQuoteOfTheDay');
+  static final _shellNavigatorAuthors =
+      GlobalKey<NavigatorState>(debugLabel: 'shellAuthors');
   static final _shellNavigatorSettings =
       GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
@@ -87,14 +88,14 @@ class AppNavigation {
           ),
 
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorQuoteOfTheDay,
+            navigatorKey: _shellNavigatorAuthors,
             routes: <RouteBase>[
               GoRoute(
-                path: QuoteOfTheDayScreen.kRouteName,
-                name: "Wishlist",
+                path: AuthorsScreen.kRouteName,
+                name: "Authors",
                 pageBuilder: (context, state) => reusableTransitionPage(
                   state: state,
-                  child: const QuoteOfTheDayScreen(),
+                  child: const AuthorsScreen(),
                 ),
               ),
             ],
@@ -116,15 +117,15 @@ class AppNavigation {
         ],
       ),
 
-      /// View all Screen
-      // GoRoute(
-      //   parentNavigatorKey: rootNavigatorKey,
-      //   path: ViewAllScreen.kRouteName,
-      //   name: "View All",
-      //   builder: (context, state) => ViewAllScreen(
-      //     key: state.pageKey,
-      //   ),
-      // ),
+      /// View all Quote of the Day Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: QuoteOfTheDayListScreen.kRouteName,
+        name: "Quote of the Day List",
+        builder: (context, state) => QuoteOfTheDayListScreen(
+          key: state.pageKey,
+        ),
+      ),
     ],
   );
 

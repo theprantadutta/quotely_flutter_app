@@ -54,8 +54,8 @@ class _AwesomeBottomBarFancyBorderLayoutState
             title: 'Favourites',
           ),
           TabItem(
-            icon: Icons.menu_book_outlined,
-            title: 'Quote',
+            icon: Icons.person_2_outlined,
+            title: 'Authors',
           ),
           TabItem(
             icon: Icons.settings_outlined,

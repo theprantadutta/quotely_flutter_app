@@ -8,10 +8,12 @@ part '../generated/riverpods/all_author_data_provider.g.dart';
 @Riverpod(keepAlive: true)
 Future<AuthorResponseDto> fetchAllAuthors(
   Ref ref,
+  String search,
   int pageNumber,
   int pageSize,
 ) async {
   return await AuthorService().getAllAuthorsFromDatabase(
+    search: search,
     pageNumber: pageNumber,
     pageSize: pageSize,
   );
