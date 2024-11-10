@@ -1,9 +1,7 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:quotely_flutter_app/navigation/bottom-navigation/awesome_bottom_bar/awesome_bottom_bar_fancy.dart';
+import 'package:quotely_flutter_app/navigation/bottom-navigation/bottom_destinations.dart';
 
 import '../../constants/selectors.dart';
 import 'awesome_bottom_bar/top_level_page_view.dart';
@@ -146,38 +144,70 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
           ),
         ),
         extendBody: false,
+        // ###########################################################
+        // TODO: Don't you fucking dare delete this, you piece of shit
+        // ###########################################################
         // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        bottomNavigationBar: Theme(
-          data: ThemeData(
-            splashColor: Colors.transparent,
-            highlightColor: kPrimaryColor.withOpacity(0.1),
-            primaryColor: kPrimaryColor,
-            fontFamily: GoogleFonts.firaCode().fontFamily,
-          ),
-          child: FadeInUp(
-            duration: const Duration(milliseconds: 500),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    kPrimaryColor.withOpacity(0.15), // Soft start
-                    kPrimaryColor.withOpacity(0.1), // Light middle
-                    kPrimaryColor.withOpacity(0.05), // Very subtle end
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-                // borderRadius: const BorderRadius.only(
-                //   topLeft: Radius.circular(15),
-                //   topRight: Radius.circular(15),
-                // ),
-              ),
-              child: AwesomeBottomBarFancy(
-                selectedIndex: selectedIndex,
-                updateCurrentPageIndex: _updateCurrentPageIndex,
-              ),
+        // bottomNavigationBar: Theme(
+        //   data: ThemeData(
+        //     splashColor: Colors.transparent,
+        //     highlightColor: kPrimaryColor.withOpacity(0.1),
+        //     primaryColor: kPrimaryColor,
+        //     fontFamily: GoogleFonts.firaCode().fontFamily,
+        //   ),
+        //   child: FadeInUp(
+        //     duration: const Duration(milliseconds: 500),
+        //     child: Container(
+        //       decoration: BoxDecoration(
+        //         gradient: LinearGradient(
+        //           begin: Alignment.topCenter,
+        //           end: Alignment.bottomCenter,
+        //           colors: [
+        //             kPrimaryColor.withOpacity(0.15), // Soft start
+        //             kPrimaryColor.withOpacity(0.1), // Light middle
+        //             kPrimaryColor.withOpacity(0.05), // Very subtle end
+        //           ],
+        //           stops: const [0.0, 0.5, 1.0],
+        //         ),
+        //         // borderRadius: const BorderRadius.only(
+        //         //   topLeft: Radius.circular(15),
+        //         //   topRight: Radius.circular(15),
+        //         // ),
+        //       ),
+        //       child: AwesomeBottomBarFancy(
+        //         selectedIndex: selectedIndex,
+        //         updateCurrentPageIndex: _updateCurrentPageIndex,
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        bottomNavigationBar: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
+              (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                  ? TextStyle(
+                      color: kPrimaryColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    )
+                  : const TextStyle(
+                      fontSize: 13,
+                    ),
             ),
+            iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
+              (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                  ? const IconThemeData(
+                      color: Colors.white,
+                    )
+                  : const IconThemeData(),
+            ),
+          ),
+          child: NavigationBar(
+            onDestinationSelected: _updateCurrentPageIndex,
+            indicatorColor: kPrimaryColor.withOpacity(0.9),
+            surfaceTintColor: kPrimaryColor,
+            selectedIndex: selectedIndex,
+            destinations: kBottomDestinations,
           ),
         ),
       ),
