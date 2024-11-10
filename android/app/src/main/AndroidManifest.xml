@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
-        android:label="quotely_flutter_app"
+        android:label="Quotely"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true"
