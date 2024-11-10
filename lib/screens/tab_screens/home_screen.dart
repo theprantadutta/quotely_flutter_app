@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quotely_flutter_app/components/shared/something_went_wrong.dart';
 import 'package:quotely_flutter_app/riverpods/all_quote_data_provider.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
@@ -56,7 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     } catch (e) {
       if (kDebugMode) print(e);
-      if (!mounted) {
+      if (mounted) {
         setState(() {
           hasError = true;
           isLoadingMore = false;
@@ -80,6 +81,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onViewChanged: () => setState(() => isGridView = !isGridView),
               loading: isLoadingMore,
             ),
+
+            // Display error message if there's an error
+            if (hasError)
+              Expanded(
+                child: Center(
+                  child: SomethingWentWrong(
+                    title: 'Failed to get Quotes.',
+                    onRetryPressed: _fetchQuotes,
+                  ),
+                ),
+              ),
             HomeScreenQuoteFilters(
               allSelectedTags: allSelectedTags,
               onSelectedTagChange: (String currentTag) async {
@@ -133,15 +145,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         quotePageNumber: quotePageNumber,
                         onLastItemScrolled: _fetchQuotes,
                       ),
-              ),
-
-            // Display error message if there's an error
-            if (hasError)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(
-                  child: Text('Something Went Wrong'),
-                ),
               ),
           ],
         ),

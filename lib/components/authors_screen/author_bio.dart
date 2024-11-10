@@ -6,7 +6,7 @@ class AuthorBio extends StatefulWidget {
   const AuthorBio({super.key, required this.bio});
 
   @override
-  _AuthorBioState createState() => _AuthorBioState();
+  State<AuthorBio> createState() => _AuthorBioState();
 }
 
 class _AuthorBioState extends State<AuthorBio> {
@@ -14,12 +14,17 @@ class _AuthorBioState extends State<AuthorBio> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate if the bio text fits in four lines
         final span = TextSpan(
           text: widget.bio,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
+          ),
         );
         final tp = TextPainter(
           text: span,
@@ -40,16 +45,15 @@ class _AuthorBioState extends State<AuthorBio> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: Colors.grey[700],
+                      color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
                     ),
                   ),
                   if (isOverflowing && !isExpanded)
-                    TextSpan(
+                    const TextSpan(
                       text: '... ',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
-                        color: Colors.grey[700],
                       ),
                     ),
                 ],

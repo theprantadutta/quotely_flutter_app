@@ -27,7 +27,7 @@ class HomeScreenTopBar extends StatelessWidget {
             children: [
               Image.asset(
                 'assets/quotely_icon.png',
-                height: MediaQuery.sizeOf(context).height * 0.04,
+                height: MediaQuery.sizeOf(context).height * 0.03,
               ),
               const SizedBox(width: 10),
               const Text(

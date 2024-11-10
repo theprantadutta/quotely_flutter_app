@@ -28,6 +28,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
   bool hasMoreData = true;
   bool hasError = false;
   List<AuthorDto> quotes = [];
+  bool refetching = false;
 
   Timer? _debounce;
 
@@ -83,6 +84,9 @@ class _AuthorListState extends ConsumerState<AuthorList> {
   Future<void> _refreshQuotes() async {
     debugPrint('Refreshing Quotes...');
     try {
+      setState(() {
+        refetching = true;
+      });
       final _ = await ref.refresh(
         fetchAllAuthorsProvider(
           widget.authorSearchController.text,
@@ -101,6 +105,10 @@ class _AuthorListState extends ConsumerState<AuthorList> {
       }
       setState(() {
         hasError = true;
+      });
+    } finally {
+      setState(() {
+        refetching = false;
       });
     }
   }
@@ -152,11 +160,12 @@ class _AuthorListState extends ConsumerState<AuthorList> {
               child: Text('Something Went Wrong'),
             ),
             loading: () {
-              if (quotes.isEmpty) {
+              if (quotes.isEmpty || refetching) {
                 return Skeletonizer(
                   child: ListView.builder(
                     itemCount: 10,
-                    itemBuilder: (context, index) => const SingleAuthorViewSkeletor(),
+                    itemBuilder: (context, index) =>
+                        const SingleAuthorViewSkeletor(),
                   ),
                 );
               }

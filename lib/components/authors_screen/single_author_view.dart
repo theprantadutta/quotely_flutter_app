@@ -74,6 +74,59 @@ class SingleAuthorViewSkeletor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    final kPrimaryColor = Theme.of(context).primaryColor;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    return Stack(
+      children: [
+        const Positioned(
+          top: 10,
+          right: 10,
+          child: Icon(
+            Icons.open_in_new_outlined,
+            size: 18,
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 3),
+          padding: const EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 15,
+          ),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: kPrimaryColor.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: kPrimaryColor.withOpacity(0.10),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'author.name',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                'author.description zdfgdfgsdfg',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 5),
+              const AuthorBio(
+                  bio:
+                      'gdfadfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf'),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
