@@ -9,6 +9,7 @@ import '../../components/home_screen/home_screen_list_view/home_screen_quote_lis
 import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
 import '../../dtos/quote_dto.dart';
+import '../../main.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const kRouteName = '/home';
@@ -19,7 +20,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool isGridView = true;
   int quotePageNumber = 1;
   bool hasMoreData = true;
   bool hasError = false;
@@ -68,6 +68,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isGridView = MyApp.of(context).isGridView;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -77,11 +78,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           children: [
             HomeScreenTopBar(
-              isGridView: isGridView,
-              onViewChanged: () => setState(() => isGridView = !isGridView),
               loading: isLoadingMore,
+              isGridView: isGridView,
+              onViewChanged: () {
+                setState(MyApp.of(context).toggleGridViewEnabled);
+              },
             ),
-
             // Display error message if there's an error
             if (hasError)
               Expanded(
@@ -119,33 +121,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             // Display the main content if there are quotes available
             if (!hasError && quotes.isNotEmpty)
-              // Expanded(
-              //   child: isGridView
-              //       ? ListView.builder(
-              //           itemCount: quotes.length + (isLoadingMore ? 1 : 0),
-              //           itemBuilder: (context, index) {
-              //             if (index < quotes.length) {
-              //               return HomeScreenQuoteGridView(
-              //                 quotes: quotes,
-              //                 quotePageNumber: quotePageNumber,
-              //                 onLastItemScrolled: _fetchQuotes,
-              //               );
-              //             } else {
-              //               return const Padding(
-              //                 padding: EdgeInsets.symmetric(vertical: 16),
-              //                 child: Center(
-              //                   child: CircularProgressIndicator(),
-              //                 ),
-              //               );
-              //             }
-              //           },
-              //         )
-              //       : HomeScreenQuoteListView(
-              //           quotes: quotes,
-              //           quotePageNumber: quotePageNumber,
-              //           onLastItemScrolled: _fetchQuotes,
-              //         ),
-              // ),
               Expanded(
                 child: isGridView
                     ? HomeScreenQuoteGridView(

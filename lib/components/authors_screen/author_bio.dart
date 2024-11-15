@@ -23,7 +23,7 @@ class _AuthorBioState extends State<AuthorBio> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w400,
-            color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
+            color: isDarkTheme ? Colors.grey[400] : Colors.grey[800],
           ),
         );
         final tp = TextPainter(

@@ -56,7 +56,7 @@ class SingleAuthorView extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
+                  color: isDarkTheme ? Colors.grey[400] : Colors.grey[800],
                 ),
               ),
               const SizedBox(height: 5),

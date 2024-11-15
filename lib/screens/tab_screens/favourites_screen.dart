@@ -4,6 +4,7 @@ import 'package:quotely_flutter_app/services/isar_service.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
+import '../../main.dart';
 
 class FavouritesScreen extends StatefulWidget {
   static const kRouteName = '/favourites';
@@ -14,8 +15,6 @@ class FavouritesScreen extends StatefulWidget {
 }
 
 class _FavouritesScreenState extends State<FavouritesScreen> {
-  bool isGridView = true;
-
   @override
   void initState() {
     super.initState();
@@ -31,6 +30,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final iconColor = Theme.of(context).iconTheme.color;
+    final isGridView = MyApp.of(context).isGridView;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -113,8 +113,10 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                           Row(
                             children: [
                               GestureDetector(
-                                onTap: () =>
-                                    setState(() => isGridView = !isGridView),
+                                onTap: () => setState(
+                                  () =>
+                                      MyApp.of(context).toggleGridViewEnabled(),
+                                ),
                                 child: Icon(
                                   Icons.view_agenda_outlined,
                                   color: !isGridView
@@ -126,8 +128,10 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                               ),
                               const SizedBox(width: 10),
                               GestureDetector(
-                                onTap: () =>
-                                    setState(() => isGridView = !isGridView),
+                                onTap: () => setState(
+                                  () =>
+                                      MyApp.of(context).toggleGridViewEnabled(),
+                                ),
                                 child: Icon(
                                   Icons.crop_square,
                                   size: 28,

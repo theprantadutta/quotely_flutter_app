@@ -34,12 +34,21 @@ class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
   FlexScheme _flexScheme = kDefaultFlexTheme;
   bool _isBiometricEnabled = false;
+  bool _isGridView = true;
   SharedPreferences? _sharedPreferences;
 
   /// This is needed for components that may have a different theme data
   bool get isDarkMode => _themeMode == ThemeMode.dark;
   FlexScheme get flexScheme => _flexScheme;
   bool get isBiometricEnabled => _isBiometricEnabled;
+  bool get isGridView => _isGridView;
+
+  void toggleGridViewEnabled() {
+    setState(() {
+      _isGridView = !isGridView;
+      _sharedPreferences?.setBool(kIsGridViewKey, _isGridView);
+    });
+  }
 
   void changeBiometricEnabledEnabled(bool isisBiometricEnabled) {
     setState(() {
@@ -68,6 +77,10 @@ class _MyAppState extends State<MyApp> {
     if (isDarkMode != null) {
       setState(
           () => _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light);
+    }
+    final isGridView = _sharedPreferences?.getBool(kIsGridViewKey);
+    if (isGridView != null) {
+      setState(() => _isGridView = isGridView);
     }
     final flexScheme = _sharedPreferences?.getString(kFlexSchemeKey);
     if (flexScheme != null) {
