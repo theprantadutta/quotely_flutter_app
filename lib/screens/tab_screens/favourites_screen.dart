@@ -4,7 +4,6 @@ import 'package:quotely_flutter_app/services/isar_service.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
-import '../../components/home_screen/home_screen_quote_filters.dart';
 
 class FavouritesScreen extends StatefulWidget {
   static const kRouteName = '/favourites';
@@ -16,9 +15,22 @@ class FavouritesScreen extends StatefulWidget {
 
 class _FavouritesScreenState extends State<FavouritesScreen> {
   bool isGridView = true;
-  List<String> allSelectedTags = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final changed = IsarService().watchAllFavouriteQuotes(([]));
+    changed.listen((value) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = Theme.of(context).iconTheme.color;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -32,12 +44,16 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
             SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.765,
               child: FutureBuilder(
-                future: IsarService().getAllFavouriteQuotes(allSelectedTags),
+                future: IsarService().getAllFavouriteQuotes([]),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return isGridView
-                        ? const HomeScreenQuoteGridViewSkeltor()
-                        : const HomeScreenQuoteListViewSkeletor();
+                        ? const FavoutiesScreenSkeletor(
+                            widget: HomeScreenQuoteGridViewSkeltor(),
+                          )
+                        : const FavoutiesScreenSkeletor(
+                            widget: HomeScreenQuoteListViewSkeletor(),
+                          );
                   }
                   if (snapshot.hasError) {
                     return const Padding(
@@ -84,43 +100,55 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                   }
                   return Column(
                     children: [
-                      HomeScreenQuoteFilters(
-                        allSelectedTags: allSelectedTags,
-                        onSelectedTagChange: (String currentTag) async {
-                          setState(() {
-                            if (allSelectedTags.contains(currentTag)) {
-                              // Remove the tag if it already exists
-                              allSelectedTags.remove(currentTag);
-                            } else {
-                              // Add the tag if it does not exist
-                              allSelectedTags.add(currentTag);
-                            }
-                          });
-                        },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'All Favourite Quotes',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () =>
+                                    setState(() => isGridView = !isGridView),
+                                child: Icon(
+                                  Icons.view_agenda_outlined,
+                                  color: !isGridView
+                                      ? iconColor
+                                      : isDarkTheme
+                                          ? Colors.grey.shade700
+                                          : Colors.grey.shade400,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () =>
+                                    setState(() => isGridView = !isGridView),
+                                child: Icon(
+                                  Icons.crop_square,
+                                  size: 28,
+                                  color: isGridView
+                                      ? iconColor
+                                      : isDarkTheme
+                                          ? Colors.grey.shade700
+                                          : Colors.grey.shade400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      // Display the main content if there are quotes available
                       Expanded(
                         child: isGridView
-                            ? ListView.builder(
-                                itemCount: quotes.length,
-                                itemBuilder: (context, index) {
-                                  if (index < quotes.length) {
-                                    return HomeScreenQuoteGridView(
-                                      quotes: quotes,
-                                      quotePageNumber: 1,
-                                      onLastItemScrolled: () {
-                                        return Future.value();
-                                      },
-                                    );
-                                  } else {
-                                    return const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 16),
-                                      child: Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    );
-                                  }
+                            ? HomeScreenQuoteGridView(
+                                quotes: quotes,
+                                quotePageNumber: 1,
+                                onLastItemScrolled: () {
+                                  return Future.value();
                                 },
                               )
                             : HomeScreenQuoteListView(
@@ -139,6 +167,53 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class FavoutiesScreenSkeletor extends StatelessWidget {
+  final Widget widget;
+
+  const FavoutiesScreenSkeletor({
+    super.key,
+    required this.widget,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'All Favourite Quotes',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Row(
+              children: [
+                Icon(
+                  Icons.view_agenda_outlined,
+                  color:
+                      isDarkTheme ? Colors.grey.shade700 : Colors.grey.shade400,
+                ),
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.crop_square,
+                  size: 28,
+                  color:
+                      isDarkTheme ? Colors.grey.shade700 : Colors.grey.shade400,
+                ),
+              ],
+            ),
+          ],
+        ),
+        Expanded(child: widget),
+      ],
     );
   }
 }

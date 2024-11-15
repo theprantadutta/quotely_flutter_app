@@ -67,4 +67,16 @@ class IsarService {
         )
         .findAllAsync();
   }
+
+  Stream<List<QuoteDto>> watchAllFavouriteQuotes(List<String> tags) async* {
+    final isar = await openDB();
+    yield* isar.quoteDtos
+        .where()
+        .isFavouriteEqualTo(true)
+        .anyOf(
+          tags,
+          (q, element) => q.tagsElementEqualTo(element),
+        )
+        .watch(fireImmediately: true);
+  }
 }

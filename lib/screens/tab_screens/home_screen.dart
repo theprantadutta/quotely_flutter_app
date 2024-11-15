@@ -115,30 +115,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (!hasError && quotes.isEmpty)
               isGridView
                   ? const HomeScreenQuoteGridViewSkeltor()
-                  : const HomeScreenQuoteListViewSkeletor(),
+                  : const Expanded(child: HomeScreenQuoteListViewSkeletor()),
 
             // Display the main content if there are quotes available
             if (!hasError && quotes.isNotEmpty)
+              // Expanded(
+              //   child: isGridView
+              //       ? ListView.builder(
+              //           itemCount: quotes.length + (isLoadingMore ? 1 : 0),
+              //           itemBuilder: (context, index) {
+              //             if (index < quotes.length) {
+              //               return HomeScreenQuoteGridView(
+              //                 quotes: quotes,
+              //                 quotePageNumber: quotePageNumber,
+              //                 onLastItemScrolled: _fetchQuotes,
+              //               );
+              //             } else {
+              //               return const Padding(
+              //                 padding: EdgeInsets.symmetric(vertical: 16),
+              //                 child: Center(
+              //                   child: CircularProgressIndicator(),
+              //                 ),
+              //               );
+              //             }
+              //           },
+              //         )
+              //       : HomeScreenQuoteListView(
+              //           quotes: quotes,
+              //           quotePageNumber: quotePageNumber,
+              //           onLastItemScrolled: _fetchQuotes,
+              //         ),
+              // ),
               Expanded(
                 child: isGridView
-                    ? ListView.builder(
-                        itemCount: quotes.length + (isLoadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index < quotes.length) {
-                            return HomeScreenQuoteGridView(
-                              quotes: quotes,
-                              quotePageNumber: quotePageNumber,
-                              onLastItemScrolled: _fetchQuotes,
-                            );
-                          } else {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
-                        },
+                    ? HomeScreenQuoteGridView(
+                        quotes: quotes,
+                        quotePageNumber: quotePageNumber,
+                        onLastItemScrolled: _fetchQuotes,
                       )
                     : HomeScreenQuoteListView(
                         quotes: quotes,
