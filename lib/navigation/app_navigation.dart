@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quotely_flutter_app/components/settings_screen/appearance/appearance_screen.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
+import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
+import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
 
+import '../screens/settings_offline_support_screen.dart';
 import '../screens/tab_screens/favourites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
 import '../screens/tab_screens/settings_screen.dart';
@@ -106,7 +110,7 @@ class AppNavigation {
             routes: <RouteBase>[
               GoRoute(
                 path: SettingsScreen.kRouteName,
-                name: "Cart",
+                name: "Settings",
                 pageBuilder: (context, state) => reusableTransitionPage(
                   state: state,
                   child: const SettingsScreen(),
@@ -117,12 +121,52 @@ class AppNavigation {
         ],
       ),
 
+      /// View Quote of the Day Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: QuoteOfTheDayScreen.kRouteName,
+        name: "Quote of the Day",
+        builder: (context, state) => QuoteOfTheDayScreen(
+          key: state.pageKey,
+        ),
+      ),
+
       /// View all Quote of the Day Screen
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
         path: QuoteOfTheDayListScreen.kRouteName,
         name: "Quote of the Day List",
         builder: (context, state) => QuoteOfTheDayListScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View Settings Appearance
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: AppearanceScreen.kRouteName,
+        name: "Appearance",
+        builder: (context, state) => AppearanceScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View Settings Appearance
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: SettingsNotificationScreen.kRouteName,
+        name: "Settings Notification",
+        builder: (context, state) => SettingsNotificationScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View Settings Offline Support
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: SettingsOfflineSupportScreen.kRouteName,
+        name: "Settings Offline Support",
+        builder: (context, state) => SettingsOfflineSupportScreen(
           key: state.pageKey,
         ),
       ),

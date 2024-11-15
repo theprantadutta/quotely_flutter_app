@@ -1,6 +1,0 @@
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  remove_alpha_ios: true
-  image_path: "assets/quotely_logo.png"
-  min_sdk_android: 21

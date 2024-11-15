@@ -34,7 +34,7 @@ class IsarService {
     try {
       final isar = await openDB();
 
-      await isar.writeAsync((isarDb) async {
+      isar.write((isarDb) {
         final newQuote = QuoteDto(
           id: quoteDto.id,
           author: quoteDto.author,

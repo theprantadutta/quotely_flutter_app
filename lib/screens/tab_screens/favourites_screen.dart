@@ -49,17 +49,36 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                   }
                   final quotes = snapshot.data!;
                   if (quotes.isEmpty) {
-                    return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.hourglass_empty_outlined,
-                            size: 60,
-                          ),
-                          SizedBox(width: 20),
-                          Text('No Favourites added yet.'),
-                        ],
+                    return SizedBox(
+                      width: MediaQuery.sizeOf(context).width * 0.8,
+                      child: const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.hourglass_empty_outlined,
+                              size: 80,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'No Favourites added yet.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'When you like a quote, it\'s going to show up here, this section helps you to read your favourite quotes over and over',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }

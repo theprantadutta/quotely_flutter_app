@@ -43,7 +43,7 @@ class _AuthorBioState extends State<AuthorBio> {
                   TextSpan(
                     text: widget.bio,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
                     ),
@@ -52,7 +52,7 @@ class _AuthorBioState extends State<AuthorBio> {
                     const TextSpan(
                       text: '... ',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w400,
                       ),
                     ),

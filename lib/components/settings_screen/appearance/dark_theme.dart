@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
+import '../../../main.dart';
 
 class DarkTheme extends StatefulWidget {
   const DarkTheme({super.key});
@@ -40,7 +40,7 @@ class _DarkThemeState extends State<DarkTheme> {
           ),
           const SizedBox(width: 10),
           const Text(
-            'Dark Theme',
+            'Set Dark Theme',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quotely_flutter_app/components/layouts/main_layout.dart';
 import 'package:quotely_flutter_app/components/quote_of_the_day_screen/quote_of_the_day_component.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
-
-import '../components/shared/top_navigation_bar.dart';
 
 class QuoteOfTheDayScreen extends StatelessWidget {
   static const kRouteName = '/quote-of-the-day';
@@ -12,8 +11,9 @@ class QuoteOfTheDayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
-    return SafeArea(
-      child: Padding(
+    return MainLayout(
+      title: 'Quote of the Day',
+      body: Padding(
         padding: const EdgeInsets.symmetric(
           vertical: 8,
           horizontal: 10,
@@ -21,10 +21,7 @@ class QuoteOfTheDayScreen extends StatelessWidget {
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const TopNavigationBar(title: 'Quote of the Day'),
-            const Expanded(
-              child: QuoteOfTheDayComponent(),
-            ),
+            const QuoteOfTheDayComponent(),
             GestureDetector(
               onTap: () => context.push(QuoteOfTheDayListScreen.kRouteName),
               child: Container(
