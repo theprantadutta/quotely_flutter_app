@@ -33,6 +33,7 @@ dependencies:
   intl: ^0.19.0
   flutter_native_splash: ^2.4.2
   package_info_plus: ^8.1.1
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +52,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+    - .env
 
 lint_staged:
   "lib/**.dart": dart format --fix && dart fix --apply
