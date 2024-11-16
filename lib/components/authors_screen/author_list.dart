@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/components/authors_screen/single_author_view.dart';
+import 'package:quotely_flutter_app/components/shared/something_went_wrong.dart';
 import 'package:quotely_flutter_app/riverpods/all_author_data_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -27,7 +28,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
   int pageSize = 10;
   bool hasMoreData = true;
   bool hasError = false;
-  List<AuthorDto> quotes = [];
+  List<AuthorDto> authors = [];
   bool refetching = false;
 
   Timer? _debounce;
@@ -43,7 +44,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(
       const Duration(milliseconds: 500),
-      _refreshQuotes,
+      _refreshAuthors,
     );
   }
 
@@ -81,7 +82,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
     super.dispose();
   }
 
-  Future<void> _refreshQuotes() async {
+  Future<void> _refreshAuthors() async {
     debugPrint('Refreshing Quotes...');
     try {
       setState(() {
@@ -95,7 +96,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
         ).future,
       );
       setState(() {
-        quotes = [];
+        authors = [];
         pageNumber = 1;
         hasError = false;
       });
@@ -129,7 +130,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
         width: MediaQuery.sizeOf(context).width,
         // margin: EdgeInsets.symmetric(vertical: 5),
         child: RefreshIndicator.adaptive(
-          onRefresh: _refreshQuotes,
+          onRefresh: _refreshAuthors,
           child: quoteProvider.when(
             skipLoadingOnRefresh: false,
             data: (data) {
@@ -138,29 +139,56 @@ class _AuthorListState extends ConsumerState<AuthorList> {
                 hasMoreData = false;
               }
               for (var author in authorsFromDb) {
-                // if (!quotes.any((n) => n.quoteId == quote.quoteId)) {
-                quotes.add(author);
-                // }
+                if (!authors.any((n) => n.id == author.id)) {
+                  authors.add(author);
+                }
+              }
+              if (authors.isEmpty) {
+                return SizedBox(
+                  height: MediaQuery.sizeOf(context).height * 0.7,
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.hourglass_empty_outlined,
+                          size: 80,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'No Author Found',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               }
               return ListView.builder(
                 controller: authorScrollController,
-                itemCount: quotes.length + (hasMoreData ? 1 : 0),
+                itemCount: authors.length + (hasMoreData ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == quotes.length) {
+                  if (index == authors.length) {
                     return const SingleAuthorViewSkeletor();
                   }
                   return SingleAuthorView(
                     index: index,
-                    author: quotes[index],
+                    author: authors[index],
                   );
                 },
               );
             },
-            error: (error, stackTrace) => const Center(
-              child: Text('Something Went Wrong'),
+            error: (error, stackTrace) => Center(
+              child: SomethingWentWrong(
+                onRetryPressed: _refreshAuthors,
+              ),
             ),
             loading: () {
-              if (quotes.isEmpty || refetching) {
+              if (authors.isEmpty || refetching) {
                 return Skeletonizer(
                   child: ListView.builder(
                     itemCount: 10,
@@ -171,14 +199,14 @@ class _AuthorListState extends ConsumerState<AuthorList> {
               }
               return ListView.builder(
                 controller: authorScrollController,
-                itemCount: quotes.length + 1,
+                itemCount: authors.length + 1,
                 itemBuilder: (context, index) {
-                  if (index == quotes.length) {
+                  if (index == authors.length) {
                     return const SingleAuthorViewSkeletor();
                   }
                   return SingleAuthorView(
                     index: index,
-                    author: quotes[index],
+                    author: authors[index],
                   );
                 },
               );

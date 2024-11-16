@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -44,6 +45,20 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  gotoAScreen(BuildContext context, String route) {
+    try {
+      Future.delayed(Duration.zero, () async {
+        // ignore: use_build_context_synchronously
+        context.push(route);
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Something Went Wrong when going to screen: $route');
+        print(e);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -60,30 +75,32 @@ class SettingsScreen extends StatelessWidget {
                     iconData: Icons.contrast_outlined,
                     title: 'Appearance',
                     description: 'Control How your app looks',
-                    onTap: () => context.push(AppearanceScreen.kRouteName),
+                    onTap: () =>
+                        gotoAScreen(context, AppearanceScreen.kRouteName),
                   ),
                   // Settings Quote of the Day
                   SettingsScreenLayout(
                     iconData: Icons.format_quote_outlined,
                     title: 'Quote of the Day',
                     description: 'Manage all quote of the day',
-                    onTap: () => context.push(QuoteOfTheDayScreen.kRouteName),
+                    onTap: () =>
+                        gotoAScreen(context, QuoteOfTheDayScreen.kRouteName),
                   ),
                   // Settings Notifications
                   SettingsScreenLayout(
                     iconData: Icons.notifications_active_outlined,
                     title: 'Notifications',
                     description: 'Manage Notifications',
-                    onTap: () =>
-                        context.push(SettingsNotificationScreen.kRouteName),
+                    onTap: () => gotoAScreen(
+                        context, SettingsNotificationScreen.kRouteName),
                   ),
                   // Settings Offline Support
                   SettingsScreenLayout(
                     iconData: Icons.wifi_off_outlined,
                     title: 'Offline Support',
                     description: 'Use the app even when online',
-                    onTap: () =>
-                        context.push(SettingsOfflineSupportScreen.kRouteName),
+                    onTap: () => gotoAScreen(
+                        context, SettingsOfflineSupportScreen.kRouteName),
                   ),
                   // Settings About Quotely App
                   SettingsScreenLayout(

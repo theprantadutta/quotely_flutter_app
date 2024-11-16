@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
 
   void toggleGridViewEnabled() {
     setState(() {
-      _isGridView = !isGridView;
+      _isGridView = !_isGridView;
       _sharedPreferences?.setBool(kIsGridViewKey, _isGridView);
     });
   }

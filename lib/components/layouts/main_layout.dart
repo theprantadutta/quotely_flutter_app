@@ -8,11 +8,13 @@ import '../shared/floating_theme_change_button.dart';
 class MainLayout extends StatelessWidget {
   final String title;
   final Widget body;
+  final PreferredSizeWidget? bottom;
 
   const MainLayout({
     super.key,
     required this.body,
     required this.title,
+    this.bottom,
   });
 
   Future<bool> _onBackButtonPressed(BuildContext context) async {
@@ -42,6 +44,7 @@ class MainLayout extends StatelessWidget {
               weight: 20,
             ),
           ),
+          bottom: bottom,
         ),
         body: SingleChildScrollView(child: body),
         floatingActionButton: kReleaseMode

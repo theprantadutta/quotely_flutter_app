@@ -57,7 +57,7 @@ class SettingsOfflineSupportScreen extends StatelessWidget {
               ),
               const SizedBox(height: 15),
               GestureDetector(
-                onTap: CommonService.showNotImplementedDialog(context),
+                onTap: () => CommonService.showNotImplementedDialog(context),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 10),

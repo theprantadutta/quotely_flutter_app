@@ -6,6 +6,8 @@ import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
 
+import '../screen_arguments/author_detail_screen_arguments.dart';
+import '../screens/author_detail_screen.dart';
 import '../screens/settings_offline_support_screen.dart';
 import '../screens/tab_screens/favourites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
@@ -169,6 +171,21 @@ class AppNavigation {
         builder: (context, state) => SettingsOfflineSupportScreen(
           key: state.pageKey,
         ),
+      ),
+
+      /// Author Detail
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: AuthorDetailScreen.kRouteName,
+        name: "Author Detail",
+        builder: (context, state) {
+          final authorDetailScreenArguments =
+              state.extra as AuthorDetailScreenArguments;
+          return AuthorDetailScreen(
+            key: state.pageKey,
+            authorDetailScreenArguments: authorDetailScreenArguments,
+          );
+        },
       ),
     ],
   );

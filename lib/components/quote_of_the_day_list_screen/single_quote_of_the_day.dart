@@ -25,7 +25,7 @@ class SingleQuoteOfTheDay extends StatelessWidget {
       decoration: BoxDecoration(
         color: kPrimaryColor.withOpacity(0.05),
         border: Border.all(
-          color: kPrimaryColor.withOpacity(0.5),
+          color: kPrimaryColor.withOpacity(0.2),
         ),
         borderRadius: BorderRadius.circular(15),
       ),
@@ -74,7 +74,7 @@ class SingleQuoteOfTheDaySkeletor extends StatelessWidget {
       decoration: BoxDecoration(
         color: kPrimaryColor.withOpacity(0.05),
         border: Border.all(
-          color: kPrimaryColor.withOpacity(0.5),
+          color: kPrimaryColor.withOpacity(0.2),
         ),
         borderRadius: BorderRadius.circular(15),
       ),

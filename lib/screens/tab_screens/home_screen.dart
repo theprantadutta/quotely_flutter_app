@@ -80,9 +80,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             HomeScreenTopBar(
               loading: isLoadingMore,
               isGridView: isGridView,
-              onViewChanged: () {
-                setState(MyApp.of(context).toggleGridViewEnabled);
-              },
+              onViewChanged: () =>
+                  setState(MyApp.of(context).toggleGridViewEnabled),
             ),
             // Display error message if there's an error
             if (hasError)
@@ -115,9 +114,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             // Display skeleton loaders when there’s no error and no data
             if (!hasError && quotes.isEmpty)
-              isGridView
-                  ? const HomeScreenQuoteGridViewSkeltor()
-                  : const Expanded(child: HomeScreenQuoteListViewSkeletor()),
+              Expanded(
+                child: isGridView
+                    ? const HomeScreenQuoteGridViewSkeltor()
+                    : const HomeScreenQuoteListViewSkeletor(),
+              ),
 
             // Display the main content if there are quotes available
             if (!hasError && quotes.isNotEmpty)

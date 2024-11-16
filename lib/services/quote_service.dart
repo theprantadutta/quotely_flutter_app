@@ -73,4 +73,38 @@ class QuoteService {
 
     throw Exception('Failed to get quotes');
   }
+
+  Future<QuoteResponseDto> getAllQuotesByAuthorFromDatabase({
+    required String authorSlug,
+    required int pageNumber,
+    required int pageSize,
+  }) async {
+    // Initialize query parameters with page number and page size
+    final queryParameters = {
+      'authorSlug': authorSlug,
+      'pageNumber': pageNumber.toString(),
+      'pageSize': pageSize.toString(),
+    };
+
+    final uri = Uri.parse('$kApiUrl/$kGetAllQuotesByAuthor').replace(
+      queryParameters: queryParameters,
+    );
+
+    final response = await HttpService.get(uri.toString());
+
+    if (response.statusCode == 200) {
+      // Deserialize JSON response to QuoteResponseDto
+      final quoteResponseDto =
+          QuoteResponseDto.fromJson(json.decode(response.data));
+
+      // Iterate through quotes and check if each is a favorite
+      for (var quoteDto in quoteResponseDto.quotes) {
+        quoteDto.isFavourite = await IsarService().isFavourite(quoteDto.id);
+      }
+
+      return quoteResponseDto;
+    }
+
+    throw Exception('Failed to get quotes by id');
+  }
 }

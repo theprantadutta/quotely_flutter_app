@@ -11,6 +11,7 @@ class AuthorDto {
   final String link;
   final int quoteCount;
   final String slug;
+  final String? imageUrl;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
   final DateTime dateAdded;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
@@ -26,6 +27,7 @@ class AuthorDto {
     required this.slug,
     required this.dateAdded,
     required this.dateModified,
+    required this.imageUrl,
   });
 
   static DateTime _fromJson(String date) => DateTime.parse(date).toUtc();
