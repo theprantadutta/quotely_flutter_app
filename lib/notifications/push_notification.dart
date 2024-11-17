@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
+import 'package:quotely_flutter_app/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../firebase_options.dart';
 import '../navigation/app_navigation.dart';
@@ -92,7 +94,27 @@ class PushNotifications {
       sound: true,
     );
 
-    // await _firebaseMessaging.subscribeToTopic('all');
+    // await _firebaseMessaging.subscribeToAllTopic();
+
+    const String allTopicKey = 'subscribedToAllTopic';
+
+    // Get SharedPreferences instance
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Check if already subscribed
+    final bool isAlreadySubscribed = prefs.getBool(allTopicKey) ?? false;
+
+    if (!isAlreadySubscribed) {
+      // Subscribe to the topic
+      await NotificationService().subscribeToAllTopic();
+
+      // Mark as subscribed in SharedPreferences
+      await prefs.setBool(allTopicKey, true);
+
+      debugPrint('Subscribed to all topic and updated preferences.');
+    } else {
+      debugPrint('Already subscribed to all topic.');
+    }
   }
 
   // get the fcm device token

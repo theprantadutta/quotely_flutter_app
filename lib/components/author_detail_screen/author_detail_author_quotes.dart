@@ -18,7 +18,10 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 15,
+            ),
             decoration: BoxDecoration(
               border: Border.all(
                 color: kPrimaryColor.withOpacity(0.4),
