@@ -24,7 +24,6 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final kPrimaryColor = Theme.of(context).primaryColor;
     final author = widget.authorDetailScreenArguments.author;
     return MainLayout(
       title: 'Author Detail',

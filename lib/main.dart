@@ -9,9 +9,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'constants/selectors.dart';
 import 'constants/shared_preference_keys.dart';
 import 'navigation/app_navigation.dart';
+import 'notifications/push_notification.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  PushNotifications.init();
   await dotenv.load();
   runApp(
     const ProviderScope(
