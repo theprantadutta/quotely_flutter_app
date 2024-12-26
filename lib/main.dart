@@ -80,7 +80,8 @@ class _MyAppState extends State<MyApp> {
     final isDarkMode = _sharedPreferences?.getBool(kIsDarkModeKey);
     if (isDarkMode != null) {
       setState(
-          () => _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light);
+        () => _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      );
     }
     final isGridView = _sharedPreferences?.getBool(kIsGridViewKey);
     if (isGridView != null) {

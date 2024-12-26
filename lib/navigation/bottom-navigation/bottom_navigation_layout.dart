@@ -131,8 +131,8 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  kPrimaryColor.withOpacity(0.12), // Soft start
-                  kPrimaryColor.withOpacity(0.06), // Lighter end
+                  kPrimaryColor.withValues(alpha: 0.12), // Soft start
+                  kPrimaryColor.withValues(alpha: 0.06), // Lighter end
                 ],
                 stops: const [0.0, 1.0],
               ),
@@ -151,7 +151,7 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
         // bottomNavigationBar: Theme(
         //   data: ThemeData(
         //     splashColor: Colors.transparent,
-        //     highlightColor: kPrimaryColor.withOpacity(0.1),
+        //     highlightColor: kPrimaryColor.withValues(alpha:0.1),
         //     primaryColor: kPrimaryColor,
         //     fontFamily: GoogleFonts.firaCode().fontFamily,
         //   ),
@@ -163,9 +163,9 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
         //           begin: Alignment.topCenter,
         //           end: Alignment.bottomCenter,
         //           colors: [
-        //             kPrimaryColor.withOpacity(0.15), // Soft start
-        //             kPrimaryColor.withOpacity(0.1), // Light middle
-        //             kPrimaryColor.withOpacity(0.05), // Very subtle end
+        //             kPrimaryColor.withValues(alpha:0.15), // Soft start
+        //             kPrimaryColor.withValues(alpha:0.1), // Light middle
+        //             kPrimaryColor.withValues(alpha:0.05), // Very subtle end
         //           ],
         //           stops: const [0.0, 0.5, 1.0],
         //         ),
@@ -204,7 +204,7 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
           ),
           child: NavigationBar(
             onDestinationSelected: _updateCurrentPageIndex,
-            indicatorColor: kPrimaryColor.withOpacity(0.9),
+            indicatorColor: kPrimaryColor.withValues(alpha: 0.9),
             surfaceTintColor: kPrimaryColor,
             selectedIndex: selectedIndex,
             destinations: kBottomDestinations,

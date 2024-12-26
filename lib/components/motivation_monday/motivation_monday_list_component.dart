@@ -1,27 +1,29 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quotely_flutter_app/components/quote_of_the_day_list_screen/single_quote_of_the_day.dart';
-import 'package:quotely_flutter_app/dtos/quote_of_the_day_dto.dart';
-import 'package:quotely_flutter_app/riverpods/all_quote_of_the_day_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class QuoteOfTheDayListComponent extends ConsumerStatefulWidget {
-  const QuoteOfTheDayListComponent({super.key});
+import '../../components/quote_of_the_day_list_screen/single_quote_of_the_day.dart';
+import '../../components/quote_of_the_day_screen/single_quote_of_the_component.dart';
+import '../../dtos/motivation_monday_dto.dart';
+import '../../riverpods/all_motivation_monday_provider.dart';
+
+class MotivationMondayListComponent extends ConsumerStatefulWidget {
+  const MotivationMondayListComponent({super.key});
 
   @override
-  ConsumerState<QuoteOfTheDayListComponent> createState() =>
-      _QuoteOfTheDayListComponentState();
+  ConsumerState<MotivationMondayListComponent> createState() =>
+      _MotivationMondayListComponentState();
 }
 
-class _QuoteOfTheDayListComponentState
-    extends ConsumerState<QuoteOfTheDayListComponent> {
+class _MotivationMondayListComponentState
+    extends ConsumerState<MotivationMondayListComponent> {
   ScrollController quoteScrollController = ScrollController();
   int pageNumber = 1;
   int pageSize = 10;
   bool hasMoreData = true;
   bool hasError = false;
-  List<QuoteOfTheDayDto> quotes = [];
+  List<MotivationMondayDto> quotes = [];
 
   @override
   void initState() {
@@ -39,7 +41,7 @@ class _QuoteOfTheDayListComponentState
             pageNumber++;
           });
           final _ = await ref.refresh(
-            fetchAllQuoteOfTheDayProvider(
+            fetchAllMotivationMondayProvider(
               pageNumber,
               pageSize,
             ).future,
@@ -64,7 +66,7 @@ class _QuoteOfTheDayListComponentState
     debugPrint('Refreshing Quotes...');
     try {
       final _ = await ref.refresh(
-        fetchAllQuoteOfTheDayProvider(
+        fetchAllMotivationMondayProvider(
           pageNumber,
           pageSize,
         ).future,
@@ -86,19 +88,18 @@ class _QuoteOfTheDayListComponentState
   @override
   Widget build(BuildContext context) {
     final quoteProvider = ref.watch(
-      fetchAllQuoteOfTheDayProvider(pageNumber, pageSize),
+      fetchAllMotivationMondayProvider(pageNumber, pageSize),
     );
 
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * 0.87,
       width: MediaQuery.sizeOf(context).width,
-      // margin: EdgeInsets.symmetric(vertical: 5),
       child: RefreshIndicator.adaptive(
         onRefresh: _refreshQuotes,
         child: quoteProvider.when(
           skipLoadingOnRefresh: false,
           data: (data) {
-            final quotesFromDb = data.quoteOfTheDayWithQuotes;
+            final quotesFromDb = data.motivationMondayWithQuotes;
             if (quotesFromDb.length < pageSize) {
               hasMoreData = false;
             }
@@ -112,7 +113,7 @@ class _QuoteOfTheDayListComponentState
               itemCount: quotes.length + (hasMoreData ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
-                  return const SingleQuoteOfTheDaySkeletor();
+                  return const SingleQuoteOfTheComponentSkeletor();
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(
@@ -133,7 +134,7 @@ class _QuoteOfTheDayListComponentState
                 child: ListView.builder(
                   itemCount: 10,
                   itemBuilder: (context, index) =>
-                      const SingleQuoteOfTheDaySkeletor(),
+                      const SingleQuoteOfTheComponentSkeletor(),
                 ),
               );
             }
@@ -142,7 +143,7 @@ class _QuoteOfTheDayListComponentState
               itemCount: quotes.length + 1,
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
-                  return const SingleQuoteOfTheDaySkeletor();
+                  return const SingleQuoteOfTheComponentSkeletor();
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(

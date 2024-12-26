@@ -53,7 +53,7 @@ class SomethingWentWrong extends StatelessWidget {
             decoration: BoxDecoration(
               // color: kPrimaryColor,
               border: Border.all(
-                color: kPrimaryColor.withOpacity(0.5),
+                color: kPrimaryColor.withValues(alpha: 0.5),
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(100),

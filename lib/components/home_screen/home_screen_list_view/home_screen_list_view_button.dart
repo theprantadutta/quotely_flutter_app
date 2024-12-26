@@ -17,7 +17,7 @@ class HomeScreenListViewButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       decoration: BoxDecoration(
         border: Border.all(
-          color: kPrimaryColor.withOpacity(0.2),
+          color: kPrimaryColor.withValues(alpha: 0.2),
         ),
         borderRadius: BorderRadius.circular(10),
       ),

@@ -36,12 +36,12 @@ class HomeScreenGridViewButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? kPrimaryColor.withOpacity(0.7)
+                ? kPrimaryColor.withValues(alpha: 0.7)
                 : Colors.transparent,
             border: Border.all(
               color: isSelected
                   ? Colors.transparent
-                  : kPrimaryColor.withOpacity(0.2),
+                  : kPrimaryColor.withValues(alpha: 0.2),
             ),
             borderRadius: BorderRadius.circular(10),
           ),

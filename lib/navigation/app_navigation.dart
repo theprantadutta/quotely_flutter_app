@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/settings_screen/appearance/appearance_screen.dart';
+import 'package:quotely_flutter_app/screens/daily_inspiration_screen.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
@@ -8,6 +9,9 @@ import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
 
 import '../screen_arguments/author_detail_screen_arguments.dart';
 import '../screens/author_detail_screen.dart';
+import '../screens/daily_inspiration_list_screen.dart';
+import '../screens/motivation_monday_list_screen.dart';
+import '../screens/motivation_monday_screen.dart';
 import '../screens/settings_offline_support_screen.dart';
 import '../screens/tab_screens/favourites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
@@ -139,6 +143,46 @@ class AppNavigation {
         path: QuoteOfTheDayListScreen.kRouteName,
         name: "Quote of the Day List",
         builder: (context, state) => QuoteOfTheDayListScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View Daily Inspiration Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: DailyInspirationScreen.kRouteName,
+        name: "Daily Inspiration",
+        builder: (context, state) => DailyInspirationScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View all Daily Inspiration Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: DailyInspirationListScreen.kRouteName,
+        name: "Daily Inspiration List",
+        builder: (context, state) => DailyInspirationListScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View Motivation Monday Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: MotivationMondayScreen.kRouteName,
+        name: "Motivation Monday",
+        builder: (context, state) => MotivationMondayScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View all Monday Motivation Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: MotivationMondayListScreen.kRouteName,
+        name: "Monday Motivation List",
+        builder: (context, state) => MotivationMondayListScreen(
           key: state.pageKey,
         ),
       ),

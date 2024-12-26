@@ -6,7 +6,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../components/settings_screen/appearance/appearance_screen.dart';
 import '../../../components/settings_screen/settings_screen_layout.dart';
 import '../../../components/shared/top_navigation_bar.dart';
-import '../../../screens/quote_of_the_day_screen.dart';
 import '../../../screens/settings_notification_screen.dart';
 import '../../../screens/settings_offline_support_screen.dart';
 import '../../services/common_service.dart';
@@ -78,14 +77,6 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () =>
                         gotoAScreen(context, AppearanceScreen.kRouteName),
                   ),
-                  // Settings Quote of the Day
-                  SettingsScreenLayout(
-                    iconData: Icons.format_quote_outlined,
-                    title: 'Quote of the Day',
-                    description: 'Manage all quote of the day',
-                    onTap: () =>
-                        gotoAScreen(context, QuoteOfTheDayScreen.kRouteName),
-                  ),
                   // Settings Notifications
                   SettingsScreenLayout(
                     iconData: Icons.notifications_active_outlined,
@@ -101,6 +92,16 @@ class SettingsScreen extends StatelessWidget {
                     description: 'Use the app even when online',
                     onTap: () => gotoAScreen(
                         context, SettingsOfflineSupportScreen.kRouteName),
+                  ),
+                  // Settings Add A Quote
+                  SettingsScreenLayout(
+                    iconData: Icons.add_box_outlined,
+                    title: 'Add A Quote',
+                    description: 'Add A Quote with Authors and Tags',
+                    onTap: () =>
+                        CommonService.showNotImplementedDialog(context),
+                    // onTap: () => gotoAScreen(
+                    //     context, SettingsOfflineSupportScreen.kRouteName),
                   ),
                   // Settings About Quotely App
                   SettingsScreenLayout(

@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quotely_flutter_app/riverpods/daily_inspiration_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../components/quote_of_the_day_screen/single_quote_of_the_component.dart';
-import '../../riverpods/today_quote_of_the_day_provider.dart';
 
-class QuoteOfTheDayComponent extends ConsumerWidget {
-  const QuoteOfTheDayComponent({super.key});
+class DailyInspirationComponent extends ConsumerWidget {
+  const DailyInspirationComponent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quoteOfTheDayProvider = ref.watch(fetchTodayQuoteOfTheDayProvider);
+    final dailyInspirationProvider =
+        ref.watch(fetchTodayDailyInspirationProvider);
 
-    return quoteOfTheDayProvider.when(
+    return dailyInspirationProvider.when(
       data: (data) {
         return SingleQuoteOfTheComponent(
-          quoteDate: data.quoteDate,
           author: data.author,
           content: data.content,
+          quoteDate: data.quoteDate,
         );
       },
       error: (err, stack) => const Center(

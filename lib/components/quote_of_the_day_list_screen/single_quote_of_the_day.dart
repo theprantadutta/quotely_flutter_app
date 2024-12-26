@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:quotely_flutter_app/dtos/quote_of_the_day_dto.dart';
 
 class SingleQuoteOfTheDay extends StatelessWidget {
-  final QuoteOfTheDayDto quoteOfTheDay;
   final int index;
+  final String author;
+  final String content;
+  final DateTime quoteDate;
 
   const SingleQuoteOfTheDay({
     super.key,
-    required this.quoteOfTheDay,
     required this.index,
+    required this.author,
+    required this.content,
+    required this.quoteDate,
   });
 
   @override
@@ -23,9 +26,9 @@ class SingleQuoteOfTheDay extends StatelessWidget {
       ),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
+        color: kPrimaryColor.withValues(alpha: 0.05),
         border: Border.all(
-          color: kPrimaryColor.withOpacity(0.2),
+          color: kPrimaryColor.withValues(alpha: 0.2),
         ),
         borderRadius: BorderRadius.circular(15),
       ),
@@ -33,19 +36,19 @@ class SingleQuoteOfTheDay extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Quote Date: ${DateFormat('dd, MM, yyyy').format(quoteOfTheDay.quoteDate)}',
+            'Quote Date: ${DateFormat('dd, MM, yyyy').format(quoteDate)}',
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 5),
-          Text(quoteOfTheDay.content),
+          Text(content),
           const SizedBox(height: 5),
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              '- ${quoteOfTheDay.author}',
+              '- ${author}',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -72,9 +75,9 @@ class SingleQuoteOfTheDaySkeletor extends StatelessWidget {
       ),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
+        color: kPrimaryColor.withValues(alpha: 0.05),
         border: Border.all(
-          color: kPrimaryColor.withOpacity(0.2),
+          color: kPrimaryColor.withValues(alpha: 0.2),
         ),
         borderRadius: BorderRadius.circular(15),
       ),

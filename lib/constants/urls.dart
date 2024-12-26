@@ -9,5 +9,12 @@ const kGetAllTags = 'Tag/GetAllTags';
 const kGetAllAuthors = 'Author/GetAllAuthors';
 const kGetAllQuotes = 'Quote/GetAllQuotes';
 const kGetAllQuotesByAuthor = 'Quote/GetAllQuotesByAuthor';
+
 const kGetAllQuoteOfTheDay = 'QuoteOfTheDay/GetAllQuoteOfTheDay';
 const kGetTodayQuoteOfTheDay = 'QuoteOfTheDay/GetTodayQuoteOfTheDay';
+
+const kGetAllDailyInspiration = 'DailyInspiration/GetAllDailyInspiration';
+const kGetTodayDailyInspiration = 'DailyInspiration/GetTodayDailyInspiration';
+
+const kGetAllMotivationMonday = 'MotivationMonday/GetAllMotivationMonday';
+const kGetTodayMotivationMonday = 'MotivationMonday/GetTodayMotivationMonday';

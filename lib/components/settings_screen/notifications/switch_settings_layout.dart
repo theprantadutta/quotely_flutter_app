@@ -19,7 +19,7 @@ class SwitchSettingsLayout extends StatelessWidget {
       height: MediaQuery.sizeOf(context).height * 0.07,
       padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
+        color: kPrimaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -27,13 +27,13 @@ class SwitchSettingsLayout extends StatelessWidget {
         children: [
           Switch(
             activeColor: kPrimaryColor,
-            inactiveThumbColor: kPrimaryColor.withOpacity(0.3),
-            inactiveTrackColor: kPrimaryColor.withOpacity(0.3),
+            inactiveThumbColor: kPrimaryColor.withValues(alpha: 0.3),
+            inactiveTrackColor: kPrimaryColor.withValues(alpha: 0.3),
             trackColor: WidgetStateProperty.all(
-              kPrimaryColor.withOpacity(0.1),
+              kPrimaryColor.withValues(alpha: 0.1),
             ),
             trackOutlineColor: WidgetStateProperty.all(
-              kPrimaryColor.withOpacity(0.2),
+              kPrimaryColor.withValues(alpha: 0.2),
             ),
             value: value,
             onChanged: onSwitchChanged,

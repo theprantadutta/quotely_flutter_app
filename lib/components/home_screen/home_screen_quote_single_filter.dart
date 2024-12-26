@@ -19,12 +19,13 @@ class HomeScreenQuoteSingleFilter extends StatelessWidget {
       margin: EdgeInsets.only(left: index == 0 ? 0 : 5),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color:
-            doesTagExist ? kPrimaryColor.withOpacity(0.7) : Colors.transparent,
+        color: doesTagExist
+            ? kPrimaryColor.withValues(alpha: 0.7)
+            : Colors.transparent,
         border: Border.all(
           color: doesTagExist
               ? Colors.transparent
-              : kPrimaryColor.withOpacity(0.4),
+              : kPrimaryColor.withValues(alpha: 0.4),
         ),
         borderRadius: BorderRadius.circular(10),
       ),

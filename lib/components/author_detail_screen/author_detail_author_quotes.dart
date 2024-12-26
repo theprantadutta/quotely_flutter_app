@@ -24,7 +24,7 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               border: Border.all(
-                color: kPrimaryColor.withOpacity(0.4),
+                color: kPrimaryColor.withValues(alpha: 0.4),
               ),
               borderRadius: BorderRadius.circular(15),
             ),

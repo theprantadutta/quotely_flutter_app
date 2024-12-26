@@ -17,7 +17,7 @@ class _DarkThemeState extends State<DarkTheme> {
       height: MediaQuery.sizeOf(context).height * 0.07,
       padding: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
+        color: kPrimaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -25,13 +25,13 @@ class _DarkThemeState extends State<DarkTheme> {
         children: [
           Switch(
             activeColor: kPrimaryColor,
-            inactiveThumbColor: kPrimaryColor.withOpacity(0.3),
-            inactiveTrackColor: kPrimaryColor.withOpacity(0.3),
+            inactiveThumbColor: kPrimaryColor.withValues(alpha: 0.3),
+            inactiveTrackColor: kPrimaryColor.withValues(alpha: 0.3),
             trackColor: WidgetStateProperty.all(
-              kPrimaryColor.withOpacity(0.1),
+              kPrimaryColor.withValues(alpha: 0.1),
             ),
             trackOutlineColor: WidgetStateProperty.all(
-              kPrimaryColor.withOpacity(0.2),
+              kPrimaryColor.withValues(alpha: 0.2),
             ),
             value: MyApp.of(context).isDarkMode,
             onChanged: (value) => MyApp.of(context).changeTheme(

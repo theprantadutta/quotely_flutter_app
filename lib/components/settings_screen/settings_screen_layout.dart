@@ -26,7 +26,7 @@ class SettingsScreenLayout extends StatelessWidget {
           ),
           margin: const EdgeInsets.symmetric(vertical: 3),
           decoration: BoxDecoration(
-            color: kPrimaryColor.withOpacity(0.05),
+            color: kPrimaryColor.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(15),
           ),
           child: Row(
@@ -56,7 +56,7 @@ class SettingsScreenLayout extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 5),
                       Text(
                         description,
                         style: const TextStyle(

@@ -89,10 +89,10 @@ class SingleAuthorDetailButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
           decoration: BoxDecoration(
             color: isSelected
-                ? kPrimaryColor.withOpacity(0.8)
-                : kPrimaryColor.withOpacity(0.2),
+                ? kPrimaryColor.withValues(alpha: 0.8)
+                : kPrimaryColor.withValues(alpha: 0.2),
             border: Border.all(
-              color: kPrimaryColor.withOpacity(0.2),
+              color: kPrimaryColor.withValues(alpha: 0.2),
             ),
             borderRadius: BorderRadius.circular(5),
           ),

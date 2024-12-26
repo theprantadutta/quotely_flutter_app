@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../dtos/quote_of_the_day_dto.dart';
-
 class SingleQuoteOfTheComponent extends StatelessWidget {
-  final QuoteOfTheDayDto quoteOfTheDayDto;
+  final DateTime quoteDate;
+  final String author;
+  final String content;
 
   const SingleQuoteOfTheComponent({
     super.key,
-    required this.quoteOfTheDayDto,
+    required this.quoteDate,
+    required this.author,
+    required this.content,
   });
 
   @override
@@ -19,7 +21,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
+        color: kPrimaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -27,7 +29,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Quote Date: ${DateFormat('dd MMM, yyyy').format(quoteOfTheDayDto.quoteDate)}',
+            'Quote Date: ${DateFormat('dd MMM, yyyy').format(quoteDate)}',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -44,7 +46,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
                 ),
               ),
               Text(
-                quoteOfTheDayDto.content,
+                content,
                 style: const TextStyle(
                   fontSize: 18,
                 ),
@@ -53,7 +55,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  '- ${quoteOfTheDayDto.author}',
+                  '- ${author}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -80,7 +82,7 @@ class SingleQuoteOfTheComponentSkeletor extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
+        color: kPrimaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(

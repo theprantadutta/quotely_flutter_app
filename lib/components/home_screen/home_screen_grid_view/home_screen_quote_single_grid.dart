@@ -40,10 +40,10 @@ class _HomeScreenQuoteSingleGridState extends State<HomeScreenQuoteSingleGrid>
         borderRadius: BorderRadius.circular(10),
         gradient: LinearGradient(
           colors: [
-            kPrimaryColor.withOpacity(0.3),
-            kPrimaryColor.withOpacity(0.2),
-            kPrimaryColor.withOpacity(0.1),
-            kPrimaryColor.withOpacity(0.4),
+            kPrimaryColor.withValues(alpha: 0.3),
+            kPrimaryColor.withValues(alpha: 0.2),
+            kPrimaryColor.withValues(alpha: 0.1),
+            kPrimaryColor.withValues(alpha: 0.4),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -108,10 +108,10 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         gradient: LinearGradient(
           colors: [
-            kPrimaryColor.withOpacity(0.3),
-            kPrimaryColor.withOpacity(0.2),
-            kPrimaryColor.withOpacity(0.1),
-            kPrimaryColor.withOpacity(0.4),
+            kPrimaryColor.withValues(alpha: 0.3),
+            kPrimaryColor.withValues(alpha: 0.2),
+            kPrimaryColor.withValues(alpha: 0.1),
+            kPrimaryColor.withValues(alpha: 0.4),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

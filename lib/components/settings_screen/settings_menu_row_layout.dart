@@ -20,7 +20,7 @@ class SettingsMenuRowLayout extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       margin: const EdgeInsets.symmetric(vertical: 3),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
+        color: kPrimaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(

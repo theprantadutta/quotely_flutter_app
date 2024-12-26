@@ -21,14 +21,15 @@ class InputFormField extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
           hintText: labelText,
           hintStyle: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: isDarkTheme
-                ? Colors.white.withOpacity(0.7)
-                : Colors.black.withOpacity(0.6),
+                ? Colors.white.withValues(alpha: 0.7)
+                : Colors.black.withValues(alpha: 0.6),
           ),
           // Border when the TextField is enabled but not focused
           enabledBorder: OutlineInputBorder(

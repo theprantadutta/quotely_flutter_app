@@ -43,10 +43,10 @@ class SingleAuthorView extends StatelessWidget {
             ),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: kPrimaryColor.withOpacity(0.05),
+              color: kPrimaryColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
-                color: kPrimaryColor.withOpacity(0.10),
+                color: kPrimaryColor.withValues(alpha: 0.10),
               ),
             ),
             child: Row(
@@ -120,10 +120,10 @@ class SingleAuthorViewSkeletor extends StatelessWidget {
           ),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: kPrimaryColor.withOpacity(0.05),
+            color: kPrimaryColor.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: kPrimaryColor.withOpacity(0.10),
+              color: kPrimaryColor.withValues(alpha: 0.10),
             ),
           ),
           child: Row(

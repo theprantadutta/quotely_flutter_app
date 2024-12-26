@@ -1,161 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/layouts/main_layout.dart';
 import 'package:quotely_flutter_app/components/settings_screen/notifications/switch_settings_layout.dart';
 import 'package:quotely_flutter_app/constants/notification_keys.dart';
+import 'package:quotely_flutter_app/screens/daily_inspiration_screen.dart';
+import 'package:quotely_flutter_app/screens/motivation_monday_screen.dart';
 import 'package:quotely_flutter_app/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../components/notifications_screen/notification_screen_layout.dart';
 import '../constants/shared_preference_keys.dart';
-
-// class SettingsNotificationScreen extends StatefulWidget {
-//   static const kRouteName = '/settings-notification';
-//   const SettingsNotificationScreen({super.key});
-
-//   @override
-//   State<SettingsNotificationScreen> createState() =>
-//       _SettingsNotificationState();
-// }
-
-// class _SettingsNotificationState extends State<SettingsNotificationScreen> {
-//   bool _isNotificationEnabled = true;
-//   bool _isNotificationMotivationEnabled = false;
-//   bool _isNotificationDailyInspirationEnabled = false;
-//   bool _isNotificationQuoteOfTheDayEnabled = false;
-//   SharedPreferences? _sharedPreferences;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     initializeSharedPreference();
-//   }
-
-//   Future<void> initializeSharedPreference() async {
-//     _sharedPreferences = await SharedPreferences.getInstance();
-//     final isNotificationEnabled =
-//         _sharedPreferences?.getBool(kNotificationEnabled);
-//     if (isNotificationEnabled != null) {
-//       setState(() => _isNotificationEnabled = isNotificationEnabled);
-//     }
-//     final isNotificationMotivationEnabled =
-//         _sharedPreferences?.getBool(kNotificationMotivation);
-//     if (isNotificationMotivationEnabled != null) {
-//       setState(() =>
-//           _isNotificationMotivationEnabled = isNotificationMotivationEnabled);
-//     }
-//     final isNotificationDailyInspirationEnabled =
-//         _sharedPreferences?.getBool(kNotificationDailyInspiration);
-//     if (isNotificationDailyInspirationEnabled != null) {
-//       setState(() => _isNotificationDailyInspirationEnabled =
-//           isNotificationDailyInspirationEnabled);
-//     }
-//     final isNotificationQuoteOfTheWeekEnabled =
-//         _sharedPreferences?.getBool(kNotificationQuoteOfTheDay);
-//     if (isNotificationQuoteOfTheWeekEnabled != null) {
-//       setState(() => _isNotificationQuoteOfTheDayEnabled =
-//           isNotificationQuoteOfTheWeekEnabled);
-//     }
-//   }
-
-//   Future<void> onNotificationSwitched(bool isNotificationEnabled) async {
-//     setState(() {
-//       _isNotificationEnabled = isNotificationEnabled;
-//       _sharedPreferences?.setBool(kNotificationEnabled, isNotificationEnabled);
-//     });
-//     if (isNotificationEnabled) {
-//       await NotificationService().subscribeToTopic(kNotificationAllTopic);
-//     } else {
-//       await NotificationService().unsubscribeFromAllTopic();
-//     }
-//   }
-
-//   Future<void> onNotificationMondayMotivationSwitched(
-//       bool isNotificationMotivationEnabled) async {
-//     setState(() {
-//       _isNotificationMotivationEnabled = isNotificationMotivationEnabled;
-//       _sharedPreferences?.setBool(
-//           kNotificationMotivation, isNotificationMotivationEnabled);
-//     });
-//     if (isNotificationMotivationEnabled) {
-//       await NotificationService()
-//           .subscribeToTopic(kNotificationMotivationMondayTopic);
-//     } else {
-//       await NotificationService()
-//           .unsubscribeFromTopic(kNotificationMotivationMondayTopic);
-//     }
-//   }
-
-//   Future<void> onNotificationDailyInspirationSwitched(
-//       bool isNotificationDailyInspirationEnabled) async {
-//     setState(() {
-//       _isNotificationMotivationEnabled = isNotificationDailyInspirationEnabled;
-//       _sharedPreferences?.setBool(
-//           kNotificationDailyInspiration, isNotificationDailyInspirationEnabled);
-//     });
-//     if (isNotificationDailyInspirationEnabled) {
-//       await NotificationService()
-//           .subscribeToTopic(kNotificationDailyInspirationTopic);
-//     } else {
-//       await NotificationService()
-//           .unsubscribeFromTopic(kNotificationDailyInspirationTopic);
-//     }
-//   }
-
-//   Future<void> onNotificationQuoteOfTheWeekSwitched(
-//       bool isNotificationQuoteOfTheWeekEnabled) async {
-//     setState(() {
-//       _isNotificationQuoteOfTheDayEnabled = isNotificationQuoteOfTheWeekEnabled;
-//       _sharedPreferences?.setBool(
-//           kNotificationQuoteOfTheDay, isNotificationQuoteOfTheWeekEnabled);
-//     });
-//     if (isNotificationQuoteOfTheWeekEnabled) {
-//       await NotificationService()
-//           .subscribeToTopic(kNotificationQuoteOfTheDayTopic);
-//     } else {
-//       await NotificationService()
-//           .unsubscribeFromTopic(kNotificationQuoteOfTheDayTopic);
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MainLayout(
-//       title: 'Notifications',
-//       body: Padding(
-//         padding: const EdgeInsets.symmetric(
-//           horizontal: 10,
-//           vertical: 8,
-//         ),
-//         child: Column(
-//           children: [
-//             SwitchSettingsLayout(
-//               title: 'Enable All Notifications',
-//               value: _isNotificationEnabled,
-//               onSwitchChanged: onNotificationSwitched,
-//             ),
-//             SizedBox(height: 6),
-//             SwitchSettingsLayout(
-//               title: 'Enable Motivation Monday',
-//               value: _isNotificationMotivationEnabled,
-//               onSwitchChanged: onNotificationMondayMotivationSwitched,
-//             ),
-//             SizedBox(height: 6),
-//             SwitchSettingsLayout(
-//               title: 'Enable Daily Inspiration',
-//               value: _isNotificationDailyInspirationEnabled,
-//               onSwitchChanged: onNotificationDailyInspirationSwitched,
-//             ),
-//             SizedBox(height: 6),
-//             SwitchSettingsLayout(
-//               title: 'Enable Quote of the Day',
-//               value: _isNotificationQuoteOfTheDayEnabled,
-//               onSwitchChanged: onNotificationMondayMotivationSwitched,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+import 'quote_of_the_day_screen.dart';
 
 class SettingsNotificationScreen extends StatefulWidget {
   static const kRouteName = '/settings-notification';
@@ -230,6 +86,20 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
     }
   }
 
+  gotoAScreen(BuildContext context, String route) {
+    try {
+      Future.delayed(Duration.zero, () async {
+        // ignore: use_build_context_synchronously
+        context.push(route);
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Something Went Wrong when going to screen: $route');
+        print(e);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -238,6 +108,29 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Column(
           children: [
+            // Notifications Quote of the Day
+            NotificationScreenLayout(
+              iconData: Icons.format_quote_outlined,
+              title: 'Quote of the Day',
+              description: 'Manage all quote of the day',
+              onTap: () => gotoAScreen(context, QuoteOfTheDayScreen.kRouteName),
+            ),
+            // Notifications Daily Inspiration
+            NotificationScreenLayout(
+              iconData: Icons.format_quote_outlined,
+              title: 'Daily Inspiration',
+              description: 'Manage all daily inspiration',
+              onTap: () =>
+                  gotoAScreen(context, DailyInspirationScreen.kRouteName),
+            ),
+            // Notifications Monday Motivation
+            NotificationScreenLayout(
+              iconData: Icons.format_quote_outlined,
+              title: 'Monday Motivation',
+              description: 'Manage all Monday Motivation',
+              onTap: () =>
+                  gotoAScreen(context, MotivationMondayScreen.kRouteName),
+            ),
             SwitchSettingsLayout(
               title: 'Enable All Notifications',
               value: _notifications[kNotificationEnabled]!,

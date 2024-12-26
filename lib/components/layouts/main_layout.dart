@@ -31,7 +31,8 @@ class MainLayout extends StatelessWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          backgroundColor: kPrimaryColor.withOpacity(isDarkTheme ? 0.6 : 0.9),
+          backgroundColor:
+              kPrimaryColor.withValues(alpha: isDarkTheme ? 0.6 : 0.9),
           systemOverlayStyle: SystemUiOverlayStyle.light,
           title: MainLayoutAppBar(
             title: title,

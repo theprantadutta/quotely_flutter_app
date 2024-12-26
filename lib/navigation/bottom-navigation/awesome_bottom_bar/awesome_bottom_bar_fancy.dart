@@ -35,7 +35,7 @@ class _AwesomeBottomBarFancyBorderLayoutState
           topLeft: Radius.circular(15),
           topRight: Radius.circular(15),
         ),
-        backgroundColor: kPrimaryColor.withOpacity(0.05),
+        backgroundColor: kPrimaryColor.withValues(alpha: 0.05),
         colorSelected: kPrimaryColor,
         color: isDarkTheme ? Colors.white : Colors.black,
         iconSize: 20,
