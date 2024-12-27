@@ -5,6 +5,8 @@ final kApiProdUrl = dotenv.env['PROD_API_URL'];
 final kApiDevUrl = dotenv.env['DEV_API_URL'];
 final kApiUrl = kDebugMode ? kApiDevUrl : kApiProdUrl;
 
+final kAppUpdateInfo = 'Application/GetApplicationInfo';
+
 const kGetAllTags = 'Tag/GetAllTags';
 const kGetAllAuthors = 'Author/GetAllAuthors';
 const kGetAllQuotes = 'Quote/GetAllQuotes';

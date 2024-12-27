@@ -1,15 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quotely_flutter_app/components/shared/something_went_wrong.dart';
-import 'package:quotely_flutter_app/riverpods/all_quote_data_provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
+import '../../components/shared/something_went_wrong.dart';
 import '../../dtos/quote_dto.dart';
 import '../../main.dart';
+import '../../riverpods/all_quote_data_provider.dart';
+import '../../services/app_info_service.dart';
+import '../../services/app_service.dart';
+import '../../util/functions.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const kRouteName = '/home';
@@ -32,6 +36,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _fetchQuotes();
+    Future.microtask(() => checkForMaintenanceAndAppUpdate());
+  }
+
+  Future<void> checkForMaintenanceAndAppUpdate() async {
+    debugPrint('Running checkForMaintenanceAndAppUpdate...');
+    try {
+      final appUpdateInfo = await AppInfoService().getAppUpdateInfo();
+      // Check Maintenance
+      final maintenanceBreak = appUpdateInfo.maintenanceBreak;
+      debugPrint('Maintenance Break: $maintenanceBreak');
+      if (maintenanceBreak) {
+        debugPrint('Maintenance Break, returning...');
+        if (!mounted) return;
+        await AppService.showMaintenanceDialog(context);
+        return;
+      }
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      String currentAppVersion = packageInfo.version;
+      final currentVersion = appUpdateInfo.currentVersion;
+      debugPrint('Current App Version: $currentAppVersion');
+      if (!mounted) return;
+      if (compareVersion(currentVersion, currentAppVersion) == 1) {
+        AppService.showUpdateDialog(context, currentVersion);
+      }
+    } catch (e) {
+      debugPrint('Something went wrong while checking for app update');
+      debugPrint(e.toString());
+      // showErrorToast(
+      //   context: context,
+      //   title: 'Something Went Wrong',
+      //   description: 'Failed to check App Update,',
+      // );
+    }
   }
 
   Future<void> _fetchQuotes() async {

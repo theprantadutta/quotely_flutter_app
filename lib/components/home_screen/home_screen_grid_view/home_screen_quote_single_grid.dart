@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
+import 'package:quotely_flutter_app/services/common_service.dart';
 
 import '../../../services/isar_service.dart';
 import 'home_screen_grid_content.dart';
@@ -52,11 +53,12 @@ class _HomeScreenQuoteSingleGridState extends State<HomeScreenQuoteSingleGrid>
       ),
       child: Stack(
         children: [
-          const HomeScreenGridViewButton(
+          HomeScreenGridViewButton(
             bottom: 5,
             right: 20,
             title: 'Share',
             iconData: Icons.share_outlined,
+            onTap: () => CommonService.showNotImplementedDialog(context),
           ),
           HomeScreenGridViewButton(
             bottom: 5,
