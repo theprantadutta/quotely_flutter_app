@@ -2,6 +2,8 @@
 
 Quotely is a Flutter app designed for quote enthusiasts. It allows users to explore, save, and share inspirational quotes from various authors. With beautiful custom UI and seamless functionality, Quotely provides a delightful experience for browsing quotes, searching for authors, and staying inspired with daily notifications.  
 
+[![Download Latest APK](https://img.shields.io/badge/Download-Latest%20APK-brightgreen?style=for-the-badge&logo=android)](https://github.com/theprantadutta/quotely_flutter_app/releases/latest/download/quotely.apk)
+
 <p align="center">  
   <img alt="Light Theme Screenshot" src="./screenshots/quotely_1_light.jpg" width="45%" />  
   <img alt="Dark Theme Screenshot" src="./screenshots/quotely_1_dark.jpg" width="45%" />  
