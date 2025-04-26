@@ -1,0 +1,2 @@
+F:/Personal/MyProjects/quotely_flutter_app/android/app/.cxx/Debug/5y96es22/x86/CMakeFiles/edit_cache.dir
+F:/Personal/MyProjects/quotely_flutter_app/android/app/.cxx/Debug/5y96es22/x86/CMakeFiles/rebuild_cache.dir

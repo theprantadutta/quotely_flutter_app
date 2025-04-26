@@ -41,14 +41,14 @@ class _HomeScreenQuoteSingleGridState extends State<HomeScreenQuoteSingleGrid>
         borderRadius: BorderRadius.circular(10),
         gradient: LinearGradient(
           colors: [
+            kPrimaryColor.withValues(alpha: 0.4),
             kPrimaryColor.withValues(alpha: 0.3),
             kPrimaryColor.withValues(alpha: 0.2),
             kPrimaryColor.withValues(alpha: 0.1),
-            kPrimaryColor.withValues(alpha: 0.4),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          stops: const [0.1, 0.4, 0.9, 1.0],
+          stops: const [0.0, 0.3, 0.7, 1.0],
         ),
       ),
       child: Stack(
