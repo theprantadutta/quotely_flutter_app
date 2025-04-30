@@ -22,15 +22,15 @@ class IsarService {
     );
   }
 
-  Future<bool> isFavourite(String quoteId) async {
+  Future<bool> isFavorite(String quoteId) async {
     final isar = await openDB();
     final existingQuote =
         await isar.quoteDtos.where().idEqualTo(quoteId).findFirstAsync();
-    return existingQuote == null ? false : existingQuote.isFavourite;
+    return existingQuote == null ? false : existingQuote.isFavorite;
   }
 
   Future<bool> changeQuoteUpdateStatus(
-      QuoteDto quoteDto, bool isFavourite) async {
+      QuoteDto quoteDto, bool isFavorite) async {
     try {
       final isar = await openDB();
 
@@ -42,7 +42,7 @@ class IsarService {
           tags: quoteDto.tags,
           authorSlug: quoteDto.authorSlug,
           length: quoteDto.length,
-          isFavourite: isFavourite,
+          isFavorite: isFavorite,
           dateAdded: quoteDto.dateAdded,
           dateModified: quoteDto.dateModified,
         );
@@ -60,7 +60,7 @@ class IsarService {
     final isar = await openDB();
     return await isar.quoteDtos
         .where()
-        .isFavouriteEqualTo(true)
+        .isFavoriteEqualTo(true)
         .anyOf(
           tags,
           (q, element) => q.tagsElementEqualTo(element),
@@ -72,7 +72,7 @@ class IsarService {
     final isar = await openDB();
     yield* isar.quoteDtos
         .where()
-        .isFavouriteEqualTo(true)
+        .isFavoriteEqualTo(true)
         .anyOf(
           tags,
           (q, element) => q.tagsElementEqualTo(element),

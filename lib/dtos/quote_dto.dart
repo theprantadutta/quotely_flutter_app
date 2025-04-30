@@ -13,7 +13,7 @@ class QuoteDto {
   final List<String> tags;
   final String authorSlug;
   final int length;
-  bool isFavourite;
+  bool isFavorite;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
   final DateTime dateAdded;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
@@ -26,7 +26,7 @@ class QuoteDto {
     required this.tags,
     required this.authorSlug,
     required this.length,
-    this.isFavourite = false,
+    this.isFavorite = false,
     required this.dateAdded,
     required this.dateModified,
   });

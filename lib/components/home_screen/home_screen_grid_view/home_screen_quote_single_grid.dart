@@ -27,7 +27,7 @@ class _HomeScreenQuoteSingleGridState extends State<HomeScreenQuoteSingleGrid>
 
   @override
   void initState() {
-    selectedQuote = widget.currentQuote.isFavourite;
+    selectedQuote = widget.currentQuote.isFavorite;
     super.initState();
   }
 
