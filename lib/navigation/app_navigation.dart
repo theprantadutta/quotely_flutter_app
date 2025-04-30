@@ -6,6 +6,7 @@ import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
+import 'package:quotely_flutter_app/screens/tab_screens/facts_screen.dart';
 
 import '../screen_arguments/author_detail_screen_arguments.dart';
 import '../screens/author_detail_screen.dart';
@@ -31,6 +32,8 @@ class AppNavigation {
       GlobalKey<NavigatorState>(debugLabel: 'shellFavorites');
   static final _shellNavigatorAuthors =
       GlobalKey<NavigatorState>(debugLabel: 'shellAuthors');
+  static final _shellNavigatorFacts =
+      GlobalKey<NavigatorState>(debugLabel: 'shellFacts');
   static final _shellNavigatorSettings =
       GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
@@ -106,6 +109,20 @@ class AppNavigation {
                 pageBuilder: (context, state) => reusableTransitionPage(
                   state: state,
                   child: const AuthorsScreen(),
+                ),
+              ),
+            ],
+          ),
+
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorFacts,
+            routes: <RouteBase>[
+              GoRoute(
+                path: FactsScreen.kRouteName,
+                name: "Facts",
+                pageBuilder: (context, state) => reusableTransitionPage(
+                  state: state,
+                  child: const FactsScreen(),
                 ),
               ),
             ],

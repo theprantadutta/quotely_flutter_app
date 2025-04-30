@@ -8,7 +8,7 @@ import '../../components/home_screen/home_screen_list_view/home_screen_quote_lis
 import '../../main.dart';
 
 class FavoritesScreen extends StatefulWidget {
-  static const kRouteName = '/Favorites';
+  static const kRouteName = '/favorites';
   const FavoritesScreen({super.key});
 
   @override
