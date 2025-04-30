@@ -51,7 +51,7 @@ class _AwesomeBottomBarFancyBorderLayoutState
           ),
           TabItem(
             icon: Icons.favorite_outline,
-            title: 'Favourites',
+            title: 'Favorites',
           ),
           TabItem(
             icon: Icons.person_2_outlined,

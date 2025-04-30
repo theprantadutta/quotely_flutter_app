@@ -1,9 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:quotely_flutter_app/components/home_screen/home_screen_grid_view/home_screen_quote_single_grid.dart';
+import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import '../../../dtos/quote_dto.dart';
 
 class HomeScreenQuoteGridView extends StatelessWidget {
   final List<QuoteDto> quotes;
@@ -57,8 +56,8 @@ class HomeScreenQuoteGridView extends StatelessWidget {
   }
 }
 
-class HomeScreenQuoteGridViewSkeltor extends StatelessWidget {
-  const HomeScreenQuoteGridViewSkeltor({super.key});
+class HomeScreenQuoteGridViewSkeletor extends StatelessWidget {
+  const HomeScreenQuoteGridViewSkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {

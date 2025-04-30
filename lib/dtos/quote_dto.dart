@@ -1,12 +1,11 @@
-import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../database/database.dart';
 
 part '../generated/dtos/quote_dto.g.dart';
 
 @JsonSerializable()
-@collection
 class QuoteDto {
-  @Id()
   final String id;
   final String author;
   final String content;
@@ -33,6 +32,21 @@ class QuoteDto {
 
   static DateTime _fromJson(String date) => DateTime.parse(date).toUtc();
   static String _toJson(DateTime date) => date.toUtc().toIso8601String();
+
+  factory QuoteDto.fromQuote(Quote quote) => QuoteDto(
+        id: quote.id,
+        author: quote.author,
+        content: quote.content,
+        tags: quote.tags.split(','),
+        authorSlug: quote.authorSlug,
+        length: quote.length,
+        isFavorite: quote.isFavorite,
+        dateAdded: quote.dateAdded,
+        dateModified: quote.dateModified,
+      );
+  static List<QuoteDto> fromQuoteList(List<Quote> quotes) {
+    return quotes.map((quote) => QuoteDto.fromQuote(quote)).toList();
+  }
 
   /// Connect the generated [_$QuoteDtoFromJson] function to the `fromJson`
   /// factory.

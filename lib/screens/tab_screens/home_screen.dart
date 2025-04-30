@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
 import '../../components/shared/something_went_wrong.dart';
-import '../../dtos/quote_dto.dart';
 import '../../main.dart';
 import '../../riverpods/all_quote_data_provider.dart';
 import '../../services/app_info_service.dart';
@@ -153,7 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (!hasError && quotes.isEmpty)
               Expanded(
                 child: isGridView
-                    ? const HomeScreenQuoteGridViewSkeltor()
+                    ? const HomeScreenQuoteGridViewSkeletor()
                     : const HomeScreenQuoteListViewSkeletor(),
               ),
 

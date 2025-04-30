@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:quotely_flutter_app/services/common_service.dart';
+import 'package:quotely_flutter_app/services/drift_service.dart';
 
-import '../../../services/isar_service.dart';
 import 'home_screen_grid_content.dart';
 import 'home_screen_grid_view_button.dart';
 
@@ -72,7 +72,7 @@ class _HomeScreenQuoteSingleGridState extends State<HomeScreenQuoteSingleGrid>
               setState(() {
                 selectedQuote = !selectedQuote;
               });
-              IsarService().changeQuoteUpdateStatus(
+              DriftService.changeQuoteUpdateStatus(
                 widget.currentQuote,
                 selectedQuote,
               );

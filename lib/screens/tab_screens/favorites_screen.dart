@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:quotely_flutter_app/components/shared/top_navigation_bar.dart';
-import 'package:quotely_flutter_app/services/isar_service.dart';
+import 'package:quotely_flutter_app/dtos/quote_dto.dart';
+import 'package:quotely_flutter_app/services/drift_service.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
 import '../../main.dart';
 
-class FavouritesScreen extends StatefulWidget {
-  static const kRouteName = '/favourites';
-  const FavouritesScreen({super.key});
+class FavoritesScreen extends StatefulWidget {
+  static const kRouteName = '/Favorites';
+  const FavoritesScreen({super.key});
 
   @override
-  State<FavouritesScreen> createState() => _FavouritesScreenState();
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-class _FavouritesScreenState extends State<FavouritesScreen> {
+class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void initState() {
     super.initState();
-    final changed = IsarService().watchAllFavouriteQuotes(([]));
+    final changed = DriftService.watchAllFavoriteQuotes(([]));
     changed.listen((value) {
       if (mounted) {
         setState(() {});
@@ -40,18 +41,18 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const TopNavigationBar(title: 'Favourites'),
+            const TopNavigationBar(title: 'Favorites'),
             SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.765,
-              child: FutureBuilder(
-                future: IsarService().getAllFavouriteQuotes([]),
+              child: StreamBuilder(
+                stream: DriftService.watchAllFavoriteQuotes([]),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return isGridView
-                        ? const FavoutiesScreenSkeletor(
-                            widget: HomeScreenQuoteGridViewSkeltor(),
+                        ? const FavoritesScreenSkeletor(
+                            widget: HomeScreenQuoteGridViewSkeletor(),
                           )
-                        : const FavoutiesScreenSkeletor(
+                        : const FavoritesScreenSkeletor(
                             widget: HomeScreenQuoteListViewSkeletor(),
                           );
                   }
@@ -78,7 +79,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                             ),
                             SizedBox(height: 10),
                             Text(
-                              'No Favourites added yet.',
+                              'No Favorites added yet.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 18,
@@ -87,7 +88,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                             ),
                             SizedBox(height: 10),
                             Text(
-                              'When you like a quote, it\'s going to show up here, this section helps you to read your favourite quotes over and over',
+                              'When you like a quote, it\'s going to show up here, this section helps you to read your Favorite quotes over and over',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 15,
@@ -104,7 +105,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'All Favourite Quotes',
+                            'All Favorite Quotes',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -149,14 +150,14 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                       Expanded(
                         child: isGridView
                             ? HomeScreenQuoteGridView(
-                                quotes: quotes,
+                                quotes: QuoteDto.fromQuoteList(quotes),
                                 quotePageNumber: 1,
                                 onLastItemScrolled: () {
                                   return Future.value();
                                 },
                               )
                             : HomeScreenQuoteListView(
-                                quotes: quotes,
+                                quotes: QuoteDto.fromQuoteList(quotes),
                                 quotePageNumber: 1,
                                 onLastItemScrolled: () {
                                   return Future.value();
@@ -175,10 +176,10 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
   }
 }
 
-class FavoutiesScreenSkeletor extends StatelessWidget {
+class FavoritesScreenSkeletor extends StatelessWidget {
   final Widget widget;
 
-  const FavoutiesScreenSkeletor({
+  const FavoritesScreenSkeletor({
     super.key,
     required this.widget,
   });
@@ -192,7 +193,7 @@ class FavoutiesScreenSkeletor extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'All Favourite Quotes',
+              'All Favorite Quotes',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,

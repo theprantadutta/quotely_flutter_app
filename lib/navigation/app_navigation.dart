@@ -13,7 +13,7 @@ import '../screens/daily_inspiration_list_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
 import '../screens/motivation_monday_screen.dart';
 import '../screens/settings_offline_support_screen.dart';
-import '../screens/tab_screens/favourites_screen.dart';
+import '../screens/tab_screens/favorites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
 import '../screens/tab_screens/settings_screen.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
@@ -27,8 +27,8 @@ class AppNavigation {
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
   static final _shellNavigatorHome =
       GlobalKey<NavigatorState>(debugLabel: 'shellHome');
-  static final _shellNavigatorFavourites =
-      GlobalKey<NavigatorState>(debugLabel: 'shellFavourites');
+  static final _shellNavigatorFavorites =
+      GlobalKey<NavigatorState>(debugLabel: 'shellFavorites');
   static final _shellNavigatorAuthors =
       GlobalKey<NavigatorState>(debugLabel: 'shellAuthors');
   static final _shellNavigatorSettings =
@@ -84,14 +84,14 @@ class AppNavigation {
           ),
 
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorFavourites,
+            navigatorKey: _shellNavigatorFavorites,
             routes: <RouteBase>[
               GoRoute(
-                path: FavouritesScreen.kRouteName,
-                name: "Favourites",
+                path: FavoritesScreen.kRouteName,
+                name: "Favorites",
                 pageBuilder: (context, state) => reusableTransitionPage(
                   state: state,
-                  child: const FavouritesScreen(),
+                  child: const FavoritesScreen(),
                 ),
               ),
             ],

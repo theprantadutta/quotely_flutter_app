@@ -10,9 +10,11 @@ import 'constants/selectors.dart';
 import 'constants/shared_preference_keys.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
+import 'service_locator/init_service_locators.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  initServiceLocator();
   PushNotifications.init();
   await dotenv.load();
   runApp(
@@ -75,7 +77,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void intializeSharedPreferences() async {
+  void initializeSharedPreferences() async {
     _sharedPreferences = await SharedPreferences.getInstance();
     final isDarkMode = _sharedPreferences?.getBool(kIsDarkModeKey);
     if (isDarkMode != null) {
@@ -118,7 +120,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     setOptimalDisplayMode();
-    intializeSharedPreferences();
+    initializeSharedPreferences();
   }
 
   @override

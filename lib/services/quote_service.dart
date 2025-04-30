@@ -1,9 +1,10 @@
 import 'dart:convert';
 
+import 'package:quotely_flutter_app/services/drift_service.dart';
+
 import '../../dtos/quote_response_dto.dart';
 import '../constants/urls.dart';
 import 'http_service.dart';
-import 'isar_service.dart';
 
 class QuoteService {
   Future<QuoteResponseDto> getAllQuotesFromDatabase({
@@ -35,7 +36,7 @@ class QuoteService {
 
       // Iterate through quotes and check if each is a favorite
       for (var quoteDto in quoteResponseDto.quotes) {
-        quoteDto.isFavorite = await IsarService().isFavorite(quoteDto.id);
+        quoteDto.isFavorite = await DriftService.isFavorite(quoteDto.id);
       }
 
       return quoteResponseDto;
@@ -69,7 +70,7 @@ class QuoteService {
 
       // Iterate through quotes and check if each is a favorite
       for (var quoteDto in quoteResponseDto.quotes) {
-        quoteDto.isFavorite = await IsarService().isFavorite(quoteDto.id);
+        quoteDto.isFavorite = await DriftService.isFavorite(quoteDto.id);
       }
 
       return quoteResponseDto;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../dtos/quote_dto.dart';
 import 'home_screen_list_content.dart';
 import 'home_screen_list_view_button.dart';
 

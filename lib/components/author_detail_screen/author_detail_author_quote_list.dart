@@ -148,7 +148,7 @@ class _AuthorDetailAuthorQuoteListState
                 ],
               ),
               isGridView
-                  ? const HomeScreenQuoteGridViewSkeltor()
+                  ? const HomeScreenQuoteGridViewSkeletor()
                   : SizedBox(
                       height: MediaQuery.sizeOf(context).height * 0.7,
                       child: const HomeScreenQuoteListViewSkeletor(),

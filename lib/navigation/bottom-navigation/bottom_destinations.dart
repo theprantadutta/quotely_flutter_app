@@ -8,7 +8,7 @@ const kBottomDestinations = <Widget>[
   ),
   NavigationDestination(
     icon: Icon(Icons.favorite_outline),
-    label: 'Favourites',
+    label: 'Favorites',
   ),
   NavigationDestination(
     icon: Icon(Icons.person_2_outlined),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../../dtos/quote_dto.dart';
+import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 
 class HomeScreenListContent extends StatelessWidget {
   final QuoteDto quote;

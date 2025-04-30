@@ -14,8 +14,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   flex_color_scheme: ^8.0.2
   google_fonts: ^6.2.1
-  isar: ^4.0.0-dev.14
-  isar_flutter_libs: ^4.0.0-dev.14
   shared_preferences: ^2.3.2
   go_router: ^15.1.1
   animate_do: ^4.2.0
@@ -46,6 +44,9 @@ dependencies:
   url_launcher: ^6.3.1
   open_file: ^3.5.10
   permission_handler: ^12.0.0+1
+  drift: ^2.26.0
+  drift_flutter: ^0.2.4
+  get_it: ^8.0.3
 
 dev_dependencies:
   flutter_test:
@@ -55,8 +56,9 @@ dev_dependencies:
   lint_staged: ^0.5.1
   husky: ^0.1.7
   riverpod_generator: ^2.6.1
-  build_runner: ^2.4.13
+  build_runner: ^2.4.15
   riverpod_lint: ^2.6.1
+  drift_dev: ^2.26.0
 
 flutter:
   uses-material-design: true

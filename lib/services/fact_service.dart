@@ -40,7 +40,7 @@ class QuoteService {
 
       // Iterate through quotes and check if each is a favorite
       // for (var quoteDto in aiFactResponseDto.aiFacts) {
-      //   quoteDto.isFavorite = await IsarService().isFavorite(quoteDto.id);
+      //   quoteDto.isFavorite = await DriftService.isFavorite(quoteDto.id);
       // }
 
       return aiFactResponseDto;
