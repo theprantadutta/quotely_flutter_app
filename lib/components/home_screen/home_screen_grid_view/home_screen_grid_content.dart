@@ -49,13 +49,17 @@ class HomeScreenGridContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              '- ${quote.author}',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                '- ${quote.author}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.right,
               ),
             ),
           ),
@@ -97,11 +101,18 @@ class HomeScreenGridContentSkeletor extends StatelessWidget {
           const SizedBox(height: 20),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              '- Rumy',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  '- Rumy',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
               ),
             ),
           ),

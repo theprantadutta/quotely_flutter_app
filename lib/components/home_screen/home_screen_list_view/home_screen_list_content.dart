@@ -45,11 +45,14 @@ class HomeScreenListContent extends StatelessWidget {
         const SizedBox(height: 5),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Text(
-            '- ${quote.author}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              '- ${quote.author}',
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.right,
             ),
           ),
         ),
@@ -99,13 +102,16 @@ class HomeScrenListContentSkeletor extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 5),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0),
-          child: Text(
-            '- Rumy',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              '- Rumy',
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.right,
             ),
           ),
         ),

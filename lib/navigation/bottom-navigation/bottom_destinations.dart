@@ -15,6 +15,10 @@ const kBottomDestinations = <Widget>[
     label: 'Authors',
   ),
   NavigationDestination(
+    icon: Icon(Icons.fact_check_outlined),
+    label: 'Facts',
+  ),
+  NavigationDestination(
     icon: Icon(Icons.settings_outlined),
     label: 'Settings',
   ),

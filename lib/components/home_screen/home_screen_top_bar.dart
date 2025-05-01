@@ -48,7 +48,9 @@ class HomeScreenTopBar extends StatelessWidget {
           Row(
             children: [
               GestureDetector(
-                onTap: onViewChanged,
+                onTap: () {
+                  if (isGridView) onViewChanged();
+                },
                 child: Icon(
                   Icons.view_agenda_outlined,
                   color: !isGridView
@@ -60,7 +62,9 @@ class HomeScreenTopBar extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               GestureDetector(
-                onTap: onViewChanged,
+                onTap: () {
+                  if (!isGridView) onViewChanged();
+                },
                 child: Icon(
                   Icons.crop_square,
                   size: 28,

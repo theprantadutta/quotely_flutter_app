@@ -1,13 +1,16 @@
 import 'dart:convert';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/services/drift_service.dart';
 
 import '../../dtos/quote_response_dto.dart';
 import '../constants/urls.dart';
+import '../state_providers/favorite_quote_ids.dart';
 import 'http_service.dart';
 
 class QuoteService {
   Future<QuoteResponseDto> getAllQuotesFromDatabase({
+    required Ref ref,
     required int pageNumber,
     required int pageSize,
     required List<String> tags,
@@ -35,9 +38,23 @@ class QuoteService {
           QuoteResponseDto.fromJson(json.decode(response.data));
 
       // Iterate through quotes and check if each is a favorite
+      // for (var quoteDto in quoteResponseDto.quotes) {
+      //   quoteDto.isFavorite = await DriftService.isFavorite(quoteDto.id);
+      // }
+
+      final favoriteQuotes = await DriftService.getAllFavoriteQuotes(tags);
+
+      List<String> favoriteIds = [];
       for (var quoteDto in quoteResponseDto.quotes) {
-        quoteDto.isFavorite = await DriftService.isFavorite(quoteDto.id);
+        // Only add if not already exists
+        if (!favoriteIds.contains(quoteDto.id)) {
+          favoriteIds.add(quoteDto.id);
+        }
+        quoteDto.isFavorite = favoriteQuotes.any((element) =>
+            element.id == quoteDto.id || favoriteIds.contains(element.id));
       }
+
+      ref.read(favoriteQuoteIdsProvider.notifier).addMultipleIds(favoriteIds);
 
       return quoteResponseDto;
     }

@@ -58,6 +58,10 @@ class _AwesomeBottomBarFancyBorderLayoutState
             title: 'Authors',
           ),
           TabItem(
+            icon: Icons.fact_check_outlined,
+            title: 'Facts',
+          ),
+          TabItem(
             icon: Icons.settings_outlined,
             title: 'Settings',
           ),

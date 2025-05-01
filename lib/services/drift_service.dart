@@ -16,15 +16,6 @@ class DriftService {
     return existingQuote == null ? false : existingQuote.isFavorite;
   }
 
-  // static Future<List<Quote>> getAllFavoriteQuotes(List<String> tags) async {
-  //   final database = getIt.get<AppDatabase>();
-  //   final query = database.select(database.quotes)
-  //     ..where((tbl) =>
-  //         tbl.isFavorite.equals(true) &
-  //         tags.map((tag) => tbl.tags.like('%$tag%')).reduce((a, b) => a | b));
-  //   return query.get();
-  // }
-
   static Future<bool> changeQuoteUpdateStatus(
       QuoteDto quote, bool isFavorite) async {
     try {
@@ -53,21 +44,6 @@ class DriftService {
     }
   }
 
-  // static Stream<List<Quote>> watchAllFavoriteQuotes(List<String> tags) {
-  //   final db = getIt.get<AppDatabase>();
-
-  //   // Simple tag filtering based on substring match
-  //   final tagConditions = tags.map(
-  //     (tag) => db.quotes.tags.like('%$tag%'),
-  //   );
-
-  //   final query = db.select(db.quotes)
-  //     ..where((tbl) =>
-  //         tbl.isFavorite.equals(true) & tagConditions.reduce((a, b) => a | b));
-
-  //   return query.watch();
-  // }
-
   static Stream<List<Quote>> watchAllFavoriteQuotes(List<String> tags) {
     final db = getIt.get<AppDatabase>();
     final query = db.select(db.quotes);
@@ -82,5 +58,27 @@ class DriftService {
     }
 
     return query.watch();
+  }
+
+  static Future<List<Quote>> getAllFavoriteQuotes(List<String> tags) async {
+    final db = getIt.get<AppDatabase>();
+    final query = db.select(db.quotes)
+      ..where((tbl) => tbl.isFavorite.equals(true));
+
+    if (tags.isNotEmpty) {
+      query.where((tbl) {
+        // Start with a false condition
+        Expression<bool> condition = const Constant<bool>(false);
+
+        // Combine all tag conditions with OR
+        for (final tag in tags) {
+          condition = condition | tbl.tags.like('%$tag%');
+        }
+
+        return condition;
+      });
+    }
+
+    return query.get();
   }
 }

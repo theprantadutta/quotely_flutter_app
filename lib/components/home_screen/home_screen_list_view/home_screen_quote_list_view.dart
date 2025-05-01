@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../services/drift_service.dart';
+import '../../../state_providers/favorite_quote_ids.dart';
 import 'home_screen_list_content.dart';
 import 'home_screen_list_view_button.dart';
 
-class HomeScreenQuoteListView extends StatefulWidget {
+class HomeScreenQuoteListView extends ConsumerStatefulWidget {
   final List<QuoteDto> quotes;
   final int quotePageNumber;
   final Future<void> Function() onLastItemScrolled;
@@ -18,11 +22,12 @@ class HomeScreenQuoteListView extends StatefulWidget {
   });
 
   @override
-  State<HomeScreenQuoteListView> createState() =>
+  ConsumerState<HomeScreenQuoteListView> createState() =>
       _HomeScreenQuoteListViewState();
 }
 
-class _HomeScreenQuoteListViewState extends State<HomeScreenQuoteListView> {
+class _HomeScreenQuoteListViewState
+    extends ConsumerState<HomeScreenQuoteListView> {
   late ScrollController _scrollController;
 
   @override
@@ -53,6 +58,9 @@ class _HomeScreenQuoteListViewState extends State<HomeScreenQuoteListView> {
       controller: _scrollController,
       itemCount: widget.quotes.length,
       itemBuilder: (context, index) {
+        final currentQuote = widget.quotes[index];
+        final allFavoriteIds = ref.read(favoriteQuoteIdsProvider).toList();
+        final selectedQuote = allFavoriteIds.contains(currentQuote.id);
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
           padding: const EdgeInsets.only(top: 10, bottom: 5),
@@ -76,21 +84,50 @@ class _HomeScreenQuoteListViewState extends State<HomeScreenQuoteListView> {
           child: Column(
             children: [
               HomeScreenListContent(
-                quote: widget.quotes[index],
+                quote: currentQuote,
               ),
-              const Padding(
-                padding: EdgeInsets.only(right: 8.0),
+              Padding(
+                padding: EdgeInsets.only(right: 8.0, top: 5.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     HomeScreenListViewButton(
                       title: 'Like',
                       iconData: Icons.favorite_outline,
+                      isSelected: selectedQuote,
+                      onTap: () {
+                        debugPrint(
+                            "Making Quote with ID ${currentQuote.id} as ${!selectedQuote}");
+                        ref
+                            .read(favoriteQuoteIdsProvider.notifier)
+                            .addOrRemoveId(currentQuote.id);
+                        DriftService.changeQuoteUpdateStatus(
+                          currentQuote,
+                          selectedQuote,
+                        );
+                      },
                     ),
                     SizedBox(width: 10),
                     HomeScreenListViewButton(
                       title: 'Share',
                       iconData: Icons.share_outlined,
+                      isSelected: false,
+                      onTap: () {
+                        final shareText =
+                            '"${currentQuote.content}" - ${currentQuote.author}\n\n'
+                            'Shared via Quotely';
+                        SharePlus.instance.share(
+                          ShareParams(
+                            text: shareText,
+                            subject: 'Amazing quote by ${currentQuote.author}',
+                            sharePositionOrigin: Rect.fromPoints(
+                              // This helps position the share dialog on iPad
+                              Offset.zero,
+                              const Offset(0, 0),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -133,7 +170,7 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Column(
+            child: Column(
               children: [
                 HomeScrenListContentSkeletor(),
                 Padding(
@@ -144,11 +181,15 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
                       HomeScreenListViewButton(
                         title: 'Share',
                         iconData: Icons.share_outlined,
+                        onTap: () {},
+                        isSelected: false,
                       ),
                       SizedBox(width: 10),
                       HomeScreenListViewButton(
                         title: 'Like',
                         iconData: Icons.favorite_outline,
+                        onTap: () {},
+                        isSelected: false,
                       ),
                     ],
                   ),

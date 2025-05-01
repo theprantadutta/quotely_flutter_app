@@ -208,6 +208,19 @@ class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
             surfaceTintColor: kPrimaryColor,
             selectedIndex: selectedIndex,
             destinations: kBottomDestinations,
+            labelTextStyle: WidgetStateTextStyle.resolveWith(
+              (states) {
+                return states.contains(WidgetState.selected)
+                    ? TextStyle(
+                        color: kPrimaryColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      )
+                    : TextStyle(
+                        fontSize: 12,
+                      );
+              },
+            ),
           ),
         ),
       ),

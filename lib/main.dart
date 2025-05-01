@@ -2,6 +2,7 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +14,8 @@ import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   initServiceLocator();
   PushNotifications.init();
   await dotenv.load();
@@ -79,15 +81,15 @@ class _MyAppState extends State<MyApp> {
 
   void initializeSharedPreferences() async {
     _sharedPreferences = await SharedPreferences.getInstance();
+    final isGridView = _sharedPreferences?.getBool(kIsGridViewKey);
+    if (isGridView != null) {
+      setState(() => _isGridView = isGridView);
+    }
     final isDarkMode = _sharedPreferences?.getBool(kIsDarkModeKey);
     if (isDarkMode != null) {
       setState(
         () => _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light,
       );
-    }
-    final isGridView = _sharedPreferences?.getBool(kIsGridViewKey);
-    if (isGridView != null) {
-      setState(() => _isGridView = isGridView);
     }
     final flexScheme = _sharedPreferences?.getString(kFlexSchemeKey);
     if (flexScheme != null) {
