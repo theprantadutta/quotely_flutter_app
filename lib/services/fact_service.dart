@@ -1,12 +1,16 @@
 import 'dart:convert';
 
-import 'package:quotely_flutter_app/constants/urls.dart';
+import 'package:flutter/foundation.dart';
+
+import '../constants/urls.dart';
 
 import '../dtos/ai_fact_response_dto.dart';
 import 'http_service.dart';
 
-class QuoteService {
-  Future<AiFactResponseDto> getAllAiFactsFromDatabase({
+class FactService {
+  FactService._();
+
+  static Future<AiFactResponseDto> getAllAiFactsFromDatabase({
     required int pageNumber,
     required int pageSize,
     required List<String> factCategories,
@@ -31,21 +35,42 @@ class QuoteService {
       queryParameters: queryParameters,
     );
 
+    print('URI: ${uri.toString()}');
     final response = await HttpService.get(uri.toString());
 
     if (response.statusCode == 200) {
       // Deserialize JSON response to AiFactResponseDto
-      final aiFactResponseDto =
-          AiFactResponseDto.fromJson(json.decode(response.data));
-
-      // Iterate through quotes and check if each is a favorite
-      // for (var quoteDto in aiFactResponseDto.aiFacts) {
-      //   quoteDto.isFavorite = await DriftService.isFavorite(quoteDto.id);
-      // }
-
-      return aiFactResponseDto;
+      return AiFactResponseDto.fromJson(json.decode(response.data));
     }
 
     throw Exception('Failed to get facts');
+  }
+
+  static Future<List<String>> getAllFactsCategoriesFromDatabase({
+    required int pageNumber,
+    required int pageSize,
+  }) async {
+    final url =
+        '$kApiUrl/$kGetAllAiFactCategories?pageNumber=$pageNumber&pageSize=$pageSize';
+
+    try {
+      final response = await HttpService.get(url);
+
+      if (response.statusCode == 200) {
+        // First decode the JSON string if needed
+        final dynamic data =
+            response.data is String ? jsonDecode(response.data) : response.data;
+
+        // Ensure we have a List and convert items to String
+        if (data is List) {
+          return data.map((item) => item.toString()).toList();
+        }
+        throw FormatException('Expected List but got ${data.runtimeType}');
+      }
+      throw Exception('Failed with status ${response.statusCode}');
+    } catch (e) {
+      if (kDebugMode) print(e);
+      throw Exception('Failed to fetch categories: $e');
+    }
   }
 }

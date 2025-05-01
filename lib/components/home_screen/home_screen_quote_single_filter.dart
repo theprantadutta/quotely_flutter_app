@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class HomeScreenQuoteSingleFilter extends StatelessWidget {
+class AllFilterList extends StatelessWidget {
   final int index;
   final String title;
-  final bool doesTagExist;
+  final bool isSelected;
 
-  const HomeScreenQuoteSingleFilter({
+  const AllFilterList({
     super.key,
     required this.index,
     required this.title,
-    required this.doesTagExist,
+    required this.isSelected,
   });
 
   @override
@@ -19,11 +19,11 @@ class HomeScreenQuoteSingleFilter extends StatelessWidget {
       margin: EdgeInsets.only(left: index == 0 ? 0 : 5),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: doesTagExist
+        color: isSelected
             ? kPrimaryColor.withValues(alpha: 0.7)
             : Colors.transparent,
         border: Border.all(
-          color: doesTagExist
+          color: isSelected
               ? Colors.transparent
               : kPrimaryColor.withValues(alpha: 0.4),
         ),
@@ -35,9 +35,7 @@ class HomeScreenQuoteSingleFilter extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: doesTagExist
-                ? Colors.white
-                : Theme.of(context).textTheme.bodyLarge?.color,
+            color: isSelected ? Colors.white : kPrimaryColor,
           ),
         ),
       ),

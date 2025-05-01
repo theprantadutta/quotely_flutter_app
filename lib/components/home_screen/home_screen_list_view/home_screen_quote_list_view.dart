@@ -76,9 +76,6 @@ class _HomeScreenQuoteListViewState
               end: Alignment.bottomRight,
               stops: const [0.1, 0.4, 0.9, 1.0],
             ),
-            border: Border.all(
-              color: kPrimaryColor.withValues(alpha: 0.1),
-            ),
             borderRadius: BorderRadius.circular(15),
           ),
           child: Column(
@@ -165,14 +162,11 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
                 end: Alignment.bottomRight,
                 stops: const [0.1, 0.4, 0.9, 1.0],
               ),
-              border: Border.all(
-                color: kPrimaryColor.withValues(alpha: 0.1),
-              ),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Column(
               children: [
-                HomeScrenListContentSkeletor(),
+                HomeScreenListContentSkeletor(),
                 Padding(
                   padding: EdgeInsets.only(right: 8.0),
                   child: Row(

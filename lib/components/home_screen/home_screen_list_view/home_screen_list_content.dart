@@ -61,8 +61,8 @@ class HomeScreenListContent extends StatelessWidget {
   }
 }
 
-class HomeScrenListContentSkeletor extends StatelessWidget {
-  const HomeScrenListContentSkeletor({super.key});
+class HomeScreenListContentSkeletor extends StatelessWidget {
+  const HomeScreenListContentSkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {

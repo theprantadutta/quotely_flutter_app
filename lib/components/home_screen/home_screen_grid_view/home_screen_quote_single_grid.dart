@@ -34,42 +34,38 @@ class _HomeScreenQuoteSingleGridState
     final kPrimaryColor = Theme.of(context).primaryColor;
     final allFavoriteIds = ref.read(favoriteQuoteIdsProvider).toList();
     final selectedQuote = allFavoriteIds.contains(widget.currentQuote.id);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
-          // height: widget.defaultHeight,
-          // decoration: BoxDecoration(
-          //   borderRadius: BorderRadius.circular(10),
-          //   gradient: LinearGradient(
-          //     colors: [
-          //       kPrimaryColor.withValues(alpha: 0.4),
-          //       kPrimaryColor.withValues(alpha: 0.3),
-          //       kPrimaryColor.withValues(alpha: 0.2),
-          //       kPrimaryColor.withValues(alpha: 0.1),
-          //     ],
-          //     begin: Alignment.topLeft,
-          //     end: Alignment.bottomRight,
-          //     stops: const [0.0, 0.3, 0.7, 1.0],
-          //   ),
           height: widget.defaultHeight,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: [
-                kPrimaryColor.withValues(alpha: 0.4),
-                kPrimaryColor.withValues(alpha: 0.3),
-                kPrimaryColor.withValues(alpha: 0.2),
-                kPrimaryColor.withValues(alpha: 0.1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              stops: const [0.0, 0.3, 0.7, 1.0],
-            ),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-            ),
+            gradient: isDarkTheme
+                ? LinearGradient(
+                    colors: [
+                      kPrimaryColor.withValues(alpha: 0.05),
+                      kPrimaryColor.withValues(alpha: 0.1),
+                      kPrimaryColor.withValues(alpha: 0.15),
+                      kPrimaryColor.withValues(alpha: 0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    stops: const [0.0, 0.3, 0.7, 1.0],
+                  )
+                : LinearGradient(
+                    colors: [
+                      kPrimaryColor.withValues(alpha: 0.4),
+                      kPrimaryColor.withValues(alpha: 0.3),
+                      kPrimaryColor.withValues(alpha: 0.2),
+                      kPrimaryColor.withValues(alpha: 0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    stops: const [0.0, 0.3, 0.7, 1.0],
+                  ),
           ),
           child: Stack(
             children: [

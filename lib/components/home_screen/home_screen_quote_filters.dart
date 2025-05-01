@@ -92,10 +92,10 @@ class _HomeScreenQuoteFiltersState
               child: ListView.builder(
                 itemCount: 10,
                 scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) => HomeScreenQuoteSingleFilter(
+                itemBuilder: (context, index) => AllFilterList(
                   index: index,
                   title: 'Religion',
-                  doesTagExist: false,
+                  isSelected: false,
                 ),
               ),
             )
@@ -106,14 +106,14 @@ class _HomeScreenQuoteFiltersState
               itemBuilder: (context, index) {
                 if (index < tags.length) {
                   final currentTag = tags[index].name;
-                  final doesTagExist =
+                  final isSelected =
                       widget.allSelectedTags.contains(currentTag);
                   return GestureDetector(
                     onTap: () => widget.onSelectedTagChange(currentTag),
-                    child: HomeScreenQuoteSingleFilter(
+                    child: AllFilterList(
                       index: index,
                       title: currentTag,
-                      doesTagExist: doesTagExist,
+                      isSelected: isSelected,
                     ),
                   );
                 } else {

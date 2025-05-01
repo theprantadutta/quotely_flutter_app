@@ -26,6 +26,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int quotePageNumber = 1;
+  int quotePageSize = 10;
   bool hasMoreData = true;
   bool hasError = false;
   bool isLoadingMore = false;
@@ -85,7 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     try {
       final newQuotes = await ref.read(fetchAllQuotesProvider(
         quotePageNumber,
-        10,
+        quotePageSize,
         allSelectedTags,
       ).future);
       setState(() {
