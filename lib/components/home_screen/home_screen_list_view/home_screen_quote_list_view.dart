@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../constants/colors.dart';
 import '../../../services/drift_service.dart';
 import '../../../state_providers/favorite_quote_ids.dart';
-import 'home_screen_list_content.dart';
-import 'home_screen_list_view_button.dart';
 
 class HomeScreenQuoteListView extends ConsumerStatefulWidget {
   final List<QuoteDto> quotes;
-  final int quotePageNumber;
   final Future<void> Function() onLastItemScrolled;
 
   const HomeScreenQuoteListView({
     super.key,
     required this.quotes,
-    required this.quotePageNumber,
     required this.onLastItemScrolled,
   });
 
@@ -29,18 +27,39 @@ class HomeScreenQuoteListView extends ConsumerStatefulWidget {
 class _HomeScreenQuoteListViewState
     extends ConsumerState<HomeScreenQuoteListView> {
   late ScrollController _scrollController;
+  final Map<String, ValueNotifier<bool>> _favoriteNotifiers = {};
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
+    _scrollController = ScrollController()..addListener(_onScroll);
+    _initializeFavoriteNotifiers();
+  }
+
+  @override
+  void didUpdateWidget(covariant HomeScreenQuoteListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.quotes != widget.quotes) {
+      _initializeFavoriteNotifiers();
+    }
+  }
+
+  void _initializeFavoriteNotifiers() {
+    final favoriteIds = ref.read(favoriteQuoteIdsProvider);
+    for (final quote in widget.quotes) {
+      _favoriteNotifiers.putIfAbsent(
+        quote.id,
+        () => ValueNotifier(favoriteIds.contains(quote.id)),
+      );
+    }
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    for (final notifier in _favoriteNotifiers.values) {
+      notifier.dispose();
+    }
     super.dispose();
   }
 
@@ -51,80 +70,234 @@ class _HomeScreenQuoteListViewState
     }
   }
 
+  Future<void> _handleShare(QuoteDto quote) async {
+    final shareText =
+        '"${quote.content}" - ${quote.author}\n\nShared via Quotely';
+    SharePlus.instance.share(
+      ShareParams(
+        text: shareText,
+        subject: 'Amazing quote by ${quote.author}',
+        sharePositionOrigin: Rect.fromPoints(
+          Offset.zero,
+          const Offset(0, 0),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleFavorite(QuoteDto quote) async {
+    final notifier = _favoriteNotifiers[quote.id]!;
+    final newValue = !notifier.value;
+    notifier.value = newValue;
+
+    debugPrint("Toggling favorite for quote ${quote.id} to $newValue");
+    ref.read(favoriteQuoteIdsProvider.notifier).addOrRemoveId(quote.id);
+    await DriftService.changeQuoteUpdateStatus(quote, !newValue);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final kPrimaryColor = Theme.of(context).primaryColor;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final authorColor = isDarkMode
+        ? theme.colorScheme.secondary
+        : theme.primaryColor.withValues(alpha: 0.8);
+
     return ListView.builder(
       controller: _scrollController,
       itemCount: widget.quotes.length,
       itemBuilder: (context, index) {
-        final currentQuote = widget.quotes[index];
-        final allFavoriteIds = ref.read(favoriteQuoteIdsProvider).toList();
-        final selectedQuote = allFavoriteIds.contains(currentQuote.id);
+        final quote = widget.quotes[index];
+        final notifier = _favoriteNotifiers[quote.id];
+
         return Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.only(top: 10, bottom: 5),
+          margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
-              colors: [
-                kPrimaryColor.withValues(alpha: 0.3),
-                kPrimaryColor.withValues(alpha: 0.2),
-                kPrimaryColor.withValues(alpha: 0.1),
-                kPrimaryColor.withValues(alpha: 0.4),
-              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              stops: const [0.1, 0.4, 0.9, 1.0],
+              stops: const [0.1, 0.9],
+              colors: [
+                theme.primaryColor.withValues(alpha: 0.1),
+                kHelperColor.withValues(alpha: 0.1),
+              ],
             ),
-            borderRadius: BorderRadius.circular(15),
           ),
-          child: Column(
+          child: Stack(
             children: [
-              HomeScreenListContent(
-                quote: currentQuote,
+              // Decorative elements
+              Positioned(
+                right: 20,
+                top: 0,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: theme.primaryColor.withValues(alpha: 0.1),
+                  ),
+                ),
               ),
+
               Padding(
-                padding: EdgeInsets.only(right: 8.0, top: 5.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HomeScreenListViewButton(
-                      title: 'Like',
-                      iconData: Icons.favorite_outline,
-                      isSelected: selectedQuote,
-                      onTap: () {
-                        debugPrint(
-                            "Making Quote with ID ${currentQuote.id} as ${!selectedQuote}");
-                        ref
-                            .read(favoriteQuoteIdsProvider.notifier)
-                            .addOrRemoveId(currentQuote.id);
-                        DriftService.changeQuoteUpdateStatus(
-                          currentQuote,
-                          selectedQuote,
-                        );
-                      },
+                    // Quote content
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Text(
+                        quote.content,
+                        style: TextStyle(
+                          fontSize: _calculateFontSize(quote.content.length),
+                          height: 1.6,
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.9),
+                        ),
+                      ),
                     ),
-                    SizedBox(width: 10),
-                    HomeScreenListViewButton(
-                      title: 'Share',
-                      iconData: Icons.share_outlined,
-                      isSelected: false,
-                      onTap: () {
-                        final shareText =
-                            '"${currentQuote.content}" - ${currentQuote.author}\n\n'
-                            'Shared via Quotely';
-                        SharePlus.instance.share(
-                          ShareParams(
-                            text: shareText,
-                            subject: 'Amazing quote by ${currentQuote.author}',
-                            sharePositionOrigin: Rect.fromPoints(
-                              // This helps position the share dialog on iPad
-                              Offset.zero,
-                              const Offset(0, 0),
+
+                    const SizedBox(height: 24),
+
+                    // Author section
+                    Padding(
+                      padding: const EdgeInsets.only(left: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 2,
+                            color: authorColor,
+                            margin: const EdgeInsets.only(bottom: 6),
+                          ),
+                          Text(
+                            '— ${quote.author}',
+                            style: GoogleFonts.raleway(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: authorColor,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Tags and actions row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 8,
+                          child: SizedBox(
+                            height: 32, // Fixed height for the tags row
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.zero,
+                              itemCount: quote.tags.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 8),
+                              itemBuilder: (context, index) {
+                                final tag = quote.tags[index];
+                                return Chip(
+                                  label: Text(
+                                    tag,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                  backgroundColor:
+                                      theme.primaryColor.withValues(alpha: 0.2),
+                                  side: BorderSide(
+                                    color: theme.primaryColor
+                                        .withValues(alpha: 0.05),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  visualDensity: VisualDensity.compact,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+
+                        // Action buttons
+                        notifier != null
+                            ? Expanded(
+                                flex: 3,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      ValueListenableBuilder<bool>(
+                                        valueListenable: notifier,
+                                        builder: (context, isFavorite, _) {
+                                          return GestureDetector(
+                                            onTap: () => _toggleFavorite(quote),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              child: AnimatedSwitcher(
+                                                duration: const Duration(
+                                                    milliseconds: 200),
+                                                transitionBuilder:
+                                                    (child, animation) {
+                                                  return ScaleTransition(
+                                                    scale: animation,
+                                                    child: child,
+                                                  );
+                                                },
+                                                child: Icon(
+                                                  isFavorite
+                                                      ? Icons.favorite
+                                                      : Icons.favorite_outline,
+                                                  key: ValueKey(isFavorite),
+                                                  size: 20,
+                                                  color: isFavorite
+                                                      ? Theme.of(context)
+                                                          .colorScheme
+                                                          .primary
+                                                      : Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface
+                                                          .withValues(
+                                                              alpha: 0.6),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => _handleShare(quote),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Icon(
+                                            Icons.share,
+                                            size: 20,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.6),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : SizedBox(),
+                      ],
                     ),
                   ],
                 ),
@@ -135,55 +308,179 @@ class _HomeScreenQuoteListViewState
       },
     );
   }
+
+  double _calculateFontSize(int length) {
+    const baseSize = 18.0;
+    const maxReduction = 6.0;
+    final reduction = (length / 100).clamp(0, maxReduction);
+    return baseSize - reduction;
+  }
 }
 
 class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
-  const HomeScreenQuoteListViewSkeletor({super.key});
+  const HomeScreenQuoteListViewSkeletor({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final kPrimaryColor = Theme.of(context).primaryColor;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final authorColor = isDarkMode
+        ? theme.colorScheme.secondary
+        : theme.primaryColor.withValues(alpha: 0.8);
+
     return Skeletonizer(
       child: ListView.builder(
         itemCount: 10,
         itemBuilder: (context, index) {
           return Container(
-            margin: const EdgeInsets.symmetric(vertical: 2),
-            padding: const EdgeInsets.only(top: 10, bottom: 5),
+            margin: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
               gradient: LinearGradient(
-                colors: [
-                  kPrimaryColor.withValues(alpha: 0.3),
-                  kPrimaryColor.withValues(alpha: 0.2),
-                  kPrimaryColor.withValues(alpha: 0.1),
-                  kPrimaryColor.withValues(alpha: 0.4),
-                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                stops: const [0.1, 0.4, 0.9, 1.0],
+                stops: const [0.1, 0.9],
+                colors: [
+                  theme.primaryColor.withValues(alpha: 0.1),
+                  theme.hintColor.withValues(alpha: 0.1),
+                ],
               ),
-              borderRadius: BorderRadius.circular(15),
             ),
-            child: Column(
+            child: Stack(
               children: [
-                HomeScreenListContentSkeletor(),
+                // Decorative elements
+                Positioned(
+                  right: 20,
+                  top: 0,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.primaryColor.withValues(alpha: 0.1),
+                    ),
+                  ),
+                ),
+
                 Padding(
-                  padding: EdgeInsets.only(right: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      HomeScreenListViewButton(
-                        title: 'Share',
-                        iconData: Icons.share_outlined,
-                        onTap: () {},
-                        isSelected: false,
+                      // Quote content
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Text(
+                          'No man can succeed in a line of endeavor which he does not like',
+                          style: TextStyle(
+                            fontSize: 20,
+                            height: 1.6,
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.9),
+                          ),
+                        ),
                       ),
-                      SizedBox(width: 10),
-                      HomeScreenListViewButton(
-                        title: 'Like',
-                        iconData: Icons.favorite_outline,
-                        onTap: () {},
-                        isSelected: false,
+
+                      const SizedBox(height: 24),
+
+                      // Author section
+                      Padding(
+                        padding: const EdgeInsets.only(left: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 2,
+                              color: authorColor,
+                              margin: const EdgeInsets.only(bottom: 6),
+                            ),
+                            Text(
+                              '— Napoleon Hill',
+                              style: GoogleFonts.raleway(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: authorColor,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Tags and actions row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Tags
+                          Flexible(
+                            child: Wrap(
+                              spacing: 8,
+                              children: ['Motivation']
+                                  .map((tag) => Chip(
+                                        label: Text(
+                                          tag,
+                                          style: theme.textTheme.labelSmall
+                                              ?.copyWith(
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                        backgroundColor: theme.primaryColor
+                                            .withValues(alpha: 0.2),
+                                        side: BorderSide(
+                                          color: theme.primaryColor
+                                              .withValues(alpha: 0.05),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8),
+                                        visualDensity: VisualDensity.compact,
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+
+                          // Action buttons
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.share, size: 20),
+                                onPressed: () => {},
+                                splashRadius: 20,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                              IconButton(
+                                icon: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  transitionBuilder: (child, animation) {
+                                    return ScaleTransition(
+                                      scale: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: Icon(
+                                    Icons.favorite_border_outlined,
+                                    size: 20,
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                onPressed: () => {},
+                                splashRadius: 20,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),

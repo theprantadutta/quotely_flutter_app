@@ -214,7 +214,7 @@ class _AuthorDetailAuthorQuoteListState
                       )
                     : HomeScreenQuoteListView(
                         quotes: quotes,
-                        quotePageNumber: quotePageNumber,
+                        // quotePageNumber: quotePageNumber,
                         onLastItemScrolled: _fetchQuotes,
                       ),
               ),

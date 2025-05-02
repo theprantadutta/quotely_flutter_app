@@ -1,122 +1,183 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../dtos/quote_dto.dart';
+import '../../../screens/tab_screens/authors_screen.dart';
 
 class HomeScreenGridContent extends StatelessWidget {
   final QuoteDto quote;
+  final double minFontSize = 16.0;
+  final double maxFontSizePercentage = 0.08;
 
   const HomeScreenGridContent({super.key, required this.quote});
 
-  double calculateDynamicFontSize(BuildContext context, int quoteLength) {
-    // Screen width for responsive adjustment
-    double screenWidth = MediaQuery.of(context).size.width;
+  double _calculateFontSize(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final baseFontSize = screenWidth * maxFontSizePercentage;
 
-    // Large base size, decrease proportionally with quote length
-    double baseFontSize = screenWidth * 0.08; // 8% of screen width as a base
-    double adjustedFontSize = baseFontSize - (quoteLength * 0.2);
+    // Adjust based on quote length (more characters = smaller font)
+    final lengthFactor = quote.content.length.clamp(0, 200) / 200;
+    final adjustedFontSize = baseFontSize * (1 - lengthFactor * 0.5);
 
-    // Ensure font size remains within readable bounds
-    return adjustedFontSize.clamp(
-        16.0, baseFontSize); // Minimum 16, max at base size
+    return adjustedFontSize.clamp(minFontSize, baseFontSize);
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageHeight = MediaQuery.sizeOf(context).height * 0.06;
-    final imageWidth = MediaQuery.sizeOf(context).width * 0.2;
+    final imageSize = MediaQuery.sizeOf(context).width * 0.2;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final authorColor = isDarkMode
+        ? theme.colorScheme.secondary
+        : theme.primaryColor.withValues(alpha: 0.8);
+    final quoteColor = theme.colorScheme.onSurface.withValues(alpha: 0.9);
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(5.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 10,
         children: [
-          Image.asset(
-            'assets/quotely_icon.png',
-            height: imageHeight,
-            width: imageWidth,
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              quote.content,
-              style: TextStyle(
-                fontSize: calculateDynamicFontSize(context, quote.length),
-                fontWeight: FontWeight.w600,
-                overflow: TextOverflow.ellipsis,
-              ),
-              maxLines: 10,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                '- ${quote.author}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.right,
-              ),
-            ),
+          _buildLogo(imageSize),
+          _buildQuoteText(context, quoteColor),
+          GestureDetector(
+            onTap: () => context.push(AuthorsScreen.kRouteName),
+            child: _buildAuthorText(authorColor),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLogo(double size) {
+    return Image.asset(
+      'assets/quotely_icon.png',
+      height: size * 0.3, // Maintain aspect ratio
+      width: size,
+      fit: BoxFit.contain,
+    );
+  }
+
+  Widget _buildQuoteText(BuildContext context, Color quoteColor) {
+    return Text(
+      quote.content,
+      style: TextStyle(
+        fontSize: _calculateFontSize(context),
+        fontStyle: FontStyle.italic,
+        color: quoteColor,
+        overflow: TextOverflow.ellipsis,
+      ),
+      maxLines: 10,
+    );
+  }
+
+  Widget _buildAuthorText(Color authorColor) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: EdgeInsets.only(right: 8.0, top: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 2,
+              color: authorColor,
+              margin: const EdgeInsets.only(bottom: 6),
+            ),
+            Text(
+              '— ${quote.author}',
+              style: GoogleFonts.raleway(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: authorColor,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class HomeScreenGridContentSkeletor extends StatelessWidget {
+  final double minFontSize = 16.0;
+  final double maxFontSizePercentage = 0.08;
+
   const HomeScreenGridContentSkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final imageHeight = MediaQuery.sizeOf(context).height * 0.06;
-    final imageWidth = MediaQuery.sizeOf(context).width * 0.2;
+    final imageSize = MediaQuery.sizeOf(context).width * 0.2;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final authorColor = isDarkMode
+        ? theme.colorScheme.secondary
+        : theme.primaryColor.withValues(alpha: 0.8);
+
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(5.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 10,
         children: [
-          Image.asset(
-            'assets/quotely_icon.png',
-            height: imageHeight,
-            width: imageWidth,
-          ),
-          const SizedBox(height: 10),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              'You will never find the same person twice, not even in the same person',
-              style: TextStyle(
-                fontSize: (28 / 224) * 200,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  '- Rumy',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ),
-          ),
+          _buildLogo(imageSize),
+          _buildQuoteText(context),
+          _buildAuthorText(authorColor),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLogo(double size) {
+    return Image.asset(
+      'assets/quotely_icon.png',
+      height: size * 0.3, // Maintain aspect ratio
+      width: size,
+      fit: BoxFit.contain,
+    );
+  }
+
+  Widget _buildQuoteText(BuildContext context) {
+    return Text(
+      'You will never find the same person twice, not even in the same person',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        overflow: TextOverflow.ellipsis,
+      ),
+      maxLines: 10,
+    );
+  }
+
+  Widget _buildAuthorText(Color authorColor) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: EdgeInsets.only(right: 8.0, top: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 2,
+              color: authorColor,
+              margin: const EdgeInsets.only(bottom: 6),
+            ),
+            Text(
+              '— Rumy',
+              style: GoogleFonts.raleway(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: authorColor,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -158,7 +158,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                               )
                             : HomeScreenQuoteListView(
                                 quotes: QuoteDto.fromQuoteList(quotes),
-                                quotePageNumber: 1,
+                                // quotePageNumber: 1,
                                 onLastItemScrolled: () {
                                   return Future.value();
                                 },

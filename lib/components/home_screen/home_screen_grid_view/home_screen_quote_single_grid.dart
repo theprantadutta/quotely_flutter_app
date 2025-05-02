@@ -2,13 +2,13 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quotely_flutter_app/dtos/quote_dto.dart';
-import 'package:quotely_flutter_app/services/drift_service.dart';
-import 'package:quotely_flutter_app/state_providers/favorite_quote_ids.dart';
+import '../../../dtos/quote_dto.dart';
+import '../../../services/drift_service.dart';
+import '../../../state_providers/favorite_quote_ids.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../constants/colors.dart';
 import 'home_screen_grid_content.dart';
-import 'home_screen_grid_view_button.dart';
 
 class HomeScreenQuoteSingleGrid extends ConsumerStatefulWidget {
   final double defaultHeight;
@@ -28,93 +28,197 @@ class HomeScreenQuoteSingleGrid extends ConsumerStatefulWidget {
 class _HomeScreenQuoteSingleGridState
     extends ConsumerState<HomeScreenQuoteSingleGrid>
     with AutomaticKeepAliveClientMixin {
+  late final ValueNotifier<bool> _isFavoriteNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavoriteNotifier = ValueNotifier(
+      ref.read(favoriteQuoteIdsProvider).contains(widget.currentQuote.id),
+    );
+  }
+
+  @override
+  void dispose() {
+    _isFavoriteNotifier.dispose();
+    super.dispose();
+  }
+
+  void _handleShare() {
+    final shareText =
+        '"${widget.currentQuote.content}" - ${widget.currentQuote.author}\n\n'
+        'Shared via Quotely';
+    SharePlus.instance.share(
+      ShareParams(
+        text: shareText,
+        subject: 'Amazing quote by ${widget.currentQuote.author}',
+        sharePositionOrigin: Rect.fromPoints(
+          Offset.zero,
+          const Offset(0, 0),
+        ),
+      ),
+    );
+  }
+
+  void _toggleFavorite() {
+    final newValue = !_isFavoriteNotifier.value;
+    _isFavoriteNotifier.value = newValue;
+
+    debugPrint("Making Quote with ID ${widget.currentQuote.id} as $newValue");
+    ref
+        .read(favoriteQuoteIdsProvider.notifier)
+        .addOrRemoveId(widget.currentQuote.id);
+    DriftService.changeQuoteUpdateStatus(widget.currentQuote, !newValue);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final kPrimaryColor = Theme.of(context).primaryColor;
-    final allFavoriteIds = ref.read(favoriteQuoteIdsProvider).toList();
-    final selectedQuote = allFavoriteIds.contains(widget.currentQuote.id);
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkTheme = theme.brightness == Brightness.dark;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          height: widget.defaultHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: isDarkTheme
-                ? LinearGradient(
-                    colors: [
-                      kPrimaryColor.withValues(alpha: 0.05),
-                      kPrimaryColor.withValues(alpha: 0.1),
-                      kPrimaryColor.withValues(alpha: 0.15),
-                      kPrimaryColor.withValues(alpha: 0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    stops: const [0.0, 0.3, 0.7, 1.0],
-                  )
-                : LinearGradient(
-                    colors: [
-                      kPrimaryColor.withValues(alpha: 0.4),
-                      kPrimaryColor.withValues(alpha: 0.3),
-                      kPrimaryColor.withValues(alpha: 0.2),
-                      kPrimaryColor.withValues(alpha: 0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    stops: const [0.0, 0.3, 0.7, 1.0],
-                  ),
+      child: Stack(
+        children: [
+          // Background with blur effect
+          _buildBackground(theme.primaryColor, isDarkTheme),
+
+          // Content with tags and actions
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Quote content
+                Expanded(
+                  child: HomeScreenGridContent(quote: widget.currentQuote),
+                ),
+
+                // Tags and actions row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildTagsRow(context, isDarkTheme),
+                    _buildActionsRow(context),
+                  ],
+                ),
+              ],
+            ),
           ),
-          child: Stack(
-            children: [
-              HomeScreenGridViewButton(
-                bottom: 5,
-                right: 20,
-                title: 'Share',
-                iconData: Icons.share_outlined,
-                onTap: () {
-                  final shareText =
-                      '"${widget.currentQuote.content}" - ${widget.currentQuote.author}\n\n'
-                      'Shared via Quotely';
-                  SharePlus.instance.share(
-                    ShareParams(
-                      text: shareText,
-                      subject: 'Amazing quote by ${widget.currentQuote.author}',
-                      sharePositionOrigin: Rect.fromPoints(
-                        // This helps position the share dialog on iPad
-                        Offset.zero,
-                        const Offset(0, 0),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              HomeScreenGridViewButton(
-                bottom: 5,
-                left: 20,
-                title: 'Like',
-                iconData: Icons.favorite_outline,
-                isSelected: selectedQuote,
-                onTap: () {
-                  debugPrint(
-                      "Making Quote with ID ${widget.currentQuote.id} as ${!selectedQuote}");
-                  ref
-                      .read(favoriteQuoteIdsProvider.notifier)
-                      .addOrRemoveId(widget.currentQuote.id);
-                  DriftService.changeQuoteUpdateStatus(
-                    widget.currentQuote,
-                    selectedQuote,
-                  );
-                },
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: HomeScreenGridContent(
-                  quote: widget.currentQuote,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagsRow(BuildContext context, bool isDarkTheme) {
+    final theme = Theme.of(context);
+    return Expanded(
+      flex: 8,
+      child: SizedBox(
+        height: 32, // Fixed height for the tags row
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.zero,
+          itemCount: widget.currentQuote.tags.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          itemBuilder: (context, index) {
+            final tag = widget.currentQuote.tags[index];
+            return Chip(
+              label: Text(
+                tag,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
+              backgroundColor: theme.primaryColor.withValues(alpha: 0.2),
+              side: BorderSide(
+                color: theme.primaryColor.withValues(alpha: 0.05),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              visualDensity: VisualDensity.compact,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionsRow(BuildContext context) {
+    return Expanded(
+      flex: 3,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ValueListenableBuilder<bool>(
+              valueListenable: _isFavoriteNotifier,
+              builder: (context, isFavorite, _) {
+                return GestureDetector(
+                  onTap: _toggleFavorite,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        );
+                      },
+                      child: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_outline,
+                        key: ValueKey(isFavorite),
+                        size: 20,
+                        color: isFavorite
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            GestureDetector(
+              onTap: _handleShare,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  Icons.share,
+                  size: 20,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackground(Color primaryColor, bool isDarkTheme) {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      child: Container(
+        height: widget.defaultHeight,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: const [0.1, 0.9],
+            colors: [
+              primaryColor.withValues(alpha: 0.1),
+              kHelperColor.withValues(alpha: 0.1),
             ],
           ),
         ),
@@ -136,40 +240,137 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final kPrimaryColor = Theme.of(context).primaryColor;
-    return Container(
-      height: defaultHeight,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        gradient: LinearGradient(
-          colors: [
-            kPrimaryColor.withValues(alpha: 0.3),
-            kPrimaryColor.withValues(alpha: 0.2),
-            kPrimaryColor.withValues(alpha: 0.1),
-            kPrimaryColor.withValues(alpha: 0.4),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: const [0.1, 0.4, 0.9, 1.0],
-        ),
-      ),
-      child: const Stack(
+    final theme = Theme.of(context);
+    final isDarkTheme = theme.brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Stack(
         children: [
-          HomeScreenGridViewButton(
-            bottom: 5,
-            right: 20,
-            title: 'Share',
-            iconData: Icons.share_outlined,
+          // Background with blur effect
+          _buildBackground(theme.primaryColor, isDarkTheme),
+
+          // Content with tags and actions
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Quote content
+                Expanded(
+                  child: HomeScreenGridContentSkeletor(),
+                ),
+
+                // Tags and actions row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildTagsRow(context, isDarkTheme),
+                    _buildActionsRow(context),
+                  ],
+                ),
+              ],
+            ),
           ),
-          HomeScreenGridViewButton(
-            bottom: 5,
-            left: 20,
-            title: 'Like',
-            iconData: Icons.favorite_outline,
-          ),
-          HomeScreenGridContentSkeletor(),
         ],
       ),
+    );
+  }
+
+  Widget _buildBackground(Color primaryColor, bool isDarkTheme) {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      child: Container(
+        height: defaultHeight,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: _buildGradient(primaryColor, isDarkTheme),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagsRow(BuildContext context, bool isDarkTheme) {
+    final theme = Theme.of(context);
+    return Flexible(
+      child: Wrap(
+        spacing: 8,
+        children: ['Motivation']
+            .map((tag) => Chip(
+                  label: Text(
+                    tag,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  backgroundColor: theme.primaryColor.withValues(alpha: 0.2),
+                  side: BorderSide(
+                    color: theme.primaryColor.withValues(alpha: 0.05),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  visualDensity: VisualDensity.compact,
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildActionsRow(BuildContext context) {
+    return Expanded(
+      flex: 3,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(
+                    scale: animation,
+                    child: child,
+                  );
+                },
+                child: Icon(
+                  Icons.favorite_outline,
+                  size: 20,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                Icons.share,
+                size: 20,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  LinearGradient _buildGradient(Color primaryColor, bool isDarkTheme) {
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      stops: const [0.1, 0.9],
+      colors: [
+        primaryColor.withValues(alpha: 0.1),
+        kHelperColor.withValues(alpha: 0.1),
+      ],
     );
   }
 }

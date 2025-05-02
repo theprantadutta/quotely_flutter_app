@@ -95,57 +95,68 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
           vertical: 8,
           horizontal: 10,
         ),
-        child: Column(
-          children: [
-            const TopNavigationBar(title: 'Facts'),
-            FactsScreenFilterList(
-              onSelectedCategoryChange: (category) async {
-                setState(() {
-                  if (allSelectedCategory.contains(category)) {
-                    allSelectedCategory.remove(category);
-                  } else {
-                    allSelectedCategory.add(category);
-                  }
-                  factPageNumber = 1;
-                  aiFacts = [];
-                });
-                ref.invalidate(fetchAllFactsProvider);
-                await _fetchFacts();
-              },
-              allSelectedCategories: allSelectedCategory,
-            ),
-            if (hasError)
-              Expanded(
-                child: Center(
-                  child: SomethingWentWrong(
-                    title: 'Failed to get Facts.',
-                    onRetryPressed: _fetchFacts,
+        child: RefreshIndicator(
+          onRefresh: () {
+            factPageNumber = 1;
+            aiFacts = [];
+            ref.invalidate(fetchAllFactsProvider);
+            return _fetchFacts();
+          },
+          child: Column(
+            children: [
+              const TopNavigationBar(title: 'Facts'),
+              FactsScreenFilterList(
+                onSelectedCategoryChange: (category) async {
+                  setState(() {
+                    if (allSelectedCategory.contains(category)) {
+                      allSelectedCategory.remove(category);
+                    } else {
+                      allSelectedCategory.add(category);
+                    }
+                    factPageNumber = 1;
+                    aiFacts = [];
+                  });
+                  ref.invalidate(fetchAllFactsProvider);
+                  await _fetchFacts();
+                },
+                allSelectedCategories: allSelectedCategory,
+              ),
+              if (hasError)
+                Expanded(
+                  child: Center(
+                    child: SomethingWentWrong(
+                      title: 'Failed to get Facts.',
+                      onRetryPressed: _fetchFacts,
+                    ),
                   ),
                 ),
-              ),
 
-            // Display skeleton loaders when there’s no error and no data
-            if (!hasError && aiFacts.isEmpty)
-              Expanded(
-                child: Center(
-                  child: CircularProgressIndicator(),
+              // Display skeleton loaders when there’s no error and no data
+              if (!hasError && aiFacts.isEmpty)
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: 10,
+                    itemBuilder: (context, index) {
+                      return SingleFactSkeletor();
+                    },
+                  ),
                 ),
-              ),
 
-            // Display the main content if there are aiFacts available
-            if (!hasError && aiFacts.isNotEmpty)
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: aiFacts.length,
-                  itemBuilder: (context, index) {
-                    return SingleFact(
-                      aiFact: aiFacts[index],
-                    );
-                  },
+              // Display the main content if there are aiFacts available
+              if (!hasError && aiFacts.isNotEmpty)
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: aiFacts.length,
+                    itemBuilder: (context, index) {
+                      return SingleFact(
+                        aiFact: aiFacts[index],
+                      );
+                    },
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

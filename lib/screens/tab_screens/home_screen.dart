@@ -115,67 +115,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           vertical: 8,
           horizontal: 10,
         ),
-        child: Column(
-          children: [
-            HomeScreenTopBar(
-              loading: isLoadingMore,
-              isGridView: isGridView,
-              onViewChanged: () =>
-                  setState(MyApp.of(context).toggleGridViewEnabled),
-            ),
-            // Display error message if there's an error
-            if (hasError)
-              Expanded(
-                child: Center(
-                  child: SomethingWentWrong(
-                    title: 'Failed to get Quotes.',
-                    onRetryPressed: _fetchQuotes,
+        child: RefreshIndicator(
+          onRefresh: () {
+            quotePageNumber = 1;
+            quotes = [];
+            ref.invalidate(fetchAllQuotesProvider);
+            return _fetchQuotes();
+          },
+          child: Column(
+            children: [
+              HomeScreenTopBar(
+                loading: isLoadingMore,
+                isGridView: isGridView,
+                onViewChanged: () =>
+                    setState(MyApp.of(context).toggleGridViewEnabled),
+              ),
+              // Display error message if there's an error
+              if (hasError)
+                Expanded(
+                  child: Center(
+                    child: SomethingWentWrong(
+                      title: 'Failed to get Quotes.',
+                      onRetryPressed: _fetchQuotes,
+                    ),
                   ),
                 ),
-              ),
-            HomeScreenQuoteFilters(
-              allSelectedTags: allSelectedTags,
-              onSelectedTagChange: (String currentTag) async {
-                setState(() {
-                  if (allSelectedTags.contains(currentTag)) {
-                    // Remove the tag if it already exists
-                    allSelectedTags.remove(currentTag);
-                  } else {
-                    // Add the tag if it does not exist
-                    allSelectedTags.add(currentTag);
-                  }
-                  quotePageNumber = 1;
-                  quotes = [];
-                });
+              HomeScreenQuoteFilters(
+                allSelectedTags: allSelectedTags,
+                onSelectedTagChange: (String currentTag) async {
+                  setState(() {
+                    if (allSelectedTags.contains(currentTag)) {
+                      // Remove the tag if it already exists
+                      allSelectedTags.remove(currentTag);
+                    } else {
+                      // Add the tag if it does not exist
+                      allSelectedTags.add(currentTag);
+                    }
+                    quotePageNumber = 1;
+                    quotes = [];
+                  });
 
-                ref.invalidate(fetchAllQuotesProvider);
-                await _fetchQuotes();
-              },
-            ),
-            // Display skeleton loaders when there’s no error and no data
-            if (!hasError && quotes.isEmpty)
-              Expanded(
-                child: isGridView
-                    ? const HomeScreenQuoteGridViewSkeletor()
-                    : const HomeScreenQuoteListViewSkeletor(),
+                  ref.invalidate(fetchAllQuotesProvider);
+                  await _fetchQuotes();
+                },
               ),
+              // Display skeleton loaders when there’s no error and no data
+              if (!hasError && quotes.isEmpty)
+                Expanded(
+                  child: isGridView
+                      ? const HomeScreenQuoteGridViewSkeletor()
+                      : const HomeScreenQuoteListViewSkeletor(),
+                ),
 
-            // Display the main content if there are quotes available
-            if (!hasError && quotes.isNotEmpty)
-              Expanded(
-                child: isGridView
-                    ? HomeScreenQuoteGridView(
-                        quotes: quotes,
-                        quotePageNumber: quotePageNumber,
-                        onLastItemScrolled: _fetchQuotes,
-                      )
-                    : HomeScreenQuoteListView(
-                        quotes: quotes,
-                        quotePageNumber: quotePageNumber,
-                        onLastItemScrolled: _fetchQuotes,
-                      ),
-              ),
-          ],
+              // Display the main content if there are quotes available
+              if (!hasError && quotes.isNotEmpty)
+                Expanded(
+                  child: isGridView
+                      ? HomeScreenQuoteGridView(
+                          quotes: quotes,
+                          quotePageNumber: quotePageNumber,
+                          onLastItemScrolled: _fetchQuotes,
+                        )
+                      : HomeScreenQuoteListView(
+                          quotes: quotes,
+                          onLastItemScrolled: _fetchQuotes,
+                        ),
+                ),
+            ],
+          ),
         ),
       ),
     );
