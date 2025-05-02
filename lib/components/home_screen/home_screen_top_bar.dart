@@ -1,5 +1,10 @@
+import 'package:drift_db_viewer/drift_db_viewer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+
+import '../../database/database.dart';
+import '../../service_locator/init_service_locators.dart';
 
 class HomeScreenTopBar extends StatelessWidget {
   final bool isGridView;
@@ -25,9 +30,17 @@ class HomeScreenTopBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              Image.asset(
-                'assets/quotely_icon.png',
-                height: MediaQuery.sizeOf(context).height * 0.03,
+              GestureDetector(
+                onTap: () {
+                  if (!kDebugMode) return;
+                  final db = getIt.get<AppDatabase>();
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => DriftDbViewer(db)));
+                },
+                child: Image.asset(
+                  'assets/quotely_icon.png',
+                  height: MediaQuery.sizeOf(context).height * 0.03,
+                ),
               ),
               const SizedBox(width: 10),
               const Text(

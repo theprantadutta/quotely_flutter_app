@@ -44,6 +44,7 @@ class QuoteDto {
         dateAdded: quote.dateAdded,
         dateModified: quote.dateModified,
       );
+
   static List<QuoteDto> fromQuoteList(List<Quote> quotes) {
     return quotes.map((quote) => QuoteDto.fromQuote(quote)).toList();
   }

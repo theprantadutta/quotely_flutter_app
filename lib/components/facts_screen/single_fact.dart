@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../constants/colors.dart';
 import '../../dtos/ai_fact_dto.dart';
+import '../../services/drift_fact_service.dart';
+import '../../state_providers/favorite_fact_ids.dart';
 
-class SingleFact extends StatelessWidget {
+class SingleFact extends ConsumerWidget {
   final AiFactDto aiFact;
 
   const SingleFact({
@@ -12,10 +16,30 @@ class SingleFact extends StatelessWidget {
     required this.aiFact,
   });
 
+  void toggleFavorite(WidgetRef ref) {
+    ref.read(favoriteFactIdsProvider.notifier).addOrRemoveId(aiFact.id);
+    DriftFactService.changeFactUpdateStatus(aiFact, !aiFact.isFavorite);
+  }
+
+  void shareFact() {
+    final shareText = '"${aiFact.content}"\n\nShared via Quotely';
+    SharePlus.instance.share(
+      ShareParams(
+        text: shareText,
+        subject: 'Amazing quote by Quotely',
+        sharePositionOrigin: Rect.fromPoints(
+          Offset.zero,
+          const Offset(0, 0),
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primaryColor = theme.primaryColor;
+    final isFavorite = ref.watch(favoriteFactIdsProvider).contains(aiFact.id);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -82,7 +106,7 @@ class SingleFact extends StatelessWidget {
                   children: [
                     // Share button
                     IconButton(
-                      onPressed: () {},
+                      onPressed: shareFact,
                       icon: Icon(
                         Icons.share_rounded,
                         color:
@@ -93,19 +117,29 @@ class SingleFact extends StatelessWidget {
 
                     const SizedBox(width: 8),
 
-                    // Favorite button
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(
-                        aiFact.isFavorite
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_outline_rounded,
-                        color: aiFact.isFavorite
-                            ? Colors.redAccent
-                            : theme.colorScheme.onSurface
-                                .withValues(alpha: 0.6),
+                    // Favorite button with animation
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        );
+                      },
+                      child: IconButton(
+                        key: ValueKey(isFavorite),
+                        onPressed: () => toggleFavorite(ref),
+                        icon: Icon(
+                          isFavorite
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_outline_rounded,
+                          color: isFavorite
+                              ? primaryColor
+                              : theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                        ),
+                        splashRadius: 20,
                       ),
-                      splashRadius: 20,
                     ),
                   ],
                 ),

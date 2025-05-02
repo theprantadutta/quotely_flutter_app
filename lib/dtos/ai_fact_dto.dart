@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import '../database/database.dart';
+
 part '../generated/dtos/ai_fact_dto.g.dart';
 
 @JsonSerializable()
@@ -34,4 +36,14 @@ class AiFactDto {
 
   /// Connect the generated [_$AiFactDtoToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$AiFactDtoToJson(this);
+
+  factory AiFactDto.fromDrift(Fact fact) => AiFactDto(
+        id: fact.id,
+        content: fact.content,
+        aiFactCategory: fact.aiFactCategory,
+        provider: fact.provider,
+        isFavorite: fact.isFavorite,
+        dateAdded: fact.dateAdded,
+        dateModified: fact.dateModified,
+      );
 }

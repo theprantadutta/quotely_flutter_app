@@ -7,3 +7,13 @@ targets:
         options:
           build_extensions:
             '^lib/{{}}.dart': 'lib/generated/{{}}.g.dart'
+      drift_dev:
+        options:
+          databases:
+            # Required: A name for the database and it's path
+            my_database: lib/database/database.dart
+           # The directory where the test files are stored: 
+          test_dir: lib/database/test/drift/ # (default)
+
+          # The directory where the schema files are stored:
+          schema_dir: lib/database/drift_schemas/  # (default)

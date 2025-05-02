@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../constants/colors.dart';
-import '../../../services/drift_service.dart';
+import '../../../services/drift_quote_service.dart';
 import '../../../state_providers/favorite_quote_ids.dart';
 
 class HomeScreenQuoteListView extends ConsumerStatefulWidget {
@@ -27,39 +27,16 @@ class HomeScreenQuoteListView extends ConsumerStatefulWidget {
 class _HomeScreenQuoteListViewState
     extends ConsumerState<HomeScreenQuoteListView> {
   late ScrollController _scrollController;
-  final Map<String, ValueNotifier<bool>> _favoriteNotifiers = {};
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
-    _initializeFavoriteNotifiers();
-  }
-
-  @override
-  void didUpdateWidget(covariant HomeScreenQuoteListView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.quotes != widget.quotes) {
-      _initializeFavoriteNotifiers();
-    }
-  }
-
-  void _initializeFavoriteNotifiers() {
-    final favoriteIds = ref.read(favoriteQuoteIdsProvider);
-    for (final quote in widget.quotes) {
-      _favoriteNotifiers.putIfAbsent(
-        quote.id,
-        () => ValueNotifier(favoriteIds.contains(quote.id)),
-      );
-    }
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    for (final notifier in _favoriteNotifiers.values) {
-      notifier.dispose();
-    }
     super.dispose();
   }
 
@@ -86,13 +63,10 @@ class _HomeScreenQuoteListViewState
   }
 
   Future<void> _toggleFavorite(QuoteDto quote) async {
-    final notifier = _favoriteNotifiers[quote.id]!;
-    final newValue = !notifier.value;
-    notifier.value = newValue;
-
+    final newValue = !quote.isFavorite;
     debugPrint("Toggling favorite for quote ${quote.id} to $newValue");
     ref.read(favoriteQuoteIdsProvider.notifier).addOrRemoveId(quote.id);
-    await DriftService.changeQuoteUpdateStatus(quote, !newValue);
+    await DriftQuoteService.changeQuoteUpdateStatus(quote, newValue);
   }
 
   @override
@@ -102,13 +76,13 @@ class _HomeScreenQuoteListViewState
     final authorColor = isDarkMode
         ? theme.colorScheme.secondary
         : theme.primaryColor.withValues(alpha: 0.8);
-
     return ListView.builder(
       controller: _scrollController,
       itemCount: widget.quotes.length,
       itemBuilder: (context, index) {
         final quote = widget.quotes[index];
-        final notifier = _favoriteNotifiers[quote.id];
+        final isFavorite =
+            ref.watch(favoriteQuoteIdsProvider).contains(quote.id);
 
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -233,70 +207,61 @@ class _HomeScreenQuoteListViewState
                         ),
 
                         // Action buttons
-                        notifier != null
-                            ? Expanded(
-                                flex: 3,
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children: [
-                                      ValueListenableBuilder<bool>(
-                                        valueListenable: notifier,
-                                        builder: (context, isFavorite, _) {
-                                          return GestureDetector(
-                                            onTap: () => _toggleFavorite(quote),
-                                            child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              child: AnimatedSwitcher(
-                                                duration: const Duration(
-                                                    milliseconds: 200),
-                                                transitionBuilder:
-                                                    (child, animation) {
-                                                  return ScaleTransition(
-                                                    scale: animation,
-                                                    child: child,
-                                                  );
-                                                },
-                                                child: Icon(
-                                                  isFavorite
-                                                      ? Icons.favorite
-                                                      : Icons.favorite_outline,
-                                                  key: ValueKey(isFavorite),
-                                                  size: 20,
-                                                  color: isFavorite
-                                                      ? Theme.of(context)
-                                                          .colorScheme
-                                                          .primary
-                                                      : Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurface
-                                                          .withValues(
-                                                              alpha: 0.6),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      GestureDetector(
-                                        onTap: () => _handleShare(quote),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          child: Icon(
-                                            Icons.share,
-                                            size: 20,
-                                            color: Theme.of(context)
+                        Expanded(
+                          flex: 3,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () => _toggleFavorite(quote),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    child: AnimatedSwitcher(
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      transitionBuilder: (child, animation) {
+                                        return ScaleTransition(
+                                          scale: animation,
+                                          child: child,
+                                        );
+                                      },
+                                      child: Icon(
+                                        isFavorite
+                                            ? Icons.favorite
+                                            : Icons.favorite_outline,
+                                        key: ValueKey(isFavorite),
+                                        size: 20,
+                                        color: isFavorite
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                            : Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
                                                 .withValues(alpha: 0.6),
-                                          ),
-                                        ),
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 ),
-                              )
-                            : SizedBox(),
+                                GestureDetector(
+                                  onTap: () => _handleShare(quote),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Icon(
+                                      Icons.share,
+                                      size: 20,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],

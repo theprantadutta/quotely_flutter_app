@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quotely_flutter_app/components/shared/top_navigation_bar.dart';
-import 'package:quotely_flutter_app/dtos/quote_dto.dart';
-import 'package:quotely_flutter_app/services/drift_service.dart';
 
-import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
-import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
-import '../../main.dart';
+import '../../components/favorites_screen/facts_list.dart';
+import '../../components/favorites_screen/quote_list.dart';
+import '../../components/shared/top_navigation_bar.dart';
 
 class FavoritesScreen extends StatefulWidget {
   static const kRouteName = '/favorites';
@@ -15,23 +12,41 @@ class FavoritesScreen extends StatefulWidget {
   State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> {
+class _FavoritesScreenState extends State<FavoritesScreen>
+    with SingleTickerProviderStateMixin {
+  bool showQuotes = true;
+
+  late AnimationController _animationController;
+
   @override
   void initState() {
     super.initState();
-    final changed = DriftService.watchAllFavoriteQuotes(([]));
-    changed.listen((value) {
-      if (mounted) {
-        setState(() {});
-      }
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this, // <-- Now 'this' is a valid TickerProvider
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _toggleView(bool showQuotes) {
+    setState(() {
+      this.showQuotes = showQuotes;
     });
+    // Animate the transition
+    if (showQuotes) {
+      _animationController.reverse();
+    } else {
+      _animationController.forward();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = Theme.of(context).iconTheme.color;
-    final isGridView = MyApp.of(context).isGridView;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -39,139 +54,91 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           horizontal: 10,
         ),
         child: Column(
-          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const TopNavigationBar(title: 'Favorites'),
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.765,
-              child: StreamBuilder(
-                stream: DriftService.watchAllFavoriteQuotes([]),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return isGridView
-                        ? const FavoritesScreenSkeletor(
-                            widget: HomeScreenQuoteGridViewSkeletor(),
-                          )
-                        : const FavoritesScreenSkeletor(
-                            widget: HomeScreenQuoteListViewSkeletor(),
-                          );
-                  }
-                  if (snapshot.hasError) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(
-                        child: Text('Something Went Wrong'),
-                      ),
-                    );
-                  }
-                  final quotes = snapshot.data!;
-                  if (quotes.isEmpty) {
-                    return SizedBox(
-                      width: MediaQuery.sizeOf(context).width * 0.8,
-                      child: const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.hourglass_empty_outlined,
-                              size: 80,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'No Favorites added yet.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'When you like a quote, it\'s going to show up here, this section helps you to read your Favorite quotes over and over',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  return Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'All Favorite Quotes',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () => setState(
-                                  () =>
-                                      MyApp.of(context).toggleGridViewEnabled(),
-                                ),
-                                child: Icon(
-                                  Icons.view_agenda_outlined,
-                                  color: !isGridView
-                                      ? iconColor
-                                      : isDarkTheme
-                                          ? Colors.grey.shade700
-                                          : Colors.grey.shade400,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () => setState(
-                                  () =>
-                                      MyApp.of(context).toggleGridViewEnabled(),
-                                ),
-                                child: Icon(
-                                  Icons.crop_square,
-                                  size: 28,
-                                  color: isGridView
-                                      ? iconColor
-                                      : isDarkTheme
-                                          ? Colors.grey.shade700
-                                          : Colors.grey.shade400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Expanded(
-                        child: isGridView
-                            ? HomeScreenQuoteGridView(
-                                quotes: QuoteDto.fromQuoteList(quotes),
-                                quotePageNumber: 1,
-                                onLastItemScrolled: () {
-                                  return Future.value();
-                                },
-                              )
-                            : HomeScreenQuoteListView(
-                                quotes: QuoteDto.fromQuoteList(quotes),
-                                // quotePageNumber: 1,
-                                onLastItemScrolled: () {
-                                  return Future.value();
-                                },
-                              ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+            _buildTabBar(),
+            Expanded(
+              child: showQuotes ? QuoteList() : FactsList(),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 200,
+          height: 48,
+          margin: EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Stack(
+            children: [
+              // Simplified animation - no need for separate Tween
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                left: showQuotes ? 0 : 100,
+                child: Container(
+                  width: 100,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _toggleView(true),
+                      child: Center(
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            color: showQuotes
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          child: Center(child: const Text('Quotes')),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _toggleView(false),
+                      child: Center(
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            color: !showQuotes
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          child: Center(child: const Text('Facts')),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -186,37 +153,8 @@ class FavoritesScreenSkeletor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'All Favorite Quotes',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Row(
-              children: [
-                Icon(
-                  Icons.view_agenda_outlined,
-                  color:
-                      isDarkTheme ? Colors.grey.shade700 : Colors.grey.shade400,
-                ),
-                const SizedBox(width: 10),
-                Icon(
-                  Icons.crop_square,
-                  size: 28,
-                  color:
-                      isDarkTheme ? Colors.grey.shade700 : Colors.grey.shade400,
-                ),
-              ],
-            ),
-          ],
-        ),
         Expanded(child: widget),
       ],
     );

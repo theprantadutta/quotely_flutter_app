@@ -3,11 +3,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../dtos/quote_dto.dart';
-import '../../../services/drift_service.dart';
-import '../../../state_providers/favorite_quote_ids.dart';
+import '../../../services/drift_quote_service.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../constants/colors.dart';
+import '../../../state_providers/favorite_quote_ids.dart';
 import 'home_screen_grid_content.dart';
 
 class HomeScreenQuoteSingleGrid extends ConsumerStatefulWidget {
@@ -28,22 +28,6 @@ class HomeScreenQuoteSingleGrid extends ConsumerStatefulWidget {
 class _HomeScreenQuoteSingleGridState
     extends ConsumerState<HomeScreenQuoteSingleGrid>
     with AutomaticKeepAliveClientMixin {
-  late final ValueNotifier<bool> _isFavoriteNotifier;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFavoriteNotifier = ValueNotifier(
-      ref.read(favoriteQuoteIdsProvider).contains(widget.currentQuote.id),
-    );
-  }
-
-  @override
-  void dispose() {
-    _isFavoriteNotifier.dispose();
-    super.dispose();
-  }
-
   void _handleShare() {
     final shareText =
         '"${widget.currentQuote.content}" - ${widget.currentQuote.author}\n\n'
@@ -60,15 +44,18 @@ class _HomeScreenQuoteSingleGridState
     );
   }
 
-  void _toggleFavorite() {
-    final newValue = !_isFavoriteNotifier.value;
-    _isFavoriteNotifier.value = newValue;
+  void _toggleFavorite() async {
+    final newValue = !widget.currentQuote.isFavorite;
 
     debugPrint("Making Quote with ID ${widget.currentQuote.id} as $newValue");
+    final result = await DriftQuoteService.changeQuoteUpdateStatus(
+        widget.currentQuote, newValue);
     ref
         .read(favoriteQuoteIdsProvider.notifier)
         .addOrRemoveId(widget.currentQuote.id);
-    DriftService.changeQuoteUpdateStatus(widget.currentQuote, !newValue);
+    if (!result) {
+      print('Error updating quote');
+    }
   }
 
   @override
@@ -76,7 +63,8 @@ class _HomeScreenQuoteSingleGridState
     super.build(context);
     final theme = Theme.of(context);
     final isDarkTheme = theme.brightness == Brightness.dark;
-
+    final isCurrentFavorite =
+        ref.watch(favoriteQuoteIdsProvider).contains(widget.currentQuote.id);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Stack(
@@ -100,7 +88,7 @@ class _HomeScreenQuoteSingleGridState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildTagsRow(context, isDarkTheme),
-                    _buildActionsRow(context),
+                    _buildActionsRow(context, isCurrentFavorite),
                   ],
                 ),
               ],
@@ -147,43 +135,38 @@ class _HomeScreenQuoteSingleGridState
     );
   }
 
-  Widget _buildActionsRow(BuildContext context) {
+  Widget _buildActionsRow(BuildContext context, bool isCurrentFavorite) {
     return Expanded(
       flex: 3,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            ValueListenableBuilder<bool>(
-              valueListenable: _isFavoriteNotifier,
-              builder: (context, isFavorite, _) {
-                return GestureDetector(
-                  onTap: _toggleFavorite,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      transitionBuilder: (child, animation) {
-                        return ScaleTransition(
-                          scale: animation,
-                          child: child,
-                        );
-                      },
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_outline,
-                        key: ValueKey(isFavorite),
-                        size: 20,
-                        color: isFavorite
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.6),
-                      ),
-                    ),
+            GestureDetector(
+              onTap: _toggleFavorite,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    );
+                  },
+                  child: Icon(
+                    isCurrentFavorite ? Icons.favorite : Icons.favorite_outline,
+                    key: ValueKey(isCurrentFavorite),
+                    size: 20,
+                    color: isCurrentFavorite
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
                   ),
-                );
-              },
+                ),
+              ),
             ),
             GestureDetector(
               onTap: _handleShare,
