@@ -55,7 +55,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  '- ${author}',
+                  '- $author',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,

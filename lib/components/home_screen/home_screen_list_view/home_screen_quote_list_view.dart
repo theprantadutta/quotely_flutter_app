@@ -63,9 +63,12 @@ class _HomeScreenQuoteListViewState
   }
 
   Future<void> _toggleFavorite(QuoteDto quote) async {
-    final newValue = !quote.isFavorite;
+    final existingFavoriteQuoteIds = ref.read(favoriteQuoteIdsProvider);
+    final newValue = !existingFavoriteQuoteIds.contains(quote.id);
     debugPrint("Toggling favorite for quote ${quote.id} to $newValue");
-    ref.read(favoriteQuoteIdsProvider.notifier).addOrRemoveId(quote.id);
+    ref
+        .read(favoriteQuoteIdsProvider.notifier)
+        .addOrUpdateViaStatus(quote.id, newValue);
     await DriftQuoteService.changeQuoteUpdateStatus(quote, newValue);
   }
 
@@ -76,6 +79,7 @@ class _HomeScreenQuoteListViewState
     final authorColor = isDarkMode
         ? theme.colorScheme.secondary
         : theme.primaryColor.withValues(alpha: 0.8);
+    final quoteColor = theme.colorScheme.onSurface.withValues(alpha: 0.9);
     return ListView.builder(
       controller: _scrollController,
       itemCount: widget.quotes.length,
@@ -129,8 +133,7 @@ class _HomeScreenQuoteListViewState
                           fontSize: _calculateFontSize(quote.content.length),
                           height: 1.6,
                           fontStyle: FontStyle.italic,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.9),
+                          color: quoteColor,
                         ),
                       ),
                     ),
@@ -294,7 +297,7 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
     final authorColor = isDarkMode
         ? theme.colorScheme.secondary
         : theme.primaryColor.withValues(alpha: 0.8);
-
+    final quoteColor = theme.colorScheme.onSurface.withValues(alpha: 0.9);
     return Skeletonizer(
       child: ListView.builder(
         itemCount: 10,
@@ -343,8 +346,7 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
                             fontSize: 20,
                             height: 1.6,
                             fontStyle: FontStyle.italic,
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.9),
+                            color: quoteColor,
                           ),
                         ),
                       ),

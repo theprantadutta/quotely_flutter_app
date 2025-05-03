@@ -28,4 +28,24 @@ class FavoriteQuoteIds extends _$FavoriteQuoteIds {
       addId(id);
     }
   }
+
+  void addOrUpdateId(String id) {
+    if (!state.contains(id)) {
+      addId(id);
+    }
+  }
+
+  void addOrUpdateIdList(List<String> ids) {
+    for (var id in ids) {
+      addOrUpdateId(id);
+    }
+  }
+
+  void addOrUpdateViaStatus(String id, bool status) {
+    if (status) {
+      addOrUpdateId(id);
+    } else {
+      removeId(id);
+    }
+  }
 }

@@ -45,14 +45,15 @@ class _HomeScreenQuoteSingleGridState
   }
 
   void _toggleFavorite() async {
-    final newValue = !widget.currentQuote.isFavorite;
+    final existingFavoriteQuoteIds = ref.read(favoriteQuoteIdsProvider);
+    final newValue = !existingFavoriteQuoteIds.contains(widget.currentQuote.id);
 
     debugPrint("Making Quote with ID ${widget.currentQuote.id} as $newValue");
     final result = await DriftQuoteService.changeQuoteUpdateStatus(
         widget.currentQuote, newValue);
     ref
         .read(favoriteQuoteIdsProvider.notifier)
-        .addOrRemoveId(widget.currentQuote.id);
+        .addOrUpdateViaStatus(widget.currentQuote.id, newValue);
     if (!result) {
       print('Error updating quote');
     }

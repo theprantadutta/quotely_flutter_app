@@ -12,6 +12,8 @@ import 'constants/shared_preference_keys.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
+import 'services/drift_fact_service.dart';
+import 'services/drift_quote_service.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();

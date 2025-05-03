@@ -14,6 +14,10 @@ import '../../main.dart';
 import '../../riverpods/all_quote_data_provider.dart';
 import '../../services/app_info_service.dart';
 import '../../services/app_service.dart';
+import '../../services/drift_fact_service.dart';
+import '../../services/drift_quote_service.dart';
+import '../../state_providers/favorite_fact_ids.dart';
+import '../../state_providers/favorite_quote_ids.dart';
 import '../../util/functions.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -40,6 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     FlutterNativeSplash.remove();
     _fetchQuotes();
     Future.microtask(() => checkForMaintenanceAndAppUpdate());
+    addAllFavoriteIds();
   }
 
   Future<void> checkForMaintenanceAndAppUpdate() async {
@@ -104,6 +109,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         });
       }
     }
+  }
+
+  Future<void> addAllFavoriteIds() async {
+    final allFavoriteQuoteIds =
+        await DriftQuoteService.getAllFavoriteQuoteIds();
+    final allFavoriteFactIds = await DriftFactService.getAllFavoriteFactIds();
+    ref
+        .read(favoriteQuoteIdsProvider.notifier)
+        .addOrUpdateIdList(allFavoriteQuoteIds);
+    ref
+        .read(favoriteFactIdsProvider.notifier)
+        .addOrUpdateIdList(allFavoriteFactIds);
   }
 
   @override

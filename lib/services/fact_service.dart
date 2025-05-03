@@ -86,9 +86,9 @@ class FactService {
             aiFactResponseDto.aiFacts);
 
         // Update favorite status
-        for (final fact in aiFactResponseDto.aiFacts) {
-          fact.isFavorite = await DriftFactService.isFavoriteFact(fact.id);
-        }
+        // for (final fact in aiFactResponseDto.aiFacts) {
+        //   fact.isFavorite = await DriftFactService.isFavoriteFact(fact.id);
+        // }
 
         return aiFactResponseDto;
       }

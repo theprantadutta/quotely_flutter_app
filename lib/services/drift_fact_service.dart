@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 
@@ -17,21 +19,19 @@ class DriftFactService {
   }
 
   static Future<bool> changeFactUpdateStatus(
-      AiFactDto fact, bool isFavorite) async {
+      AiFactDto aiFact, bool isFavorite) async {
     try {
       final database = getIt.get<AppDatabase>();
 
       await database.into(database.facts).insertOnConflictUpdate(
             FactsCompanion(
-              id: Value(fact.id),
-              content: Value(fact.content),
-              aiFactCategory: Value(fact.aiFactCategory),
-              provider: Value(fact.provider),
+              id: Value(aiFact.id),
+              aiFactCategory: Value(aiFact.aiFactCategory),
+              provider: Value(aiFact.provider),
+              content: Value(aiFact.content),
               isFavorite: Value(isFavorite), // This is what we're updating
-              dateAdded: Value(fact.dateAdded),
-              dateModified: Value(
-                DateTime.now(),
-              ), // Update modified time
+              dateAdded: Value(aiFact.dateAdded),
+              dateModified: Value(aiFact.dateModified), // Update modified time
             ),
           );
 
@@ -69,22 +69,25 @@ class DriftFactService {
     return query.get();
   }
 
-  static Future<void> saveNewFactsToDatabase(List<AiFactDto> factDtos) async {
+  static Future<void> saveNewFactsToDatabase(List<AiFactDto> aiFactDtos) async {
     final db = getIt.get<AppDatabase>();
+
     await db.batch((batch) {
-      for (final dto in factDtos) {
-        final fact = FactsCompanion(
-          id: Value(dto.id),
-          content: Value(dto.content),
-          aiFactCategory: Value(dto.aiFactCategory),
-          provider: Value(dto.provider),
-          isFavorite: Value(dto.isFavorite),
-          dateAdded: Value(dto.dateAdded),
-          dateModified: Value(dto.dateModified),
+      for (final dto in aiFactDtos) {
+        // Convert QuoteDto to database Quote entity
+        final quote = Fact(
+          id: dto.id,
+          content: dto.content,
+          aiFactCategory: dto.aiFactCategory,
+          provider: dto.provider,
+          isFavorite: false,
+          dateAdded: dto.dateAdded,
+          dateModified: dto.dateModified,
         );
+
         batch.insert(
           db.facts,
-          fact,
+          quote.toCompanion(true),
           mode: InsertMode.insertOrIgnore,
         );
       }
@@ -168,5 +171,18 @@ class DriftFactService {
 
     final facts = await query.get();
     return facts.map((e) => AiFactDto.fromDrift(e)).toList();
+  }
+
+  static Future<List<int>> getAllFavoriteFactIds() async {
+    final db = getIt.get<AppDatabase>();
+
+    // Query that selects only IDs
+    final results = await db.customSelect(
+      'SELECT id FROM facts WHERE is_favorite = 1',
+      readsFrom: {db.facts},
+    ).get();
+
+    // Map results to List<String>
+    return results.map((row) => row.read<int>('id')).toList();
   }
 }

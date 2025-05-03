@@ -1,4 +1,4 @@
-library awesome_bottom_bar;
+library;
 
 export 'chip_style.dart';
 export 'count_style.dart';

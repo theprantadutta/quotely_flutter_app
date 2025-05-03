@@ -1,14 +1,11 @@
 import 'dart:convert';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/dtos/pagination_dto.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:quotely_flutter_app/services/drift_quote_service.dart';
 
 import '../../dtos/quote_response_dto.dart';
 import '../constants/urls.dart';
-import '../database/database.dart';
-import '../state_providers/favorite_quote_ids.dart';
 import 'http_service.dart';
 
 class QuoteService {

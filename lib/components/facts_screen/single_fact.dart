@@ -16,9 +16,14 @@ class SingleFact extends ConsumerWidget {
     required this.aiFact,
   });
 
-  void toggleFavorite(WidgetRef ref) {
-    ref.read(favoriteFactIdsProvider.notifier).addOrRemoveId(aiFact.id);
-    DriftFactService.changeFactUpdateStatus(aiFact, !aiFact.isFavorite);
+  Future<void> toggleFavorite(WidgetRef ref) async {
+    final existingFavoriteFactIds = ref.read(favoriteFactIdsProvider);
+    final newValue = !existingFavoriteFactIds.contains(aiFact.id);
+    debugPrint("Toggling favorite for quote ${aiFact.id} to $newValue");
+    ref
+        .read(favoriteFactIdsProvider.notifier)
+        .addOrUpdateViaStatus(aiFact.id, newValue);
+    await DriftFactService.changeFactUpdateStatus(aiFact, newValue);
   }
 
   void shareFact() {
@@ -39,7 +44,10 @@ class SingleFact extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primaryColor = theme.primaryColor;
-    final isFavorite = ref.watch(favoriteFactIdsProvider).contains(aiFact.id);
+    print('favoriteList: ${ref.watch(favoriteFactIdsProvider)}');
+    print('currentFact: ${aiFact.id}');
+    final favoriteList = ref.watch(favoriteFactIdsProvider);
+    final isFavorite = favoriteList.contains(aiFact.id);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),

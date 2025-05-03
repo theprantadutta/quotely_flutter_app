@@ -48,7 +48,7 @@ class SingleQuoteOfTheDay extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              '- ${author}',
+              '- $author',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,

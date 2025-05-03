@@ -28,4 +28,24 @@ class FavoriteFactIds extends _$FavoriteFactIds {
       addId(id);
     }
   }
+
+  void addOrUpdateId(int id) {
+    if (!state.contains(id)) {
+      addId(id);
+    }
+  }
+
+  void addOrUpdateIdList(List<int> ids) {
+    for (var id in ids) {
+      addOrUpdateId(id);
+    }
+  }
+
+  void addOrUpdateViaStatus(int id, bool status) {
+    if (status) {
+      addOrUpdateId(id);
+    } else {
+      removeId(id);
+    }
+  }
 }
