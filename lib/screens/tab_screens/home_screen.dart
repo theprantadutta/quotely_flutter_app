@@ -114,7 +114,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> addAllFavoriteIds() async {
     final allFavoriteQuoteIds =
         await DriftQuoteService.getAllFavoriteQuoteIds();
+    talker?.info('All Favorite QuoteIds: $allFavoriteQuoteIds');
     final allFavoriteFactIds = await DriftFactService.getAllFavoriteFactIds();
+    talker?.info('All Favorite FactIds: $allFavoriteFactIds');
     ref
         .read(favoriteQuoteIdsProvider.notifier)
         .addOrUpdateIdList(allFavoriteQuoteIds);

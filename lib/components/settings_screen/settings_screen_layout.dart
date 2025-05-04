@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../constants/selectors.dart';
+
 class SettingsScreenLayout extends StatelessWidget {
   final String title;
   final String description;
@@ -26,7 +28,8 @@ class SettingsScreenLayout extends StatelessWidget {
           ),
           margin: const EdgeInsets.symmetric(vertical: 3),
           decoration: BoxDecoration(
-            color: kPrimaryColor.withValues(alpha: 0.05),
+            // color: kPrimaryColor.withValues(alpha: 0.05),
+            gradient: kGetDefaultGradient(context),
             borderRadius: BorderRadius.circular(15),
           ),
           child: Row(

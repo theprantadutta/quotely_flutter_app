@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../constants/colors.dart';
+import '../../../constants/selectors.dart';
+import '../../../screens/author_detail_screen.dart';
 import '../../../services/drift_quote_service.dart';
 import '../../../state_providers/favorite_quote_ids.dart';
 
@@ -47,18 +49,32 @@ class _HomeScreenQuoteListViewState
     }
   }
 
+  // Future<void> _handleShare(QuoteDto quote) async {
+  //   final shareText =
+  //       '"${quote.content}" - ${quote.author}\n\nShared via Quotely';
+  //   SharePlus.instance.share(
+  //     ShareParams(
+  //       text: shareText,
+  //       subject: 'Amazing quote by ${quote.author}',
+  //       sharePositionOrigin: Rect.fromPoints(
+  //         Offset.zero,
+  //         const Offset(0, 0),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Future<void> _handleShare(QuoteDto quote) async {
-    final shareText =
-        '"${quote.content}" - ${quote.author}\n\nShared via Quotely';
-    SharePlus.instance.share(
-      ShareParams(
-        text: shareText,
-        subject: 'Amazing quote by ${quote.author}',
-        sharePositionOrigin: Rect.fromPoints(
-          Offset.zero,
-          const Offset(0, 0),
-        ),
-      ),
+    final shareText = '''
+"${quote.content}" - ${quote.author}
+
+Shared via Quotely
+''';
+
+    await Share.share(
+      shareText,
+      subject: 'Amazing quote by ${quote.author}',
+      sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
     );
   }
 
@@ -92,15 +108,7 @@ class _HomeScreenQuoteListViewState
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              stops: const [0.1, 0.9],
-              colors: [
-                theme.primaryColor.withValues(alpha: 0.1),
-                kHelperColor.withValues(alpha: 0.1),
-              ],
-            ),
+            gradient: kGetDefaultGradient(context),
           ),
           child: Stack(
             children: [
@@ -141,27 +149,32 @@ class _HomeScreenQuoteListViewState
                     const SizedBox(height: 24),
 
                     // Author section
-                    Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 2,
-                            color: authorColor,
-                            margin: const EdgeInsets.only(bottom: 6),
-                          ),
-                          Text(
-                            '— ${quote.author}',
-                            style: GoogleFonts.raleway(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                    GestureDetector(
+                      onTap: () => context.push(
+                        '${AuthorDetailScreen.kRouteName}/${quote.authorSlug}',
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 2,
                               color: authorColor,
-                              letterSpacing: 0.5,
+                              margin: const EdgeInsets.only(bottom: 6),
                             ),
-                          ),
-                        ],
+                            Text(
+                              '— ${quote.author}',
+                              style: GoogleFonts.raleway(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: authorColor,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -306,15 +319,7 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
             margin: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: const [0.1, 0.9],
-                colors: [
-                  theme.primaryColor.withValues(alpha: 0.1),
-                  theme.hintColor.withValues(alpha: 0.1),
-                ],
-              ),
+              gradient: kGetDefaultGradient(context),
             ),
             child: Stack(
               children: [

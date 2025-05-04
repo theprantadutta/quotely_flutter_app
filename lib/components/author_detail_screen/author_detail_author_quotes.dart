@@ -13,45 +13,43 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
-    return Container(
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              vertical: 10,
-              horizontal: 15,
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 15,
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: kPrimaryColor.withValues(alpha: 0.4),
             ),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: kPrimaryColor.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            children: [
+              Text(
+                'Quotes from "${author.name}"',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Quotes from "${author.name}"',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  author.description,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+              const SizedBox(height: 3),
+              Text(
+                author.description,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
-          AuthorDetailAuthorQuoteList(
-            author: author,
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        AuthorDetailAuthorQuoteList(
+          author: author,
+        ),
+      ],
     );
   }
 }

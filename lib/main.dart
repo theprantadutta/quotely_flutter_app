@@ -6,23 +6,38 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
 import 'constants/selectors.dart';
 import 'constants/shared_preference_keys.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
-import 'services/drift_fact_service.dart';
-import 'services/drift_quote_service.dart';
+
+Talker? talker;
 
 void main() async {
+  talker = TalkerFlutter.init(
+    settings: TalkerSettings(
+      enabled: true,
+      colors: {
+        TalkerLogType.debug.key: AnsiPen()..magenta(),
+      },
+    ),
+  );
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   initServiceLocator();
   PushNotifications.init();
   await dotenv.load();
   runApp(
-    const ProviderScope(
+    ProviderScope(
+      observers: [
+        TalkerRiverpodObserver(
+          talker: talker!,
+        ),
+      ],
       child: MyApp(),
     ),
   );

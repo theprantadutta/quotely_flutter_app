@@ -2,11 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../constants/selectors.dart';
 import '../../../dtos/quote_dto.dart';
+import '../../../main.dart';
 import '../../../services/drift_quote_service.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../constants/colors.dart';
 import '../../../state_providers/favorite_quote_ids.dart';
 import 'home_screen_grid_content.dart';
 
@@ -28,19 +29,33 @@ class HomeScreenQuoteSingleGrid extends ConsumerStatefulWidget {
 class _HomeScreenQuoteSingleGridState
     extends ConsumerState<HomeScreenQuoteSingleGrid>
     with AutomaticKeepAliveClientMixin {
+  // void _handleShare() {
+  //   final shareText =
+  //       '"${widget.currentQuote.content}" - ${widget.currentQuote.author}\n\n'
+  //       'Shared via Quotely';
+  //   SharePlus.instance.share(
+  //     ShareParams(
+  //       text: shareText,
+  //       subject: 'Amazing quote by ${widget.currentQuote.author}',
+  //       sharePositionOrigin: Rect.fromPoints(
+  //         Offset.zero,
+  //         const Offset(0, 0),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   void _handleShare() {
-    final shareText =
-        '"${widget.currentQuote.content}" - ${widget.currentQuote.author}\n\n'
-        'Shared via Quotely';
-    SharePlus.instance.share(
-      ShareParams(
-        text: shareText,
-        subject: 'Amazing quote by ${widget.currentQuote.author}',
-        sharePositionOrigin: Rect.fromPoints(
-          Offset.zero,
-          const Offset(0, 0),
-        ),
-      ),
+    final shareText = '''
+"${widget.currentQuote.content}" - ${widget.currentQuote.author}
+
+Shared via Quotely
+''';
+
+    Share.share(
+      shareText,
+      subject: 'Amazing quote by ${widget.currentQuote.author}',
+      sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
     );
   }
 
@@ -55,7 +70,7 @@ class _HomeScreenQuoteSingleGridState
         .read(favoriteQuoteIdsProvider.notifier)
         .addOrUpdateViaStatus(widget.currentQuote.id, newValue);
     if (!result) {
-      print('Error updating quote');
+      talker?.error("Failed to update quote ${widget.currentQuote.id}");
     }
   }
 
@@ -196,15 +211,7 @@ class _HomeScreenQuoteSingleGridState
         height: widget.defaultHeight,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            stops: const [0.1, 0.9],
-            colors: [
-              primaryColor.withValues(alpha: 0.1),
-              kHelperColor.withValues(alpha: 0.1),
-            ],
-          ),
+          gradient: kGetDefaultGradient(context),
         ),
       ),
     );
@@ -232,7 +239,7 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
       child: Stack(
         children: [
           // Background with blur effect
-          _buildBackground(theme.primaryColor, isDarkTheme),
+          _buildBackground(context),
 
           // Content with tags and actions
           Padding(
@@ -261,14 +268,14 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
     );
   }
 
-  Widget _buildBackground(Color primaryColor, bool isDarkTheme) {
+  Widget _buildBackground(BuildContext context) {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
       child: Container(
         height: defaultHeight,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: _buildGradient(primaryColor, isDarkTheme),
+          gradient: kGetDefaultGradient(context),
         ),
       ),
     );
@@ -343,18 +350,6 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  LinearGradient _buildGradient(Color primaryColor, bool isDarkTheme) {
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      stops: const [0.1, 0.9],
-      colors: [
-        primaryColor.withValues(alpha: 0.1),
-        kHelperColor.withValues(alpha: 0.1),
-      ],
     );
   }
 }

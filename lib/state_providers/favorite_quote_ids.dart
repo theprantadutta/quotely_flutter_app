@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part '../generated/state_providers/favorite_quote_ids.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class FavoriteQuoteIds extends _$FavoriteQuoteIds {
   @override
   List<String> build() {

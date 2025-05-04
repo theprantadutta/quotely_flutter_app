@@ -23,6 +23,7 @@ class AuthorDetailAuthorQuoteList extends ConsumerStatefulWidget {
 class _AuthorDetailAuthorQuoteListState
     extends ConsumerState<AuthorDetailAuthorQuoteList> {
   int quotePageNumber = 1;
+  int quotePageSize = 10;
   bool hasMoreData = true;
   bool hasError = false;
   bool isLoadingMore = false;
@@ -47,7 +48,7 @@ class _AuthorDetailAuthorQuoteListState
       final newQuotes = await ref.read(fetchAllQuotesByAuthorProvider(
         widget.author.slug,
         quotePageNumber,
-        10,
+        quotePageSize,
       ).future);
       setState(() {
         hasMoreData = newQuotes.quotes.length == 10;
@@ -157,7 +158,7 @@ class _AuthorDetailAuthorQuoteListState
           ),
 
         // Display the main content if there are quotes available
-        if (!hasError && !isLoadingMore && quotes.isNotEmpty)
+        if (!hasError && quotes.isNotEmpty)
           Column(
             children: [
               Row(

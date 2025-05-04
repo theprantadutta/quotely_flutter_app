@@ -1,30 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/components/author_detail_screen/author_detail_author_bio.dart';
 import 'package:quotely_flutter_app/components/author_detail_screen/author_detail_author_quotes.dart';
-import 'package:quotely_flutter_app/screen_arguments/author_detail_screen_arguments.dart';
 
 import '../components/layouts/main_layout.dart';
+import '../components/shared/something_went_wrong.dart';
+import '../riverpods/get_author_detail_provider.dart';
 
-class AuthorDetailScreen extends StatefulWidget {
+class AuthorDetailScreen extends ConsumerStatefulWidget {
   static const kRouteName = '/author-detail';
 
-  final AuthorDetailScreenArguments authorDetailScreenArguments;
+  // final AuthorDetailScreenArguments authorDetailScreenArguments;
+  final String authorSlug;
 
   const AuthorDetailScreen({
     super.key,
-    required this.authorDetailScreenArguments,
+    required this.authorSlug,
+    // required this.authorDetailScreenArguments,
   });
 
   @override
-  State<AuthorDetailScreen> createState() => _AuthorDetailScreenState();
+  ConsumerState<AuthorDetailScreen> createState() => _AuthorDetailScreenState();
 }
 
-class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
+class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
   bool isAuthorBioSelected = true;
 
   @override
   Widget build(BuildContext context) {
-    final author = widget.authorDetailScreenArguments.author;
+    // final author = widget.authorDetailScreenArguments.author;
+    final authorProvider =
+        ref.watch(fetchAuthorDetailProvider(widget.authorSlug));
     return MainLayout(
       title: 'Author Detail',
       body: SafeArea(
@@ -51,15 +57,33 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              isAuthorBioSelected
-                  ? AuthorDetailAuthorBio(
-                      author: author,
-                    )
-                  : AuthorDetailAuthorQuotes(
-                      author: author,
-                    ),
+              authorProvider.when(
+                data: (author) {
+                  if (author == null) _buildErrorWidget();
+                  return isAuthorBioSelected
+                      ? AuthorDetailAuthorBio(
+                          author: author!,
+                        )
+                      : AuthorDetailAuthorQuotes(
+                          author: author!,
+                        );
+                },
+                error: (err, stack) => _buildErrorWidget(),
+                loading: () => AuthorDetailAuthorBioSkeletor(),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return SizedBox(
+      height: MediaQuery.sizeOf(context).height * 0.8,
+      child: const Center(
+        child: SomethingWentWrong(
+          title: 'Failed to get Author Detail',
         ),
       ),
     );

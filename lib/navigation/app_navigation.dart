@@ -8,7 +8,6 @@ import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/facts_screen.dart';
 
-import '../screen_arguments/author_detail_screen_arguments.dart';
 import '../screens/author_detail_screen.dart';
 import '../screens/daily_inspiration_list_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
@@ -237,14 +236,15 @@ class AppNavigation {
       /// Author Detail
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
-        path: AuthorDetailScreen.kRouteName,
+        path: '${AuthorDetailScreen.kRouteName}/:authorSlug',
         name: "Author Detail",
         builder: (context, state) {
-          final authorDetailScreenArguments =
-              state.extra as AuthorDetailScreenArguments;
+          // final authorDetailScreenArguments =
+          //     state.extra as AuthorDetailScreenArguments;
+          final authorSlug = state.pathParameters["authorSlug"]!;
           return AuthorDetailScreen(
             key: state.pageKey,
-            authorDetailScreenArguments: authorDetailScreenArguments,
+            authorSlug: authorSlug,
           );
         },
       ),

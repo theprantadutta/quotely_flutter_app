@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../constants/colors.dart';
+import '../../constants/selectors.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../services/drift_fact_service.dart';
 import '../../state_providers/favorite_fact_ids.dart';
@@ -26,17 +26,31 @@ class SingleFact extends ConsumerWidget {
     await DriftFactService.changeFactUpdateStatus(aiFact, newValue);
   }
 
-  void shareFact() {
-    final shareText = '"${aiFact.content}"\n\nShared via Quotely';
-    SharePlus.instance.share(
-      ShareParams(
-        text: shareText,
-        subject: 'Amazing quote by Quotely',
-        sharePositionOrigin: Rect.fromPoints(
-          Offset.zero,
-          const Offset(0, 0),
-        ),
-      ),
+  // void shareFact() {
+  //   final shareText = '"${aiFact.content}"\n\nShared via Quotely';
+  //   SharePlus.instance.share(
+  //     ShareParams(
+  //       text: shareText,
+  //       subject: 'Amazing quote by Quotely',
+  //       sharePositionOrigin: Rect.fromPoints(
+  //         Offset.zero,
+  //         const Offset(0, 0),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Future<void> shareFact() async {
+    final shareText = '''
+"${aiFact.content}"
+
+Shared via Quotely
+''';
+
+    await Share.share(
+      shareText,
+      subject: 'Amazing fact from Quotely',
+      sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
     );
   }
 
@@ -44,8 +58,6 @@ class SingleFact extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primaryColor = theme.primaryColor;
-    print('favoriteList: ${ref.watch(favoriteFactIdsProvider)}');
-    print('currentFact: ${aiFact.id}');
     final favoriteList = ref.watch(favoriteFactIdsProvider);
     final isFavorite = favoriteList.contains(aiFact.id);
 
@@ -53,15 +65,7 @@ class SingleFact extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: const [0.1, 0.9],
-          colors: [
-            primaryColor.withValues(alpha: 0.1),
-            kHelperColor.withValues(alpha: 0.1),
-          ],
-        ),
+        gradient: kGetDefaultGradient(context),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -192,22 +196,12 @@ class SingleFactSkeletor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final primaryColor = theme.primaryColor;
-
     return Skeletonizer(
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            stops: const [0.1, 0.9],
-            colors: [
-              primaryColor.withValues(alpha: 0.1),
-              kHelperColor.withValues(alpha: 0.1),
-            ],
-          ),
+          gradient: kGetDefaultGradient(context),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),

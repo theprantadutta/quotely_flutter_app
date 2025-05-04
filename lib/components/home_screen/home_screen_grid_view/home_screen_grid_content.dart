@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../dtos/quote_dto.dart';
-import '../../../screens/tab_screens/authors_screen.dart';
+import '../../../screens/author_detail_screen.dart';
 
 class HomeScreenGridContent extends StatelessWidget {
   final QuoteDto quote;
@@ -42,7 +42,9 @@ class HomeScreenGridContent extends StatelessWidget {
           _buildLogo(imageSize),
           _buildQuoteText(context, quoteColor),
           GestureDetector(
-            onTap: () => context.push(AuthorsScreen.kRouteName),
+            onTap: () => context.push(
+              '${AuthorDetailScreen.kRouteName}/${quote.authorSlug}',
+            ),
             child: _buildAuthorText(authorColor),
           ),
         ],
@@ -72,7 +74,9 @@ class HomeScreenGridContent extends StatelessWidget {
     );
   }
 
-  Widget _buildAuthorText(Color authorColor) {
+  Widget _buildAuthorText(
+    Color authorColor,
+  ) {
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(

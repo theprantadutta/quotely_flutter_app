@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/shared/circle_avatar_with_fallback.dart';
 import 'package:quotely_flutter_app/dtos/author_dto.dart';
-import 'package:quotely_flutter_app/screen_arguments/author_detail_screen_arguments.dart';
 
+import '../../constants/selectors.dart';
 import '../../screens/author_detail_screen.dart';
 
 class SingleAuthorView extends StatelessWidget {
@@ -32,8 +32,8 @@ class SingleAuthorView extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () => context.push(
-            AuthorDetailScreen.kRouteName,
-            extra: AuthorDetailScreenArguments(author: author),
+            '${AuthorDetailScreen.kRouteName}/${author.slug}',
+            // extra: AuthorDetailScreenArguments(author: author),
           ),
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 3),
@@ -43,11 +43,12 @@ class SingleAuthorView extends StatelessWidget {
             ),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: kPrimaryColor.withValues(alpha: 0.05),
+              // color: kPrimaryColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
                 color: kPrimaryColor.withValues(alpha: 0.10),
               ),
+              gradient: kGetDefaultGradient(context),
             ),
             child: Row(
               children: [

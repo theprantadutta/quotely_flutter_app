@@ -204,6 +204,7 @@ class _FactsScreenFilterListState extends ConsumerState<FactsScreenFilterList> {
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         hasError = true;
         errorMessage = e is FormatException
