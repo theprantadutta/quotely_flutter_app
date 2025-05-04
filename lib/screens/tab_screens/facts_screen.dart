@@ -58,6 +58,8 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     debugPrint('Fetching Ai Facts...');
     if (!hasMoreData || isLoadingMore) return;
 
+    if (!mounted) return;
+
     setState(() {
       isLoadingMore = true;
       hasError = false;
