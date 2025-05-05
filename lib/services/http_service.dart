@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 
@@ -7,6 +8,7 @@ import '../main.dart';
 
 class HttpService {
   static const kTimeOutDurationInSeconds = 30;
+  static final apiKey = dotenv.env['API_KEY'];
   static Future<Response> get<T>(String url) async {
     final dio = Dio();
     dio.interceptors.add(TalkerDioLogger(talker: talker!));
@@ -16,6 +18,10 @@ class HttpService {
         url,
         options: Options(
           responseType: ResponseType.plain,
+          headers: {
+            'Content-Type': 'application/json', // Set the content type to JSON
+            'X-Api-Key': apiKey,
+          },
         ),
       )
           .timeout(

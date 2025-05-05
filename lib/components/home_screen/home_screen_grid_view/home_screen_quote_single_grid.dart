@@ -173,7 +173,7 @@ Shared via Quotely
                   child: Icon(
                     isCurrentFavorite ? Icons.favorite : Icons.favorite_outline,
                     key: ValueKey(isCurrentFavorite),
-                    size: 20,
+                    size: 22,
                     color: isCurrentFavorite
                         ? Theme.of(context).colorScheme.primary
                         : Theme.of(context)
@@ -190,7 +190,7 @@ Shared via Quotely
                 padding: const EdgeInsets.all(8),
                 child: Icon(
                   Icons.share,
-                  size: 20,
+                  size: 22,
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
