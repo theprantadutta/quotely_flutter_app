@@ -1,6 +1,6 @@
 # Quotely ✨  
 
-Quotely is a Flutter app designed for quote enthusiasts. It allows users to explore, save, and share inspirational quotes from various authors. With beautiful custom UI and seamless functionality, Quotely provides a delightful experience for browsing quotes, searching for authors, and staying inspired with daily notifications.  
+Quotely is a Flutter app designed for quote enthusiasts. It allows users to explore, save, and share inspirational quotes from various authors. It also has a separate section for AI generated facts. With beautiful custom UI and seamless functionality, Quotely provides a delightful experience for browsing quotes, searching for authors, and staying inspired with daily notifications.  
 
 [![Download Latest APK](https://img.shields.io/badge/Download-Latest%20APK-brightgreen?style=for-the-badge&logo=android)](https://github.com/theprantadutta/quotely_flutter_app/releases/latest/download/quotely.apk)
 
@@ -15,6 +15,7 @@ Quotely is a Flutter app designed for quote enthusiasts. It allows users to expl
 - **Favorites**: Save and manage your favorite quotes for easy access.  
 - **Search Authors**: Search for quotes by specific authors or topics.  
 - **Share Quotes**: Share your favorite quotes with friends on social media or messaging apps.  
+- **Facts**: Visit through AI generated facts of different types and categories. 
 - **Notifications**:  
   - **Quote of the Day**: Receive daily inspiration with a fresh quote.  
   - **Random Quotes**: Get notified with random quotes throughout the day.  
@@ -68,6 +69,10 @@ Quotely integrates with various APIs to fetch a wide collection of quotes and au
   - Dynamic data updates ensure you always have fresh content.  
 
 - **Documentation**: [Quotable API Documentation](https://github.com/lukePeavey/quotable) 
+
+### ** ChatGPT, Mistral, Gemeni etc. **
+- **Features**:
+  - Provides AI generated facts.
 
 ---  
 
