@@ -18,80 +18,95 @@ class SingleAuthorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final kPrimaryColor = Theme.of(context).primaryColor;
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    return Stack(
-      children: [
-        const Positioned(
-          top: 10,
-          right: 10,
-          child: Icon(
-            Icons.open_in_new_outlined,
-            size: 18,
-          ),
-        ),
-        GestureDetector(
-          onTap: () => context.push(
-            '${AuthorDetailScreen.kRouteName}/${author.slug}',
-            // extra: AuthorDetailScreenArguments(author: author),
-          ),
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 3),
-            padding: const EdgeInsets.symmetric(
-              vertical: 15,
-              horizontal: 15,
-            ),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              // color: kPrimaryColor.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: kPrimaryColor.withValues(alpha: 0.10),
-              ),
-              gradient: kGetDefaultGradient(context),
-            ),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final kPrimaryColor = theme.primaryColor;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        borderRadius: BorderRadius.circular(16),
+        color: kPrimaryColor.withValues(alpha: 0.05),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () =>
+              context.push('${AuthorDetailScreen.kRouteName}/${author.slug}'),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Flexible(
+                // Avatar with subtle shadow
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: kGetDefaultGradient(context),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
                   child: CircleAvatarWithFallback(
                     name: author.name,
-                    radius: 25,
+                    radius: 24,
                     imageUrl: author.imageUrl,
                   ),
                 ),
-                const SizedBox(width: 15),
-                Flexible(
-                  flex: 4,
+
+                const SizedBox(width: 16),
+
+                // Author info
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         author.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onBackground,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 4),
                       Text(
                         author.description,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              isDarkTheme ? Colors.grey[400] : Colors.grey[800],
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      // const SizedBox(height: 5),
-                      // AuthorBio(bio: author.bio),
                     ],
+                  ),
+                ),
+
+                // Quote count chip
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${author.quoteCount}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: theme.primaryColor,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -101,74 +116,93 @@ class SingleAuthorViewSkeletor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final kPrimaryColor = Theme.of(context).primaryColor;
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    return Stack(
-      children: [
-        const Positioned(
-          top: 10,
-          right: 10,
-          child: Icon(
-            Icons.open_in_new_outlined,
-            size: 18,
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          padding: const EdgeInsets.symmetric(
-            vertical: 15,
-            horizontal: 15,
-          ),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: kPrimaryColor.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: kPrimaryColor.withValues(alpha: 0.10),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final kPrimaryColor = theme.primaryColor;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        borderRadius: BorderRadius.circular(16),
+        color: kPrimaryColor.withValues(alpha: 0.05),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                // Avatar with subtle shadow
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: kGetDefaultGradient(context),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatarWithFallback(
+                    name: 'Abraham Lincoln',
+                    radius: 24,
+                    imageUrl: null,
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // Author info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Abraham Lincoln',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onBackground,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'American President',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Quote count chip
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '12',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: theme.primaryColor,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            children: [
-              const Flexible(
-                child: CircleAvatarWithFallback(
-                  name: 'Abraham Lincoln',
-                  radius: 25,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Flexible(
-                flex: 4,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'author.name',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'author.description zdfgdfgsdfg',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color:
-                            isDarkTheme ? Colors.grey[300] : Colors.grey[700],
-                      ),
-                    ),
-                    // const SizedBox(height: 5),
-                    // const AuthorBio(
-                    //     bio:
-                    //         'gdfadfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf'),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
-      ],
+      ),
     );
   }
 }

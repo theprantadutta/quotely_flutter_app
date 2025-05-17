@@ -39,39 +39,41 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
             vertical: 8,
             horizontal: 10,
           ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SingleAuthorDetailButton(
-                    title: 'Author Bio',
-                    isSelected: isAuthorBioSelected,
-                    onTap: () => setState(() => isAuthorBioSelected = true),
-                  ),
-                  SingleAuthorDetailButton(
-                    title: 'Author Quotes',
-                    isSelected: !isAuthorBioSelected,
-                    onTap: () => setState(() => isAuthorBioSelected = false),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              authorProvider.when(
-                data: (author) {
-                  if (author == null) _buildErrorWidget();
-                  return isAuthorBioSelected
-                      ? AuthorDetailAuthorBio(
-                          author: author!,
-                        )
-                      : AuthorDetailAuthorQuotes(
-                          author: author!,
-                        );
-                },
-                error: (err, stack) => _buildErrorWidget(),
-                loading: () => AuthorDetailAuthorBioSkeletor(),
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    SingleAuthorDetailButton(
+                      title: 'Author Bio',
+                      isSelected: isAuthorBioSelected,
+                      onTap: () => setState(() => isAuthorBioSelected = true),
+                    ),
+                    SingleAuthorDetailButton(
+                      title: 'Author Quotes',
+                      isSelected: !isAuthorBioSelected,
+                      onTap: () => setState(() => isAuthorBioSelected = false),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                authorProvider.when(
+                  data: (author) {
+                    if (author == null) _buildErrorWidget();
+                    return isAuthorBioSelected
+                        ? AuthorDetailAuthorBio(
+                            author: author!,
+                          )
+                        : AuthorDetailAuthorQuotes(
+                            author: author!,
+                          );
+                  },
+                  error: (err, stack) => _buildErrorWidget(),
+                  loading: () => AuthorDetailAuthorBioSkeletor(),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -212,11 +212,13 @@ class _AuthorDetailAuthorQuoteListState
                         quotes: quotes,
                         quotePageNumber: quotePageNumber,
                         onLastItemScrolled: _fetchQuotes,
+                        hasAlwaysScrollablePhysics: true,
                       )
                     : HomeScreenQuoteListView(
                         quotes: quotes,
                         // quotePageNumber: quotePageNumber,
                         onLastItemScrolled: _fetchQuotes,
+                        hasAlwaysScrollablePhysics: true,
                       ),
               ),
             ],

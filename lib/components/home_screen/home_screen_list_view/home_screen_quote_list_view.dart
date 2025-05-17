@@ -14,11 +14,13 @@ import '../../../state_providers/favorite_quote_ids.dart';
 class HomeScreenQuoteListView extends ConsumerStatefulWidget {
   final List<QuoteDto> quotes;
   final Future<void> Function() onLastItemScrolled;
+  final bool hasAlwaysScrollablePhysics;
 
   const HomeScreenQuoteListView({
     super.key,
     required this.quotes,
     required this.onLastItemScrolled,
+    this.hasAlwaysScrollablePhysics = false,
   });
 
   @override
@@ -97,6 +99,9 @@ Shared via Quotely
         : theme.primaryColor.withValues(alpha: 0.8);
     final quoteColor = theme.colorScheme.onSurface.withValues(alpha: 0.9);
     return ListView.builder(
+      physics: widget.hasAlwaysScrollablePhysics
+          ? const AlwaysScrollableScrollPhysics()
+          : null,
       controller: _scrollController,
       itemCount: widget.quotes.length,
       itemBuilder: (context, index) {

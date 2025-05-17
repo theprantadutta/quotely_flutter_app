@@ -9,6 +9,7 @@ class HomeScreenQuoteGridView extends StatelessWidget {
   final int quotePageNumber;
   final Future Function() onLastItemScrolled;
   final double gridDefaultHeight;
+  final bool hasAlwaysScrollablePhysics;
 
   const HomeScreenQuoteGridView({
     super.key,
@@ -16,6 +17,7 @@ class HomeScreenQuoteGridView extends StatelessWidget {
     required this.quotePageNumber,
     required this.onLastItemScrolled,
     this.gridDefaultHeight = 0.72,
+    this.hasAlwaysScrollablePhysics = false,
   });
 
   @override
@@ -38,6 +40,9 @@ class HomeScreenQuoteGridView extends StatelessWidget {
               await onLastItemScrolled();
             }
           },
+          scrollPhysics: hasAlwaysScrollablePhysics
+              ? const AlwaysScrollableScrollPhysics()
+              : null,
         ),
         itemCount: quotes.length,
         itemBuilder: (
