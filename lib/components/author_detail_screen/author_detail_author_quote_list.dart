@@ -69,8 +69,8 @@ class _AuthorDetailAuthorQuoteListState
 
   @override
   Widget build(BuildContext context) {
-    final isGridView = MyApp.of(context).isGridView;
-    final isDarkTheme = MyApp.of(context).isDarkMode;
+    final isGridView = QuotelyApp.of(context).isGridView;
+    final isDarkTheme = QuotelyApp.of(context).isDarkMode;
     final iconColor = Theme.of(context).iconTheme.color;
     return Column(
       children: [
@@ -175,7 +175,7 @@ class _AuthorDetailAuthorQuoteListState
                     children: [
                       GestureDetector(
                         onTap: () => setState(
-                          () => MyApp.of(context).toggleGridViewEnabled(),
+                          () => QuotelyApp.of(context).toggleGridViewEnabled(),
                         ),
                         child: Icon(
                           Icons.view_agenda_outlined,
@@ -189,7 +189,7 @@ class _AuthorDetailAuthorQuoteListState
                       const SizedBox(width: 10),
                       GestureDetector(
                         onTap: () => setState(
-                          () => MyApp.of(context).toggleGridViewEnabled(),
+                          () => QuotelyApp.of(context).toggleGridViewEnabled(),
                         ),
                         child: Icon(
                           Icons.crop_square,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../constants/selectors.dart';
+
 class NotificationScreenLayout extends StatelessWidget {
   final String title;
   final String description;
@@ -26,8 +28,16 @@ class NotificationScreenLayout extends StatelessWidget {
         ),
         margin: const EdgeInsets.symmetric(vertical: 3),
         decoration: BoxDecoration(
-          color: kPrimaryColor.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(18),
+          gradient: kGetDefaultGradient(context),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

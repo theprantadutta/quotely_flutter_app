@@ -86,7 +86,7 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
     }
   }
 
-  gotoAScreen(BuildContext context, String route) {
+  void gotoAScreen(BuildContext context, String route) {
     try {
       Future.delayed(Duration.zero, () async {
         // ignore: use_build_context_synchronously
@@ -107,6 +107,7 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Column(
+          spacing: 10,
           children: [
             // Notifications Quote of the Day
             NotificationScreenLayout(
@@ -140,7 +141,6 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                 value,
               ),
             ),
-            const SizedBox(height: 6),
             SwitchSettingsLayout(
               title: 'Enable Motivation Monday',
               value: _notifications[kNotificationMotivation]!,
@@ -150,7 +150,6 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                 value,
               ),
             ),
-            const SizedBox(height: 6),
             SwitchSettingsLayout(
               title: 'Enable Daily Inspiration',
               value: _notifications[kNotificationDailyInspiration]!,
@@ -160,7 +159,6 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                 value,
               ),
             ),
-            const SizedBox(height: 6),
             SwitchSettingsLayout(
               title: 'Enable Quote of the Day',
               value: _notifications[kNotificationQuoteOfTheDay]!,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../shared/dark_gradient_background.dart';
 import '../shared/floating_theme_change_button.dart';
 
 class MainLayout extends StatelessWidget {
@@ -47,7 +48,13 @@ class MainLayout extends StatelessWidget {
           ),
           bottom: bottom,
         ),
-        body: SingleChildScrollView(child: body),
+        body: SingleChildScrollView(
+            child: Stack(
+          children: [
+            DarkGradientBackground(),
+            body,
+          ],
+        )),
         floatingActionButton: kReleaseMode
             ? null // Don't show FloatingActionButton in release (production) mode
             : const FloatingThemeChangeButton(),

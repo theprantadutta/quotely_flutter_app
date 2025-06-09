@@ -27,7 +27,7 @@ class _AwesomeBottomBarFancyBorderLayoutState
   @override
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
-    final isDarkTheme = MyApp.of(context).isDarkMode;
+    final isDarkTheme = QuotelyApp.of(context).isDarkMode;
     return FadeInUp(
       duration: const Duration(milliseconds: 500),
       child: BottomBarInspiredFancy(

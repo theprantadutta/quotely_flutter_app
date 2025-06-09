@@ -69,7 +69,7 @@ class AuthorDetailAuthorBio extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onBackground,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -133,12 +133,12 @@ class AuthorDetailAuthorBio extends StatelessWidget {
                   _buildMetaChip(
                     context,
                     Icons.calendar_today,
-                    'Since ${DateFormat.yMMMd().format(author.dateAdded)}',
+                    'Created At ${DateFormat.yMMMd().format(author.dateAdded)}',
                   ),
                 _buildMetaChip(
                   context,
                   Icons.edit,
-                  'Updated ${DateFormat.yMMMd().format(author.dateModified)}',
+                  'Updated At ${DateFormat.yMMMd().format(author.dateModified)}',
                 ),
               ],
             ),
@@ -248,7 +248,7 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onBackground,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),

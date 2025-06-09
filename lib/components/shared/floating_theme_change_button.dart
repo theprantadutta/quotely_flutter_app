@@ -11,9 +11,9 @@ class FloatingThemeChangeButton extends StatelessWidget {
     final kPrimaryColor = Theme.of(context).primaryColor;
     void handleThemeToggle() {
       if (isDarkTheme) {
-        MyApp.of(context).changeTheme(ThemeMode.light);
+        QuotelyApp.of(context).changeTheme(ThemeMode.light);
       } else {
-        MyApp.of(context).changeTheme(ThemeMode.dark);
+        QuotelyApp.of(context).changeTheme(ThemeMode.dark);
       }
     }
 

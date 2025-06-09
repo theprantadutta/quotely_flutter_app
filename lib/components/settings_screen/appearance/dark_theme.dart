@@ -33,8 +33,8 @@ class _DarkThemeState extends State<DarkTheme> {
             trackOutlineColor: WidgetStateProperty.all(
               kPrimaryColor.withValues(alpha: 0.2),
             ),
-            value: MyApp.of(context).isDarkMode,
-            onChanged: (value) => MyApp.of(context).changeTheme(
+            value: QuotelyApp.of(context).isDarkMode,
+            onChanged: (value) => QuotelyApp.of(context).changeTheme(
               value ? ThemeMode.dark : ThemeMode.light,
             ),
           ),

@@ -1,8 +1,10 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 
 import '../../dtos/quote_dto.dart';
 import '../../main.dart';
 import '../../screens/tab_screens/favorites_screen.dart';
+import '../../service_locator/init_service_locators.dart';
 import '../../services/drift_quote_service.dart';
 import '../home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
@@ -15,16 +17,36 @@ class QuoteList extends StatefulWidget {
 }
 
 class _QuoteListState extends State<QuoteList> {
+  // Assuming getIt is available for service location
+  final _analytics = getIt.get<FirebaseAnalytics>();
+
+  // --- UX & Analytics Improvement ---
+  // This function now explicitly sets the view mode and logs the corresponding event.
+  void _setViewMode(bool isGridView) {
+    final quotelyApp = QuotelyApp.of(context);
+    // Only toggle if the view is actually changing
+    if (quotelyApp.isGridView != isGridView) {
+      quotelyApp.toggleGridViewEnabled();
+
+      // Log a specific event for this screen
+      _analytics.logEvent(
+        name: 'favorites_quotes_view_changed',
+        parameters: {'view_mode': isGridView ? 'grid' : 'list'},
+      );
+      // Rebuild the widget to reflect the change
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final iconColor = Theme.of(context).iconTheme.color;
-    final isGridView = MyApp.of(context).isGridView;
+    final isGridView = QuotelyApp.of(context).isGridView;
     return Column(
-      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Container(
-          height: MediaQuery.sizeOf(context).height * 0.05,
+          height: MediaQuery.of(context).size.height * 0.05,
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -38,10 +60,9 @@ class _QuoteListState extends State<QuoteList> {
               ),
               Row(
                 children: [
+                  // --- Improved list view button ---
                   GestureDetector(
-                    onTap: () => setState(
-                      () => MyApp.of(context).toggleGridViewEnabled(),
-                    ),
+                    onTap: () => _setViewMode(false), // Set to list view
                     child: Icon(
                       Icons.view_agenda_outlined,
                       color: !isGridView
@@ -52,13 +73,13 @@ class _QuoteListState extends State<QuoteList> {
                     ),
                   ),
                   const SizedBox(width: 10),
+                  // --- Improved grid view button ---
                   GestureDetector(
-                    onTap: () => setState(
-                      () => MyApp.of(context).toggleGridViewEnabled(),
-                    ),
+                    onTap: () => _setViewMode(true), // Set to grid view
                     child: Icon(
-                      Icons.crop_square,
-                      size: 28,
+                      Icons
+                          .grid_view_rounded, // Using a more distinct grid icon
+                      size: 24, // Adjusted size to match the other icon better
                       color: isGridView
                           ? iconColor
                           : isDarkTheme
@@ -85,6 +106,11 @@ class _QuoteListState extends State<QuoteList> {
                       );
               }
               if (snapshot.hasError) {
+                // --- Analytics Event for Errors ---
+                _analytics.logEvent(
+                  name: 'favorites_quotes_load_failed',
+                  parameters: {'error': snapshot.error.toString()},
+                );
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Center(
@@ -95,7 +121,7 @@ class _QuoteListState extends State<QuoteList> {
               final quotes = snapshot.data!;
               if (quotes.isEmpty) {
                 return SizedBox(
-                  width: MediaQuery.sizeOf(context).width * 0.8,
+                  width: MediaQuery.of(context).size.width * 0.8,
                   child: const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -140,7 +166,6 @@ class _QuoteListState extends State<QuoteList> {
                           )
                         : HomeScreenQuoteListView(
                             quotes: QuoteDto.fromQuoteList(quotes),
-                            // quotePageNumber: 1,
                             onLastItemScrolled: () {
                               return Future.value();
                             },

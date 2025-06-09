@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../constants/selectors.dart';
+
 class SwitchSettingsLayout extends StatelessWidget {
   final String title;
   final bool value;
@@ -19,8 +21,16 @@ class SwitchSettingsLayout extends StatelessWidget {
       height: MediaQuery.sizeOf(context).height * 0.07,
       padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
+        gradient: kGetDefaultGradient(context),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,

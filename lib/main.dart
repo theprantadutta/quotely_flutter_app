@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -23,13 +24,14 @@ void main() async {
       enabled: true,
       colors: {
         TalkerLogType.debug.key: AnsiPen()..magenta(),
+        TalkerLogType.verbose.key: AnsiPen()..magenta(),
       },
     ),
   );
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await PushNotifications.init();
   initServiceLocator();
-  PushNotifications.init();
   await dotenv.load();
   runApp(
     ProviderScope(
@@ -38,29 +40,30 @@ void main() async {
           talker: talker!,
         ),
       ],
-      child: MyApp(),
+      child: QuotelyApp(),
     ),
   );
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class QuotelyApp extends StatefulWidget {
+  const QuotelyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<QuotelyApp> createState() => _QuotelyAppState();
 
   //https://gist.github.com/ben-xx/10000ed3bf44e0143cf0fe7ac5648254
   // ignore: library_private_types_in_public_api
-  static _MyAppState of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>()!;
+  static _QuotelyAppState of(BuildContext context) =>
+      context.findAncestorStateOfType<_QuotelyAppState>()!;
 }
 
-class _MyAppState extends State<MyApp> {
+class _QuotelyAppState extends State<QuotelyApp> {
   ThemeMode _themeMode = ThemeMode.light;
   FlexScheme _flexScheme = kDefaultFlexTheme;
   bool _isBiometricEnabled = false;
   bool _isGridView = true;
   SharedPreferences? _sharedPreferences;
+  final analytics = getIt.get<FirebaseAnalytics>();
 
   /// This is needed for components that may have a different theme data
   bool get isDarkMode => _themeMode == ThemeMode.dark;
@@ -73,13 +76,25 @@ class _MyAppState extends State<MyApp> {
       _isGridView = !_isGridView;
       _sharedPreferences?.setBool(kIsGridViewKey, _isGridView);
     });
+    // Added for Firebase Analytics
+    analytics.logEvent(
+      name: 'view_mode_toggled',
+      parameters: {'is_grid_view': _isGridView ? 'true' : 'false'},
+    );
   }
 
-  void changeBiometricEnabledEnabled(bool isisBiometricEnabled) {
+  void changeBiometricEnabledEnabled(bool isBiometricEnabled) {
     setState(() {
-      _isBiometricEnabled = isisBiometricEnabled;
-      _sharedPreferences?.setBool(kBiometricKey, isisBiometricEnabled);
+      _isBiometricEnabled = isBiometricEnabled;
+      _sharedPreferences?.setBool(kBiometricKey, isBiometricEnabled);
     });
+    // Added for Firebase Analytics
+    analytics.logEvent(
+      name: 'biometric_toggle_changed',
+      parameters: {
+        'is_biometric_enabled': isBiometricEnabled ? 'true' : 'false'
+      },
+    );
   }
 
   void changeFlexScheme(FlexScheme flexScheme) {
@@ -87,6 +102,11 @@ class _MyAppState extends State<MyApp> {
       _flexScheme = flexScheme;
       _sharedPreferences?.setString(kFlexSchemeKey, flexScheme.name);
     });
+    // Added for Firebase Analytics
+    analytics.logEvent(
+      name: 'color_scheme_changed',
+      parameters: {'flex_scheme': flexScheme.name},
+    );
   }
 
   void changeTheme(ThemeMode themeMode) {
@@ -94,6 +114,11 @@ class _MyAppState extends State<MyApp> {
       _themeMode = themeMode;
       _sharedPreferences?.setBool(kIsDarkModeKey, themeMode == ThemeMode.dark);
     });
+    // Added for Firebase Analytics
+    analytics.logEvent(
+      name: 'theme_changed',
+      parameters: {'theme_mode': themeMode.name},
+    );
   }
 
   void initializeSharedPreferences() async {

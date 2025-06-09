@@ -173,7 +173,9 @@ class _AuthorListState extends ConsumerState<AuthorList> {
                 itemCount: authors.length + (hasMoreData ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == authors.length) {
-                    return const SingleAuthorViewSkeletor();
+                    return Skeletonizer(
+                      child: const SingleAuthorViewSkeletor(),
+                    );
                   }
                   return SingleAuthorView(
                     index: index,
@@ -202,7 +204,9 @@ class _AuthorListState extends ConsumerState<AuthorList> {
                 itemCount: authors.length + 1,
                 itemBuilder: (context, index) {
                   if (index == authors.length) {
-                    return const SingleAuthorViewSkeletor();
+                    return Skeletonizer(
+                      child: const SingleAuthorViewSkeletor(),
+                    );
                   }
                   return SingleAuthorView(
                     index: index,

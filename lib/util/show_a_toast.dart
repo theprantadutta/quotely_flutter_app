@@ -13,7 +13,7 @@ const kDescriptionTextStyle = TextStyle(
   color: Colors.white,
 );
 
-showSuccessToast({
+void showSuccessToast({
   required BuildContext context,
   required String title,
   required String description,
@@ -31,7 +31,7 @@ showSuccessToast({
       barrierColor: Theme.of(context).primaryColor,
     ).show(context);
 
-showWarningToast({
+void showWarningToast({
   required BuildContext context,
   required String title,
   required String description,
@@ -48,7 +48,7 @@ showWarningToast({
       toastDuration: const Duration(seconds: 3),
     ).show(context);
 
-showErrorToast({
+void showErrorToast({
   required BuildContext context,
   required String title,
   required String description,

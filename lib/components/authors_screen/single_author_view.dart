@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/shared/circle_avatar_with_fallback.dart';
 import 'package:quotely_flutter_app/dtos/author_dto.dart';
 
+import '../../constants/colors.dart';
 import '../../constants/selectors.dart';
 import '../../screens/author_detail_screen.dart';
 
@@ -23,6 +24,26 @@ class SingleAuthorView extends StatelessWidget {
     final kPrimaryColor = theme.primaryColor;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: const [0.1, 0.9],
+          colors: [
+            Theme.of(context).primaryColor.withValues(alpha: 0.05),
+            kHelperColor.withValues(alpha: 0.05),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Material(
         borderRadius: BorderRadius.circular(16),
         color: kPrimaryColor.withValues(alpha: 0.05),
@@ -66,7 +87,7 @@ class SingleAuthorView extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onBackground,
+                          color: theme.colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -162,7 +183,7 @@ class SingleAuthorViewSkeletor extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onBackground,
+                          color: theme.colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

@@ -13,7 +13,7 @@ import '../../../components/settings_screen/settings_screen_layout.dart';
 import '../../../components/shared/top_navigation_bar.dart';
 import '../../../screens/settings_notification_screen.dart';
 import '../../../screens/settings_offline_support_screen.dart';
-import '../../services/common_service.dart';
+import '../support_us_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   static const kRouteName = '/settings';
@@ -172,7 +172,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  gotoAScreen(BuildContext context, String route) {
+  void gotoAScreen(BuildContext context, String route) {
     try {
       Future.delayed(Duration.zero, () async {
         context.push(route);
@@ -220,15 +220,14 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => gotoAScreen(
                         context, SettingsOfflineSupportScreen.kRouteName),
                   ),
-                  // Settings Add A Quote
+
+                  /// Donation
                   SettingsScreenLayout(
                     iconData: Icons.add_box_outlined,
-                    title: 'Add A Quote',
-                    description: 'Add A Quote with Authors and Tags',
+                    title: 'Support Us',
+                    description: 'Support Quotely',
                     onTap: () =>
-                        CommonService.showNotImplementedDialog(context),
-                    // onTap: () => gotoAScreen(
-                    //     context, SettingsOfflineSupportScreen.kRouteName),
+                        gotoAScreen(context, SupportUsScreen.kRouteName),
                   ),
                   // Settings About Quotely App
                   SettingsScreenLayout(
@@ -238,13 +237,13 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => showAboutSection(context),
                   ),
                   // Settings Reset Everything to default
-                  SettingsScreenLayout(
-                    iconData: Icons.notifications_active_outlined,
-                    title: 'Reset Settings',
-                    description: 'Reset All Settings to Default',
-                    onTap: () =>
-                        CommonService.showNotImplementedDialog(context),
-                  ),
+                  // SettingsScreenLayout(
+                  //   iconData: Icons.notifications_active_outlined,
+                  //   title: 'Reset Settings',
+                  //   description: 'Reset All Settings to Default',
+                  //   onTap: () =>
+                  //       CommonService.showNotImplementedDialog(context),
+                  // ),
                 ],
               ),
             ),

@@ -17,7 +17,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
     return Container(
-      height: MediaQuery.sizeOf(context).height * 0.8,
+      height: MediaQuery.sizeOf(context).height * 0.79,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(

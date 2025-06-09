@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/settings_screen/appearance/appearance_screen.dart';
@@ -10,12 +11,14 @@ import 'package:quotely_flutter_app/screens/tab_screens/facts_screen.dart';
 
 import '../screens/author_detail_screen.dart';
 import '../screens/daily_inspiration_list_screen.dart';
+import '../screens/support_us_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
 import '../screens/motivation_monday_screen.dart';
 import '../screens/settings_offline_support_screen.dart';
 import '../screens/tab_screens/favorites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
 import '../screens/tab_screens/settings_screen.dart';
+import '../service_locator/init_service_locators.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
 
 class AppNavigation {
@@ -41,6 +44,9 @@ class AppNavigation {
     initialLocation: initial,
     debugLogDiagnostics: true,
     navigatorKey: rootNavigatorKey,
+    observers: [
+      FirebaseAnalyticsObserver(analytics: getIt.get<FirebaseAnalytics>()),
+    ],
     routes: [
       // /// OnBoardingScreen
       // GoRoute(
@@ -247,6 +253,16 @@ class AppNavigation {
             authorSlug: authorSlug,
           );
         },
+      ),
+
+      /// Donation screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: SupportUsScreen.kRouteName,
+        name: "Donation",
+        builder: (context, state) => SupportUsScreen(
+          key: state.pageKey,
+        ),
       ),
     ],
   );
