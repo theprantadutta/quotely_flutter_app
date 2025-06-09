@@ -107,7 +107,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
       appBar: AppBar(
         title: const Text('Support Us'),
         centerTitle: true,
-        backgroundColor: theme.scaffoldBackgroundColor,
+        backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
         elevation: 0,
       ),
       body: Container(

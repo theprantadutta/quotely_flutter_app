@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
 import 'constants/selectors.dart';
@@ -15,6 +16,8 @@ import 'constants/shared_preference_keys.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
+import 'services/app_info_service.dart';
+import 'services/app_service.dart';
 
 Talker? talker;
 
@@ -70,6 +73,55 @@ class _QuotelyAppState extends State<QuotelyApp> {
   FlexScheme get flexScheme => _flexScheme;
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get isGridView => _isGridView;
+
+  Future<void> checkForMaintenanceAndAppUpdate() async {
+    debugPrint('Running checkForMaintenanceAndAppUpdate...');
+
+    // A check to ensure the widget is still mounted before showing dialogs.
+    if (!mounted) return;
+
+    try {
+      // --- Step 1: Check for Maintenance (Keeping your existing logic) ---
+      // We still check for maintenance first - this is a great practice.
+      final appUpdateInfo = await AppInfoService().getAppUpdateInfo();
+      final maintenanceBreak = appUpdateInfo.maintenanceBreak;
+      debugPrint('Maintenance Break: $maintenanceBreak');
+
+      if (maintenanceBreak && mounted) {
+        debugPrint('Maintenance Break is active, showing dialog...');
+        await AppService.showMaintenanceDialog(context);
+        return; // Stop further execution if in maintenance
+      }
+
+      // --- Step 2: Check for an App Update using the in_app_update package ---
+      // This talks directly to the Google Play Store.
+      debugPrint("Checking for update via in_app_update package...");
+      final AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
+
+      // If an update is available...
+      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+        debugPrint("Update available. Starting flexible update flow.");
+
+        // Start a user-friendly flexible update.
+        // This downloads the update in the background while the user can still use the app.
+        await InAppUpdate.startFlexibleUpdate();
+
+        // Once the download is complete, this line will trigger a snackbar
+        // prompting the user to restart the app to complete the installation.
+        await InAppUpdate.completeFlexibleUpdate();
+
+        debugPrint("Flexible update flow completed.");
+      } else {
+        debugPrint("No update available.");
+      }
+
+      // Your old code for manual version comparison is no longer needed for the update check.
+      // The `in_app_update` package handles this automatically.
+    } catch (e) {
+      debugPrint('Something went wrong during the check: $e');
+      // You can optionally show a non-intrusive error message here if needed.
+    }
+  }
 
   void toggleGridViewEnabled() {
     setState(() {
@@ -165,6 +217,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
     super.initState();
     setOptimalDisplayMode();
     initializeSharedPreferences();
+    Future.microtask(() => checkForMaintenanceAndAppUpdate());
   }
 
   @override
