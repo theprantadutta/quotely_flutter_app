@@ -1,15 +1,18 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
 import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
 import '../../components/shared/something_went_wrong.dart';
+import '../../constants/colors.dart';
 import '../../main.dart';
 import '../../riverpods/all_quote_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
@@ -17,6 +20,7 @@ import '../../services/drift_fact_service.dart';
 import '../../services/drift_quote_service.dart';
 import '../../state_providers/favorite_fact_ids.dart';
 import '../../state_providers/favorite_quote_ids.dart';
+import '../legal_content_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const kRouteName = '/home';
@@ -44,6 +48,173 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     FlutterNativeSplash.remove();
     _fetchQuotes();
     addAllFavoriteIds();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _checkAndShowTermsDialog());
+  }
+
+  Future<void> _checkAndShowTermsDialog() async {
+    const String termsKey =
+        'hasAcceptedTermsV2'; // Use a new key if the logic changes
+    final prefs = await SharedPreferences.getInstance();
+
+    final bool hasAccepted = prefs.getBool(termsKey) ?? false;
+    if (hasAccepted) {
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    bool isChecked = false;
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        // Use a StatefulBuilder so the dialog can manage the checkbox state.
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            void openLegalScreen(String title, String filePath) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => LegalContentScreen(
+                    title: title,
+                    markdownFile: filePath,
+                  ),
+                ),
+              );
+            }
+
+            return AlertDialog(
+              title: const Text('Welcome to Quotely!'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                        'Before you begin, please review our policies. By continuing, you agree to our terms.'),
+                    const SizedBox(height: 16),
+                    // This RichText widget makes the links tappable
+                    RichText(
+                      text: TextSpan(
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        children: [
+                          const TextSpan(text: 'I have read and agree to the '),
+                          TextSpan(
+                            text: 'Terms & Conditions',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => openLegalScreen(
+                                  'Terms & Conditions',
+                                  'assets/legal/terms.md'),
+                          ),
+                          const TextSpan(text: ' and '),
+                          TextSpan(
+                            text: 'Privacy Policy',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => openLegalScreen(
+                                  'Privacy & Policy',
+                                  'assets/legal/privacy.md'),
+                          ),
+                          const TextSpan(text: '.'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // The single checkbox for acceptance
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isChecked,
+                          onChanged: (bool? value) {
+                            setDialogState(() {
+                              isChecked = value ?? false;
+                            });
+                          },
+                        ),
+                        const Expanded(
+                          child: Text("I understand and accept."),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                // ElevatedButton(
+                //   style: ElevatedButton.styleFrom(
+                //     minimumSize: const Size(double.infinity, 45),
+                //   ),
+                //   // The button is disabled until the user checks the box
+                //   onPressed: isChecked
+                //       ? () async {
+                //           await prefs.setBool(termsKey, true);
+                //           Navigator.of(dialogContext).pop();
+                //         }
+                //       : null,
+                //   child: const Text('Continue to App'),
+                // ),
+                GestureDetector(
+                  onTap: isChecked
+                      ? () async {
+                          await prefs.setBool(termsKey, true);
+                          Navigator.of(dialogContext).pop();
+                        }
+                      : () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Please accept the terms and conditions.')),
+                          );
+                        },
+                  child: Container(
+                    width: double.infinity,
+                    height: 45,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      gradient: isChecked
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              stops: const [0.1, 0.9],
+                              colors: [
+                                Theme.of(context)
+                                    .primaryColor
+                                    .withValues(alpha: 0.5),
+                                kHelperColor.withValues(alpha: 0.5),
+                              ],
+                            )
+                          : LinearGradient(
+                              colors: [
+                                Colors.grey.shade400,
+                                Colors.grey.shade300,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Text(
+                      'Continue to App',
+                      style: TextStyle(
+                        color: isChecked
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _fetchQuotes() async {
