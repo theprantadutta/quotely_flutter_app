@@ -45,19 +45,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Todo: Fix this please
     FlutterNativeSplash.remove();
     _fetchQuotes();
     addAllFavoriteIds();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _checkAndShowTermsDialog());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _checkAndShowTermsDialog(),
+    );
   }
 
   Future<void> _checkAndShowTermsDialog() async {
     const String termsKey =
         'hasAcceptedTermsV2'; // Use a new key if the logic changes
-    final prefs = await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    final bool hasAccepted = prefs.getBool(termsKey) ?? false;
+    final bool hasAccepted = preferences.getBool(termsKey) ?? false;
     if (hasAccepted) {
       return;
     }
@@ -75,10 +77,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             void openLegalScreen(String title, String filePath) {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => LegalContentScreen(
-                    title: title,
-                    markdownFile: filePath,
-                  ),
+                  builder: (_) =>
+                      LegalContentScreen(title: title, markdownFile: filePath),
                 ),
               );
             }
@@ -91,7 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                        'Before you begin, please review our policies. By continuing, you agree to our terms.'),
+                      'Before you begin, please review our policies. By continuing, you agree to our terms.',
+                    ),
                     const SizedBox(height: 16),
                     // This RichText widget makes the links tappable
                     RichText(
@@ -102,23 +103,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           TextSpan(
                             text: 'Terms & Conditions',
                             style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                decoration: TextDecoration.underline),
+                              color: Theme.of(context).colorScheme.primary,
+                              decoration: TextDecoration.underline,
+                            ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => openLegalScreen(
-                                  'Terms & Conditions',
-                                  'assets/legal/terms.md'),
+                                    'Terms & Conditions',
+                                    'assets/legal/terms.md',
+                                  ),
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
                             text: 'Privacy Policy',
                             style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                decoration: TextDecoration.underline),
+                              color: Theme.of(context).colorScheme.primary,
+                              decoration: TextDecoration.underline,
+                            ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => openLegalScreen(
-                                  'Privacy & Policy',
-                                  'assets/legal/privacy.md'),
+                                    'Privacy & Policy',
+                                    'assets/legal/privacy.md',
+                                  ),
                           ),
                           const TextSpan(text: '.'),
                         ],
@@ -136,39 +141,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             });
                           },
                         ),
-                        const Expanded(
-                          child: Text("I understand and accept."),
-                        )
+                        const Expanded(child: Text("I understand and accept.")),
                       ],
                     ),
                   ],
                 ),
               ),
               actions: <Widget>[
-                // ElevatedButton(
-                //   style: ElevatedButton.styleFrom(
-                //     minimumSize: const Size(double.infinity, 45),
-                //   ),
-                //   // The button is disabled until the user checks the box
-                //   onPressed: isChecked
-                //       ? () async {
-                //           await prefs.setBool(termsKey, true);
-                //           Navigator.of(dialogContext).pop();
-                //         }
-                //       : null,
-                //   child: const Text('Continue to App'),
-                // ),
                 GestureDetector(
                   onTap: isChecked
                       ? () async {
-                          await prefs.setBool(termsKey, true);
+                          await preferences.setBool(termsKey, true);
                           Navigator.of(dialogContext).pop();
                         }
                       : () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text(
-                                    'Please accept the terms and conditions.')),
+                              content: Text(
+                                'Please accept the terms and conditions.',
+                              ),
+                            ),
                           );
                         },
                   child: Container(
@@ -182,9 +174,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               end: Alignment.bottomRight,
                               stops: const [0.1, 0.9],
                               colors: [
-                                Theme.of(context)
-                                    .primaryColor
-                                    .withValues(alpha: 0.5),
+                                Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.5),
                                 kHelperColor.withValues(alpha: 0.5),
                               ],
                             )
@@ -234,11 +226,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
-      final newQuotes = await ref.read(fetchAllQuotesProvider(
-        quotePageNumber,
-        quotePageSize,
-        allSelectedTags,
-      ).future);
+      final newQuotes = await ref.read(
+        fetchAllQuotesProvider(
+          quotePageNumber,
+          quotePageSize,
+          allSelectedTags,
+        ).future,
+      );
       setState(() {
         hasMoreData = newQuotes.quotes.length == quotePageSize;
         quotePageNumber++;
@@ -250,10 +244,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Analytics: Log fetch failure
       analytics.logEvent(
         name: 'quote_fetch_failed',
-        parameters: {
-          'page_number': quotePageNumber,
-          'error': e.toString(),
-        },
+        parameters: {'page_number': quotePageNumber, 'error': e.toString()},
       );
       if (mounted) {
         setState(() {
@@ -283,10 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isGridView = QuotelyApp.of(context).isGridView;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 10,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Column(
           children: [
             HomeScreenTopBar(
@@ -303,10 +291,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 allSelectedTags: allSelectedTags,
                 onSelectedTagChange: (String currentTag) async {
                   // Analytics: Log filter change event
-                  analytics.logEvent(name: 'quote_filter_changed', parameters: {
-                    'toggled_tag': currentTag,
-                    'all_selected_tags': allSelectedTags.join(','),
-                  });
+                  analytics.logEvent(
+                    name: 'quote_filter_changed',
+                    parameters: {
+                      'toggled_tag': currentTag,
+                      'all_selected_tags': allSelectedTags.join(','),
+                    },
+                  );
                   setState(() {
                     if (allSelectedTags.contains(currentTag)) {
                       allSelectedTags.remove(currentTag);

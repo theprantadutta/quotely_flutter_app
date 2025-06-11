@@ -29,7 +29,6 @@ dependencies:
   path_provider: ^2.1.5
   flutter_displaymode: ^0.6.0
   intl: ^0.20.1
-  flutter_native_splash: ^2.4.2
   package_info_plus: ^8.1.1
   flutter_dotenv: ^5.2.1
   firebase_analytics: ^11.4.6
@@ -59,7 +58,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  flutter_native_splash: ^2.4.2
   flutter_lints: ^6.0.0
   lint_staged: ^0.5.1
   husky: ^0.1.7

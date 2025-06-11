@@ -3,13 +3,13 @@ flutter_native_splash:
   # color_dark: "#e1f5fe"
   # image: assets/images/splash.png
   # image_dark: assets/images/splash.png
-  background_image: assets/images/splash_bg.png
-  background_image_dark: assets/images/splash_bg.png
+  background_image: assets/quotely_logo.png
+  background_image_dark: assets/quotely_logo.png
   android_gravity: fill
   fullscreen: true
   # branding: assets/images/branding.png
   android_12: 
-    image: assets/images/android_12_splash.png
+    image: assets/quotely_logo.png
     color: "#ffffff"
     color_dark: "#000000"
     # branding: assets/images/branding.png
