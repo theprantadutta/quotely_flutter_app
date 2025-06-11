@@ -45,7 +45,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Todo: Fix this please
     FlutterNativeSplash.remove();
     _fetchQuotes();
     addAllFavoriteIds();
