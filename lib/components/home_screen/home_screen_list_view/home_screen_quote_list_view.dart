@@ -114,6 +114,14 @@ Shared via Quotely
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: kGetDefaultGradient(context),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Stack(
             children: [

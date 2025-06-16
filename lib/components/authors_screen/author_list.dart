@@ -41,6 +41,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
   }
 
   void _onSearchChanged() {
+    if (widget.authorSearchController.text.isEmpty) return;
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(
       const Duration(milliseconds: 500),

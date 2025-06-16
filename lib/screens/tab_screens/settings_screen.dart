@@ -56,7 +56,7 @@ class SettingsScreen extends StatelessWidget {
               const CircleAvatar(
                 radius: 60,
                 backgroundColor: Colors.transparent,
-                backgroundImage: AssetImage('assets/quotely_logo.png'),
+                backgroundImage: AssetImage('assets/quotely_icon.png'),
               ),
               const SizedBox(height: 20),
               Text(
@@ -197,8 +197,9 @@ class SettingsScreen extends StatelessWidget {
     final String markdownContent = await rootBundle.loadString(filePath);
     final theme = Theme.of(context);
 
-    if (!context.mounted)
+    if (!context.mounted) {
       return; // Always check if the widget is still in the tree
+    }
 
     await showDialog(
       context: context,

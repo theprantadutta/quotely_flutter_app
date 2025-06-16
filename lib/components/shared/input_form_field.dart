@@ -34,14 +34,14 @@ class InputFormField extends StatelessWidget {
           // Border when the TextField is enabled but not focused
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: kPrimaryColor,
+              color: kPrimaryColor.withValues(alpha: 0.3),
             ),
             borderRadius: BorderRadius.circular(10),
           ),
           // Border when the TextField is focused
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: kPrimaryColor,
+              color: kPrimaryColor.withValues(alpha: 0.3),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(10),
@@ -64,7 +64,7 @@ class InputFormField extends StatelessWidget {
           // Default border
           border: OutlineInputBorder(
             borderSide: BorderSide(
-              color: kPrimaryColor,
+              color: kPrimaryColor.withValues(alpha: 0.3),
             ),
             borderRadius: BorderRadius.circular(10),
           ),

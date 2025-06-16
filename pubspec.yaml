@@ -74,6 +74,7 @@ flutter:
   assets:
     - assets/
     - assets/legal/
+    - assets/splash/
     - .env
 
 lint_staged:
