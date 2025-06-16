@@ -1,3 +1,62 @@
+Of course, bro. Let's switch from external links to the official Google Play In-App Purchase system. This is the most professional and secure way to handle this, and it's fully compliant with Google's policies.
+
+You're right—you don't need to provide any premium features. We will sell "digital goods" that act as a thank you or a tip jar. The user gets the good feeling of supporting you, and that's the "product."
+
+This is a bit more involved than launching a URL, so I'll give you a complete guide: the necessary setup in the Google Play Console and the full, updated code for the screen.
+
+-----
+
+### **Part 1: Setup (CRITICAL - Do this before using the code)**
+
+This system will not work without setting things up in your Google Play Console first.
+
+**1. Add the Flutter Package:**
+Open your terminal and add the official package for in-app purchases:
+
+```bash
+flutter pub add in_app_purchase
+```
+
+**2. Add Billing Permission (Android):**
+Go to `android/app/src/main/AndroidManifest.xml` and make sure this permission is inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="com.android.vending.BILLING" />
+```
+
+**3. Create In-App Products in Google Play Console:**
+
+  * Go to your [Google Play Console](https://play.google.com/console/).
+
+  * Select your app, then in the left menu, go to **Monetize \> In-app products**.
+
+  * Click **"Create product"** and create two separate products:
+
+      * **Product 1:**
+
+          * **Product ID:** `support_the_dev_1` (must be exact)
+          * **Name:** `Support the Dev`
+          * **Description:** `A small contribution to support the ongoing development of Quotely.`
+          * **Price:** Set a price (e.g., the equivalent of $5 USD).
+
+      * **Product 2:**
+
+          * **Product ID:** `buy_me_a_coffee_1` (must be exact)
+          * **Name:** `Buy Me a Coffee`
+          * **Description:** `If you enjoy Quotely, you can buy me a virtual coffee to show your appreciation!`
+          * **Price:** Set a price (e.g., the equivalent of $2 USD).
+
+  * For both products, make sure they are **"Managed product"** (one-time purchase) and set them to **Active**.
+
+-----
+
+### **Part 2: The Full UI Code**
+
+Replace your entire `support_us_screen.dart` file with this new version. It's been completely refactored to handle the entire in-app purchase lifecycle: loading products, handling purchases, and listening for updates.
+
+#### `lib/screens/support_us_screen.dart`
+
+```dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -17,7 +76,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
 
   // The IDs for our in-app products, matching the Play Console
   final Set<String> _productIds = {'support_the_dev_1', 'buy_me_a_coffee_1'};
-
+  
   List<ProductDetails> _products = [];
   bool _loading = true;
   String _statusMessage = 'Loading support options...';
@@ -25,8 +84,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   @override
   void initState() {
     super.initState();
-    final Stream<List<PurchaseDetails>> purchaseUpdated =
-        _inAppPurchase.purchaseStream;
+    final Stream<List<PurchaseDetails>> purchaseUpdated = _inAppPurchase.purchaseStream;
     // Listen to the stream for purchase updates
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
       _listenToPurchaseUpdated(purchaseDetailsList);
@@ -62,8 +120,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   }
 
   Future<void> _loadProducts() async {
-    final ProductDetailsResponse response =
-        await _inAppPurchase.queryProductDetails(_productIds);
+    final ProductDetailsResponse response = await _inAppPurchase.queryProductDetails(_productIds);
     if (response.notFoundIDs.isNotEmpty) {
       _statusMessage = 'Products not found. Check your Play Console setup.';
     }
@@ -80,10 +137,8 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
       } else {
         if (purchaseDetails.status == PurchaseStatus.error) {
           // Handle error
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Purchase failed. Please try again.')));
-        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
-            purchaseDetails.status == PurchaseStatus.restored) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Purchase failed. Please try again.')));
+        } else if (purchaseDetails.status == PurchaseStatus.purchased || purchaseDetails.status == PurchaseStatus.restored) {
           // Handle successful purchase
           _handleSuccessfulPurchase(purchaseDetails);
         }
@@ -103,19 +158,15 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   }
 
   void _buyProduct(ProductDetails productDetails) {
-    final PurchaseParam purchaseParam =
-        PurchaseParam(productDetails: productDetails);
+    final PurchaseParam purchaseParam = PurchaseParam(productDetails: productDetails);
     // This will open the Google Play purchase sheet
     _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
   }
 
   void _shareApp(BuildContext context) {
-    const String appShareLink =
-        'https://play.google.com/store/apps/details?id=com.pranta.quotely_flutter_app';
-    const String shareMessage =
-        'Check out Quotely! A beautiful app for daily quotes and inspiration:';
-    Share.share('$shareMessage $appShareLink',
-        subject: 'Check out the Quotely App!');
+    const String appShareLink = 'https://play.google.com/store/apps/details?id=com.pranta.quotely_flutter_app';
+    const String shareMessage = 'Check out Quotely! A beautiful app for daily quotes and inspiration:';
+    Share.share('$shareMessage $appShareLink', subject: 'Check out the Quotely App!');
   }
 
   @override
@@ -123,16 +174,14 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     final theme = Theme.of(context);
 
     // Find our specific products from the loaded list
-    final ProductDetails? supportProduct =
-        _products.cast<ProductDetails?>().firstWhere(
-              (p) => p?.id == 'support_the_dev_1',
-              orElse: () => null,
-            );
-    final ProductDetails? coffeeProduct =
-        _products.cast<ProductDetails?>().firstWhere(
-              (p) => p?.id == 'buy_me_a_coffee_1',
-              orElse: () => null,
-            );
+    final ProductDetails? supportProduct = _products.cast<ProductDetails?>().firstWhere(
+          (p) => p?.id == 'support_the_dev_1',
+          orElse: () => null,
+    );
+    final ProductDetails? coffeeProduct = _products.cast<ProductDetails?>().firstWhere(
+          (p) => p?.id == 'buy_me_a_coffee_1',
+          orElse: () => null,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -141,12 +190,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
         elevation: 0,
       ),
       body: _loading
-          ? Center(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(_statusMessage)
-            ]))
+          ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [const CircularProgressIndicator(), const SizedBox(height: 16), Text(_statusMessage)]))
           : CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
@@ -157,26 +201,19 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                         const SizedBox(height: 10),
                         ShaderMask(
                           shaderCallback: (bounds) => LinearGradient(
-                            colors: [
-                              theme.colorScheme.primary,
-                              theme.colorScheme.secondary
-                            ],
+                            colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ).createShader(bounds),
-                          child: const Icon(Icons.volunteer_activism,
-                              size: 80, color: Colors.white),
+                          child: const Icon(Icons.volunteer_activism, size: 80, color: Colors.white),
                         ),
                         const SizedBox(height: 20),
-                        Text('Support Our Journey',
-                            style: theme.textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        Text('Support Our Journey', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
                         Text(
                           'Quotely is a passion project. Your support helps us dedicate more time to new features and keep the app free for everyone.',
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant),
+                          style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                         const SizedBox(height: 30),
                       ],
@@ -194,8 +231,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                           icon: Icons.favorite_rounded,
                           iconColor: Colors.pink.shade400,
                           title: supportProduct.title,
-                          subtitle:
-                              '${supportProduct.description} (${supportProduct.price})',
+                          subtitle: '${supportProduct.description} (${supportProduct.price})',
                           onTap: () => _buyProduct(supportProduct),
                         ),
                       if (coffeeProduct != null)
@@ -204,8 +240,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                           icon: Icons.coffee_rounded,
                           iconColor: Colors.brown.shade400,
                           title: coffeeProduct.title,
-                          subtitle:
-                              '${coffeeProduct.description} (${coffeeProduct.price})',
+                          subtitle: '${coffeeProduct.description} (${coffeeProduct.price})',
                           onTap: () => _buyProduct(coffeeProduct),
                         ),
                       const SizedBox(height: 20),
@@ -270,13 +305,9 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title,
-                          style: theme.textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
-                      Text(subtitle,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant)),
+                      Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -289,3 +320,4 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     );
   }
 }
+```

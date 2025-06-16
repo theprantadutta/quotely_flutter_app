@@ -17,6 +17,8 @@
    <!-- To Install Package Update -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <uses-permission android:name="com.android.vending.BILLING" />
+
     <application
         android:label="Quotely"
         android:name="${applicationName}"
