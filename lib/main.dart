@@ -1,4 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -6,13 +7,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:in_app_update/in_app_update.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
 import 'constants/selectors.dart';
 import 'constants/shared_preference_keys.dart';
+import 'firebase_options.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
@@ -33,7 +35,10 @@ void main() async {
   );
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await PushNotifications.init();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  PushNotifications.init();
   initServiceLocator();
   await dotenv.load();
   runApp(

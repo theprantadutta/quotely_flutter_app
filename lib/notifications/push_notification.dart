@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -10,7 +9,6 @@ import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../firebase_options.dart';
 import '../navigation/app_navigation.dart';
 
 class PushNotifications {
@@ -19,10 +17,6 @@ class PushNotifications {
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // request notification permission
   static Future init() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
     FlutterError.onError = (errorDetails) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     };
@@ -199,7 +193,7 @@ class PushNotifications {
       'Quotely',
       channelDescription: 'Quotely Application',
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
       ticker: 'ticker',
       icon: '@mipmap/ic_launcher',
       showWhen: true,

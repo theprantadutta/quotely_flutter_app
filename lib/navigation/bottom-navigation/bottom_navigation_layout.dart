@@ -195,10 +195,10 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/constants/selectors.dart';
 import 'package:quotely_flutter_app/navigation/bottom-navigation/bottom_destinations.dart';
-import 'package:flutter/services.dart';
 
 class BottomNavigationLayout extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -283,7 +283,6 @@ class BottomNavigationLayout extends StatelessWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
               gradient: kGetDefaultGradient(context),
               boxShadow: [
                 BoxShadow(
