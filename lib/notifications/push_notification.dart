@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -17,15 +16,6 @@ class PushNotifications {
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   // request notification permission
   static Future init() async {
-    FlutterError.onError = (errorDetails) {
-      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-    };
-    // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
-
     // On background notification tapped
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? message) {
       if (message == null) return; // Exit early if message is null
