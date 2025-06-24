@@ -1,3 +1,5 @@
+const kThemeModeKey = 'theme_mode_key';
+const kFontFamilyKey = 'font_family_key';
 const kIsDarkModeKey = 'is_dark_mode_key';
 const kFlexSchemeKey = 'is_flex_scheme_key';
 const kBiometricKey = 'biometric_key';

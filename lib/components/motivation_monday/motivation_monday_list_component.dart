@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../components/quote_of_the_day_list_screen/single_quote_of_the_day.dart';
-import '../../components/quote_of_the_day_screen/single_quote_of_the_component.dart';
 import '../../dtos/motivation_monday_dto.dart';
 import '../../riverpods/all_motivation_monday_provider.dart';
 
@@ -113,7 +112,8 @@ class _MotivationMondayListComponentState
               itemCount: quotes.length + (hasMoreData ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
-                  return const SingleQuoteOfTheComponentSkeletor();
+                  return Skeletonizer(
+                      child: const SingleQuoteOfTheDaySkeletor());
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(
@@ -134,7 +134,7 @@ class _MotivationMondayListComponentState
                 child: ListView.builder(
                   itemCount: 10,
                   itemBuilder: (context, index) =>
-                      const SingleQuoteOfTheComponentSkeletor(),
+                      const SingleQuoteOfTheDaySkeletor(),
                 ),
               );
             }
@@ -143,7 +143,8 @@ class _MotivationMondayListComponentState
               itemCount: quotes.length + 1,
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
-                  return const SingleQuoteOfTheComponentSkeletor();
+                  return Skeletonizer(
+                      child: const SingleQuoteOfTheDaySkeletor());
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(

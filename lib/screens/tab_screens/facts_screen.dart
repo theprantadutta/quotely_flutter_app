@@ -117,6 +117,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
                     }
                     factPageNumber = 1;
                     aiFacts = [];
+                    hasMoreData = true;
                   });
                   ref.invalidate(fetchAllFactsProvider);
                   await _fetchFacts();

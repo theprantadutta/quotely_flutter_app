@@ -112,7 +112,8 @@ class _QuoteOfTheDayListComponentState
               itemCount: quotes.length + (hasMoreData ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
-                  return const SingleQuoteOfTheDaySkeletor();
+                  return Skeletonizer(
+                      child: const SingleQuoteOfTheDaySkeletor());
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(
@@ -142,7 +143,8 @@ class _QuoteOfTheDayListComponentState
               itemCount: quotes.length + 1,
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
-                  return const SingleQuoteOfTheDaySkeletor();
+                  return Skeletonizer(
+                      child: const SingleQuoteOfTheDaySkeletor());
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(

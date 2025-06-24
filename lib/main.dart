@@ -79,14 +79,17 @@ class QuotelyApp extends StatefulWidget {
 class _QuotelyAppState extends State<QuotelyApp> {
   ThemeMode _themeMode = ThemeMode.light;
   FlexScheme _flexScheme = kDefaultFlexTheme;
+  ThemeMode get themeMode => _themeMode;
   bool _isBiometricEnabled = false;
   bool _isGridView = true;
   SharedPreferences? _sharedPreferences;
+  String _fontFamily = 'Fira Code';
   final analytics = getIt.get<FirebaseAnalytics>();
 
   /// This is needed for components that may have a different theme data
   bool get isDarkMode => _themeMode == ThemeMode.dark;
   FlexScheme get flexScheme => _flexScheme;
+  String get fontFamily => _fontFamily;
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get isGridView => _isGridView;
 
@@ -139,6 +142,17 @@ class _QuotelyAppState extends State<QuotelyApp> {
     }
   }
 
+  void changeFontFamily(String newFontFamily) {
+    setState(() {
+      _fontFamily = newFontFamily;
+      _sharedPreferences?.setString(kFontFamilyKey, newFontFamily);
+    });
+    analytics.logEvent(
+      name: 'font_family_changed',
+      parameters: {'font_family': newFontFamily},
+    );
+  }
+
   void toggleGridViewEnabled() {
     setState(() {
       _isGridView = !_isGridView;
@@ -180,7 +194,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
   void changeTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;
-      _sharedPreferences?.setBool(kIsDarkModeKey, themeMode == ThemeMode.dark);
+      _sharedPreferences?.setString(kThemeModeKey, themeMode.name);
     });
     // Added for Firebase Analytics
     analytics.logEvent(
@@ -191,20 +205,42 @@ class _QuotelyAppState extends State<QuotelyApp> {
 
   void initializeSharedPreferences() async {
     _sharedPreferences = await SharedPreferences.getInstance();
+    if (!mounted) return;
+
+    // --- load the saved font family ---
+    final savedFont = _sharedPreferences?.getString(kFontFamilyKey);
+    if (savedFont != null) {
+      setState(() => _fontFamily = savedFont);
+    }
+
+    // Grid View
     final isGridView = _sharedPreferences?.getBool(kIsGridViewKey);
     if (isGridView != null) {
       setState(() => _isGridView = isGridView);
     }
-    final isDarkMode = _sharedPreferences?.getBool(kIsDarkModeKey);
-    if (isDarkMode != null) {
-      setState(
-        () => _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light,
+
+    // Theme Mode (Light/System/Dark)
+    final themeModeName = _sharedPreferences?.getString(kThemeModeKey);
+    if (themeModeName != null) {
+      final themeMode = ThemeMode.values.firstWhere(
+        (e) => e.name == themeModeName,
+        orElse: () =>
+            ThemeMode.light, // Default to light if saved value is invalid
       );
+      setState(() => _themeMode = themeMode);
     }
-    final flexScheme = _sharedPreferences?.getString(kFlexSchemeKey);
-    if (flexScheme != null) {
-      setState(() => _flexScheme = FlexScheme.values.byName(flexScheme));
+
+    // Color Scheme
+    final flexSchemeName = _sharedPreferences?.getString(kFlexSchemeKey);
+    if (flexSchemeName != null) {
+      final flexScheme = FlexScheme.values.firstWhere(
+        (e) => e.name == flexSchemeName,
+        orElse: () => kDefaultFlexTheme, // Use your default theme
+      );
+      setState(() => _flexScheme = flexScheme);
     }
+
+    // Biometric
     final isFingerPrintEnabled = _sharedPreferences?.getBool(kBiometricKey);
     if (isFingerPrintEnabled != null) {
       setState(() => _isBiometricEnabled = isFingerPrintEnabled);
@@ -233,7 +269,10 @@ class _QuotelyAppState extends State<QuotelyApp> {
     super.initState();
     setOptimalDisplayMode();
     initializeSharedPreferences();
-    Future.microtask(() => checkForMaintenanceAndAppUpdate());
+    // Use addPostFrameCallback to ensure context is available for the dialog
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkForMaintenanceAndAppUpdate();
+    });
   }
 
   @override
@@ -244,12 +283,12 @@ class _QuotelyAppState extends State<QuotelyApp> {
       theme: FlexThemeData.light(
         scheme: _flexScheme,
         useMaterial3: true,
-        fontFamily: GoogleFonts.firaCode().fontFamily,
+        fontFamily: GoogleFonts.getFont(_fontFamily).fontFamily,
       ),
       darkTheme: FlexThemeData.dark(
         scheme: _flexScheme,
         useMaterial3: true,
-        fontFamily: GoogleFonts.firaCode().fontFamily,
+        fontFamily: GoogleFonts.getFont(_fontFamily).fontFamily,
       ).copyWith(
         brightness: Brightness.dark,
       ),

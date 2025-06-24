@@ -8,13 +8,15 @@ import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/facts_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screens/author_detail_screen.dart';
 import '../screens/daily_inspiration_list_screen.dart';
-import '../screens/support_us_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
 import '../screens/motivation_monday_screen.dart';
+import '../screens/onboarding_screen.dart';
 import '../screens/settings_offline_support_screen.dart';
+import '../screens/support_us_screen.dart';
 import '../screens/tab_screens/favorites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
 import '../screens/tab_screens/settings_screen.dart';
@@ -48,15 +50,15 @@ class AppNavigation {
       FirebaseAnalyticsObserver(analytics: getIt.get<FirebaseAnalytics>()),
     ],
     routes: [
-      // /// OnBoardingScreen
-      // GoRoute(
-      //   parentNavigatorKey: rootNavigatorKey,
-      //   path: OnBoardingScreen.route,
-      //   name: "OnBoarding",
-      //   builder: (context, state) => OnBoardingScreen(
-      //     key: state.pageKey,
-      //   ),
-      // ),
+      /// OnBoardingScreen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: OnboardingScreen.kRouteName,
+        name: "OnBoarding",
+        builder: (context, state) => OnboardingScreen(
+          key: state.pageKey,
+        ),
+      ),
 
       // /// OnBoardingThemeScreen
       // GoRoute(
@@ -70,6 +72,21 @@ class AppNavigation {
 
       /// MainWrapper
       StatefulShellRoute.indexedStack(
+        redirect: (context, state) async {
+          // Check if the onboarding screen has been shown before
+          final preferences = await SharedPreferences.getInstance();
+          final onboardingShown =
+              preferences.getBool('onboardingShown') ?? false;
+
+          // If onboarding wasn't shown, show it and set the flag to true
+          if (!onboardingShown) {
+            await preferences.setBool('onboardingShown', true);
+            return OnboardingScreen.kRouteName; // Redirect to Onboarding screen
+          }
+
+          // No redirection needed if none of the conditions apply
+          return null;
+        },
         builder: (context, state, navigationShell) {
           return BottomNavigationLayout(
             navigationShell: navigationShell,
