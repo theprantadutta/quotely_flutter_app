@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/settings_screen/appearance/appearance_screen.dart';
 import 'package:quotely_flutter_app/screens/daily_inspiration_screen.dart';
+import 'package:quotely_flutter_app/screens/fact_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
@@ -12,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screens/author_detail_screen.dart';
 import '../screens/daily_inspiration_list_screen.dart';
+import '../screens/fact_of_the_day_list_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
 import '../screens/motivation_monday_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -182,6 +184,26 @@ class AppNavigation {
         path: QuoteOfTheDayListScreen.kRouteName,
         name: "Quote of the Day List",
         builder: (context, state) => QuoteOfTheDayListScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View Quote of the Day Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: FactOfTheDayScreen.kRouteName,
+        name: "Fact of the Day",
+        builder: (context, state) => FactOfTheDayScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View all Quote of the Day Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: FactOfTheDayListScreen.kRouteName,
+        name: "Fact of the Day List",
+        builder: (context, state) => FactOfTheDayListScreen(
           key: state.pageKey,
         ),
       ),

@@ -9,3 +9,6 @@ const kNotificationEnabled = 'notification-enabled';
 const kNotificationMotivation = 'notification-motivation';
 const kNotificationDailyInspiration = 'notification-daily-inspiration';
 const kNotificationQuoteOfTheDay = 'notification-quote-of-the-week';
+const kNotificationFactOfTheDay = 'notification-fact-of-the-day';
+const kNotificationDailyBrainFood = 'notification-daily-brain-food';
+const kNotificationWeirdFactWednesday = 'notification-weird-fact-wednesday';
