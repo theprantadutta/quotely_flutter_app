@@ -52,7 +52,7 @@ dependencies:
   talker_flutter: ^4.7.5
   talker_dio_logger: ^4.7.5
   talker_riverpod_logger: ^4.7.5
-  share_plus: ^10.1.4
+  share_plus: ^11.0.0
   in_app_update: ^4.2.3
   flutter_markdown_plus: ^1.0.3
   in_app_purchase: ^3.2.3

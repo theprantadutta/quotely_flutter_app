@@ -21,8 +21,6 @@ import 'firebase_options.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
-import 'services/app_info_service.dart';
-import 'services/app_service.dart';
 
 Talker? talker;
 
@@ -50,8 +48,8 @@ void main() async {
     return true;
   };
   PushNotifications.init();
-  initServiceLocator();
   await dotenv.load();
+  initServiceLocator();
   runApp(
     ProviderScope(
       observers: [
@@ -102,15 +100,15 @@ class _QuotelyAppState extends State<QuotelyApp> {
     try {
       // --- Step 1: Check for Maintenance (Keeping your existing logic) ---
       // We still check for maintenance first - this is a great practice.
-      final appUpdateInfo = await AppInfoService().getAppUpdateInfo();
-      final maintenanceBreak = appUpdateInfo.maintenanceBreak;
-      debugPrint('Maintenance Break: $maintenanceBreak');
+      // final appUpdateInfo = await AppInfoService().getAppUpdateInfo();
+      // final maintenanceBreak = appUpdateInfo.maintenanceBreak;
+      // debugPrint('Maintenance Break: $maintenanceBreak');
 
-      if (maintenanceBreak && mounted) {
-        debugPrint('Maintenance Break is active, showing dialog...');
-        await AppService.showMaintenanceDialog(context);
-        return; // Stop further execution if in maintenance
-      }
+      // if (maintenanceBreak && mounted) {
+      //   debugPrint('Maintenance Break is active, showing dialog...');
+      //   await AppService.showMaintenanceDialog(context);
+      //   return; // Stop further execution if in maintenance
+      // }
 
       // --- Step 2: Check for an App Update using the in_app_update package ---
       // This talks directly to the Google Play Store.

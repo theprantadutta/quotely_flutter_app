@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/settings_screen/appearance/appearance_screen.dart';
+import 'package:quotely_flutter_app/screens/daily_brain_food_screen.dart';
 import 'package:quotely_flutter_app/screens/daily_inspiration_screen.dart';
 import 'package:quotely_flutter_app/screens/fact_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
@@ -9,9 +10,11 @@ import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
 import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
 import 'package:quotely_flutter_app/screens/tab_screens/facts_screen.dart';
+import 'package:quotely_flutter_app/screens/weird_fact_wednesday_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screens/author_detail_screen.dart';
+import '../screens/daily_brain_food_list_screen.dart';
 import '../screens/daily_inspiration_list_screen.dart';
 import '../screens/fact_of_the_day_list_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
@@ -22,6 +25,7 @@ import '../screens/support_us_screen.dart';
 import '../screens/tab_screens/favorites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
 import '../screens/tab_screens/settings_screen.dart';
+import '../screens/weird_fact_wednesday_list_screen.dart';
 import '../service_locator/init_service_locators.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
 
@@ -188,7 +192,7 @@ class AppNavigation {
         ),
       ),
 
-      /// View Quote of the Day Screen
+      /// View Fact of the Day Screen
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
         path: FactOfTheDayScreen.kRouteName,
@@ -198,7 +202,7 @@ class AppNavigation {
         ),
       ),
 
-      /// View all Quote of the Day Screen
+      /// View all Fact of the Day Screen
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
         path: FactOfTheDayListScreen.kRouteName,
@@ -228,6 +232,26 @@ class AppNavigation {
         ),
       ),
 
+      /// View Daily Brain Food Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: DailyBrainFoodScreen.kRouteName,
+        name: "Daily Brain Food",
+        builder: (context, state) => DailyBrainFoodScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View all Daily Brain Food Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: DailyBrainFoodListScreen.kRouteName,
+        name: "Daily Brain Food List",
+        builder: (context, state) => DailyBrainFoodListScreen(
+          key: state.pageKey,
+        ),
+      ),
+
       /// View Motivation Monday Screen
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
@@ -244,6 +268,26 @@ class AppNavigation {
         path: MotivationMondayListScreen.kRouteName,
         name: "Monday Motivation List",
         builder: (context, state) => MotivationMondayListScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View Weird Fact Wednesday Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: WeirdFactWednesdayScreen.kRouteName,
+        name: "Weird Fact Wednesday",
+        builder: (context, state) => WeirdFactWednesdayScreen(
+          key: state.pageKey,
+        ),
+      ),
+
+      /// View all Weird Fact Wednesday Screen
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: WeirdFactWednesdayListScreen.kRouteName,
+        name: "Weird Fact Wednesday List",
+        builder: (context, state) => WeirdFactWednesdayListScreen(
           key: state.pageKey,
         ),
       ),

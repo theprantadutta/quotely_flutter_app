@@ -17,36 +17,35 @@ class FactNotificationScreenLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final kPrimaryColor = theme.colorScheme.primary;
-
+    final kPrimaryColor = Theme.of(context).primaryColor;
     return MainLayout(
       title: title,
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        padding: const EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: 10,
+        ),
         child: Column(
           children: [
-            // Use an Expanded widget to allow the fact component to fill the space
-            Expanded(
-              child: factWidget,
-            ),
-            const SizedBox(height: 16),
-            // The "See All" button
+            factWidget,
             GestureDetector(
               onTap: () => context.push(allFactRoute),
               child: Container(
-                height: 50,
+                height: MediaQuery.sizeOf(context).height * 0.05,
+                margin: const EdgeInsets.only(top: 8, bottom: 5),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  border: Border.all(color: kPrimaryColor.withOpacity(0.5)),
+                  border: Border.all(
+                    color: kPrimaryColor.withValues(alpha: 0.5),
+                  ),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Center(
                   child: Text(
-                    'See All Facts',
+                    'See All $title',
                     style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                       color: kPrimaryColor,
                     ),
                   ),

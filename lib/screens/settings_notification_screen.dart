@@ -11,7 +11,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/notifications_screen/notification_screen_layout.dart';
 import '../constants/shared_preference_keys.dart';
+import 'daily_brain_food_screen.dart';
+import 'fact_of_the_day_screen.dart';
 import 'quote_of_the_day_screen.dart';
+import 'weird_fact_wednesday_screen.dart';
 
 class SettingsNotificationScreen extends StatefulWidget {
   static const kRouteName = '/settings-notification';
@@ -69,7 +72,7 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
       await _sharedPreferences?.setBool(kNotificationEnabled, value);
 
       if (value) {
-        await service.subscribeToTopic(topic);
+        await service.subscribeToAllTopic();
       } else {
         await service.unsubscribeFromAllTopic();
       }
@@ -105,175 +108,9 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
     }
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return MainLayout(
-  //     title: 'Notifications',
-  //     body: Padding(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: Column(
-  //         children: [
-  //           // --- Section 1: Manage Notification Content ---
-  //           _buildSectionHeader(context, "Manage Content"),
-  //           const SizedBox(height: 8),
-  //           _buildSectionContainer(
-  //             context: context,
-  //             children: [
-  //               NotificationScreenLayout(
-  //                 iconData: Icons.tips_and_updates_outlined,
-  //                 title: 'Quote of the Day',
-  //                 description: 'Manage quote of the day alerts',
-  //                 onTap: () =>
-  //                     gotoAScreen(context, QuoteOfTheDayScreen.kRouteName),
-  //               ),
-  //               const Divider(height: 1, indent: 16, endIndent: 16),
-  //               NotificationScreenLayout(
-  //                 iconData: Icons.lightbulb_outline_rounded,
-  //                 title: 'Daily Inspiration',
-  //                 description: 'Manage daily inspiration alerts',
-  //                 onTap: () =>
-  //                     gotoAScreen(context, DailyInspirationScreen.kRouteName),
-  //               ),
-  //               const Divider(height: 1, indent: 16, endIndent: 16),
-  //               NotificationScreenLayout(
-  //                 iconData: Icons.calendar_month_outlined,
-  //                 title: 'Monday Motivation',
-  //                 description: 'Manage Monday Motivation alerts',
-  //                 onTap: () =>
-  //                     gotoAScreen(context, MotivationMondayScreen.kRouteName),
-  //               ),
-  //             ],
-  //           ),
-
-  //           const SizedBox(height: 24),
-
-  //           _buildSectionHeader(context, "Fact Notifications"),
-  //           const SizedBox(height: 8),
-  //           _buildSectionContainer(
-  //             context: context,
-  //             children: [
-  //               SwitchSettingsLayout(
-  //                 title: 'Enable Fact of the Day',
-  //                 value: _notifications[kNotificationFactOfTheDay]!,
-  //                 onSwitchChanged: (value) => _onNotificationSwitched(
-  //                   kNotificationFactOfTheDay,
-  //                   kFactOfTheDayTopic,
-  //                   value,
-  //                 ),
-  //               ),
-  //               const Divider(height: 1, indent: 16, endIndent: 16),
-  //               SwitchSettingsLayout(
-  //                 title: 'Enable Daily Brain Food',
-  //                 value: _notifications[kNotificationDailyBrainFood]!,
-  //                 onSwitchChanged: (value) => _onNotificationSwitched(
-  //                   kNotificationDailyBrainFood,
-  //                   kDailyBrainFoodTopic,
-  //                   value,
-  //                 ),
-  //               ),
-  //               const Divider(height: 1, indent: 16, endIndent: 16),
-  //               SwitchSettingsLayout(
-  //                 title: 'Enable Weird Fact Wednesday',
-  //                 value: _notifications[kNotificationWeirdFactWednesday]!,
-  //                 onSwitchChanged: (value) => _onNotificationSwitched(
-  //                   kNotificationWeirdFactWednesday,
-  //                   kWeirdFactWednesdayTopic,
-  //                   value,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-
-  //           const SizedBox(height: 24),
-
-  //           // --- Section 2: General Notification Settings ---
-  //           _buildSectionHeader(context, "General Settings"),
-  //           const SizedBox(height: 8),
-  //           _buildSectionContainer(
-  //             context: context,
-  //             children: [
-  //               SwitchSettingsLayout(
-  //                 title: 'Enable All Notifications',
-  //                 value: _notifications[kNotificationEnabled]!,
-  //                 onSwitchChanged: (value) => _onNotificationSwitched(
-  //                   kNotificationEnabled,
-  //                   kNotificationAllTopic,
-  //                   value,
-  //                 ),
-  //               ),
-  //               const Divider(height: 1, indent: 16, endIndent: 16),
-  //               SwitchSettingsLayout(
-  //                 title: 'Enable Motivation Monday',
-  //                 value: _notifications[kNotificationMotivation]!,
-  //                 onSwitchChanged: (value) => _onNotificationSwitched(
-  //                   kNotificationMotivation,
-  //                   kNotificationMotivationMondayTopic,
-  //                   value,
-  //                 ),
-  //               ),
-  //               const Divider(height: 1, indent: 16, endIndent: 16),
-  //               SwitchSettingsLayout(
-  //                 title: 'Enable Daily Inspiration',
-  //                 value: _notifications[kNotificationDailyInspiration]!,
-  //                 onSwitchChanged: (value) => _onNotificationSwitched(
-  //                   kNotificationDailyInspiration,
-  //                   kNotificationDailyInspirationTopic,
-  //                   value,
-  //                 ),
-  //               ),
-  //               const Divider(height: 1, indent: 16, endIndent: 16),
-  //               SwitchSettingsLayout(
-  //                 title: 'Enable Quote of the Day',
-  //                 value: _notifications[kNotificationQuoteOfTheDay]!,
-  //                 onSwitchChanged: (value) => _onNotificationSwitched(
-  //                   kNotificationQuoteOfTheDay,
-  //                   kNotificationQuoteOfTheDayTopic,
-  //                   value,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // // Helper widgets remain the same
-  // Widget _buildSectionHeader(BuildContext context, String title) {
-  //   return Align(
-  //     alignment: Alignment.centerLeft,
-  //     child: Padding(
-  //       padding: const EdgeInsets.only(left: 4.0, bottom: 8),
-  //       child: Text(
-  //         title.toUpperCase(),
-  //         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-  //               fontWeight: FontWeight.bold,
-  //               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-  //             ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildSectionContainer(
-  //     {required BuildContext context, required List<Widget> children}) {
-  //   // This container creates the "card" effect for each group of settings
-  //   return Container(
-  //     decoration: BoxDecoration(
-  //       color: Theme.of(context).colorScheme.surfaceContainer,
-  //       borderRadius: BorderRadius.circular(16),
-  //     ),
-  //     // ClipRRect ensures the children (like the ListTile ink splash) respect the rounded corners
-  //     child: ClipRRect(
-  //       borderRadius: BorderRadius.circular(16),
-  //       child: Column(children: children),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
+    final bool areNotificationsEnabled = _notifications[kNotificationEnabled]!;
     return MainLayout(
       title: 'Notifications',
       body: Padding(
@@ -304,35 +141,41 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
             // --- 3. Quote Notification Toggles ---
             _buildSectionHeader(context, "Quote Notification Toggles"),
             const SizedBox(height: 8),
-            _buildSectionContainer(
-              children: [
-                SwitchSettingsLayout(
-                  title: 'Quote of the Day',
-                  value: _notifications[kNotificationQuoteOfTheDay]!,
-                  onSwitchChanged: (value) => _onNotificationSwitched(
-                      kNotificationQuoteOfTheDay,
-                      kNotificationQuoteOfTheDayTopic,
-                      value),
+            IgnorePointer(
+              ignoring: !areNotificationsEnabled,
+              child: Opacity(
+                opacity: areNotificationsEnabled ? 1.0 : 0.5,
+                child: _buildSectionContainer(
+                  children: [
+                    SwitchSettingsLayout(
+                      title: 'Quote of the Day',
+                      value: _notifications[kNotificationQuoteOfTheDay]!,
+                      onSwitchChanged: (value) => _onNotificationSwitched(
+                          kNotificationQuoteOfTheDay,
+                          kNotificationQuoteOfTheDayTopic,
+                          value),
+                    ),
+                    const Divider(height: 1, indent: 20, endIndent: 20),
+                    SwitchSettingsLayout(
+                      title: 'Daily Inspiration',
+                      value: _notifications[kNotificationDailyInspiration]!,
+                      onSwitchChanged: (value) => _onNotificationSwitched(
+                          kNotificationDailyInspiration,
+                          kNotificationDailyInspirationTopic,
+                          value),
+                    ),
+                    const Divider(height: 1, indent: 20, endIndent: 20),
+                    SwitchSettingsLayout(
+                      title: 'Motivation Monday',
+                      value: _notifications[kNotificationMotivation]!,
+                      onSwitchChanged: (value) => _onNotificationSwitched(
+                          kNotificationMotivation,
+                          kNotificationMotivationMondayTopic,
+                          value),
+                    ),
+                  ],
                 ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                SwitchSettingsLayout(
-                  title: 'Daily Inspiration',
-                  value: _notifications[kNotificationDailyInspiration]!,
-                  onSwitchChanged: (value) => _onNotificationSwitched(
-                      kNotificationDailyInspiration,
-                      kNotificationDailyInspirationTopic,
-                      value),
-                ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                SwitchSettingsLayout(
-                  title: 'Motivation Monday',
-                  value: _notifications[kNotificationMotivation]!,
-                  onSwitchChanged: (value) => _onNotificationSwitched(
-                      kNotificationMotivation,
-                      kNotificationMotivationMondayTopic,
-                      value),
-                ),
-              ],
+              ),
             ),
 
             const SizedBox(height: 32),
@@ -340,31 +183,41 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
             // --- 4. Fact Notification Toggles ---
             _buildSectionHeader(context, "Fact Notification Toggles"),
             const SizedBox(height: 8),
-            _buildSectionContainer(
-              children: [
-                SwitchSettingsLayout(
-                  title: 'Fact of the Day',
-                  value: _notifications[kNotificationFactOfTheDay]!,
-                  onSwitchChanged: (value) => _onNotificationSwitched(
-                      kNotificationFactOfTheDay, kFactOfTheDayTopic, value),
+            IgnorePointer(
+              ignoring: !areNotificationsEnabled,
+              child: Opacity(
+                opacity: areNotificationsEnabled ? 1.0 : 0.5,
+                child: _buildSectionContainer(
+                  children: [
+                    SwitchSettingsLayout(
+                      title: 'Fact of the Day',
+                      value: _notifications[kNotificationFactOfTheDay]!,
+                      onSwitchChanged: (value) => _onNotificationSwitched(
+                          kNotificationFactOfTheDay,
+                          kNotificationFactOfTheDayTopic,
+                          value),
+                    ),
+                    const Divider(height: 1, indent: 20, endIndent: 20),
+                    SwitchSettingsLayout(
+                      title: 'Daily Brain Food',
+                      value: _notifications[kNotificationDailyBrainFood]!,
+                      onSwitchChanged: (value) => _onNotificationSwitched(
+                          kNotificationDailyBrainFood,
+                          kNotificationDailyBrainFoodTopic,
+                          value),
+                    ),
+                    const Divider(height: 1, indent: 20, endIndent: 20),
+                    SwitchSettingsLayout(
+                      title: 'Weird Fact Wednesday',
+                      value: _notifications[kNotificationWeirdFactWednesday]!,
+                      onSwitchChanged: (value) => _onNotificationSwitched(
+                          kNotificationWeirdFactWednesday,
+                          kNotificationWeirdFactWednesdayTopic,
+                          value),
+                    ),
+                  ],
                 ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                SwitchSettingsLayout(
-                  title: 'Daily Brain Food',
-                  value: _notifications[kNotificationDailyBrainFood]!,
-                  onSwitchChanged: (value) => _onNotificationSwitched(
-                      kNotificationDailyBrainFood, kDailyBrainFoodTopic, value),
-                ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                SwitchSettingsLayout(
-                  title: 'Weird Fact Wednesday',
-                  value: _notifications[kNotificationWeirdFactWednesday]!,
-                  onSwitchChanged: (value) => _onNotificationSwitched(
-                      kNotificationWeirdFactWednesday,
-                      kWeirdFactWednesdayTopic,
-                      value),
-                ),
-              ],
+              ),
             ),
 
             const SizedBox(height: 32),
@@ -402,21 +255,27 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                   iconData: Icons.fact_check_outlined,
                   title: 'Fact of the Day',
                   description: 'View the featured daily fact',
-                  onTap: () {}, // TODO: Add navigation
+                  onTap: () {
+                    gotoAScreen(context, FactOfTheDayScreen.kRouteName);
+                  },
                 ),
                 const Divider(height: 1, indent: 20, endIndent: 20),
                 NotificationScreenLayout(
                   iconData: Icons.psychology_outlined,
                   title: 'Daily Brain Food',
                   description: 'Catch up on interesting tidbits',
-                  onTap: () {}, // TODO: Add navigation
+                  onTap: () {
+                    gotoAScreen(context, DailyBrainFoodScreen.kRouteName);
+                  },
                 ),
                 const Divider(height: 1, indent: 20, endIndent: 20),
                 NotificationScreenLayout(
                   iconData: Icons.interests_outlined,
                   title: 'Weird Fact Wednesday',
                   description: 'Review past weird facts',
-                  onTap: () {}, // TODO: Add navigation
+                  onTap: () {
+                    gotoAScreen(context, WeirdFactWednesdayScreen.kRouteName);
+                  },
                 ),
               ],
             ),
@@ -445,8 +304,9 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: theme.colorScheme.primaryContainer.withOpacity(0.4),
-        border: Border.all(color: theme.colorScheme.primaryContainer),
+        color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+        border: Border.all(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.3)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
