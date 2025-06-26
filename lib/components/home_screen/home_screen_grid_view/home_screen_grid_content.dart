@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -32,6 +33,7 @@ class HomeScreenGridContent extends StatelessWidget {
         ? theme.colorScheme.secondary
         : theme.primaryColor.withValues(alpha: 0.8);
     final quoteColor = theme.colorScheme.onSurface.withValues(alpha: 0.9);
+    final primaryColor = theme.primaryColor;
     return Padding(
       padding: EdgeInsets.all(5.0),
       child: Column(
@@ -39,7 +41,7 @@ class HomeScreenGridContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 10,
         children: [
-          _buildLogo(imageSize),
+          _buildLogo(imageSize, primaryColor),
           _buildQuoteText(context, quoteColor),
           GestureDetector(
             onTap: () => context.push(
@@ -52,12 +54,17 @@ class HomeScreenGridContent extends StatelessWidget {
     );
   }
 
-  Widget _buildLogo(double size) {
-    return Image.asset(
-      'assets/quotely_icon.png',
-      height: size * 0.3, // Maintain aspect ratio
-      width: size,
-      fit: BoxFit.contain,
+  Widget _buildLogo(double size, Color color) {
+    // return Image.asset(
+    //   'assets/quotely_icon.png',
+    //   height: size * 0.3, // Maintain aspect ratio
+    //   width: size,
+    //   fit: BoxFit.contain,
+    // );
+    return Icon(
+      FontAwesomeIcons.quoteLeft,
+      size: size * 0.3, // Maintain aspect ratio
+      color: color,
     );
   }
 
@@ -120,7 +127,7 @@ class HomeScreenGridContentSkeletor extends StatelessWidget {
     final authorColor = isDarkMode
         ? theme.colorScheme.secondary
         : theme.primaryColor.withValues(alpha: 0.8);
-
+    final primaryColor = theme.primaryColor;
     return Padding(
       padding: EdgeInsets.all(5.0),
       child: Column(
@@ -128,7 +135,7 @@ class HomeScreenGridContentSkeletor extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 10,
         children: [
-          _buildLogo(imageSize),
+          _buildLogo(imageSize, primaryColor),
           _buildQuoteText(context),
           _buildAuthorText(authorColor),
         ],
@@ -136,12 +143,17 @@ class HomeScreenGridContentSkeletor extends StatelessWidget {
     );
   }
 
-  Widget _buildLogo(double size) {
-    return Image.asset(
-      'assets/quotely_icon.png',
-      height: size * 0.3, // Maintain aspect ratio
-      width: size,
-      fit: BoxFit.contain,
+  Widget _buildLogo(double size, Color color) {
+    // return Image.asset(
+    //   'assets/quotely_icon.png',
+    //   height: size * 0.3, // Maintain aspect ratio
+    //   width: size,
+    //   fit: BoxFit.contain,
+    // );
+    return Icon(
+      FontAwesomeIcons.quoteLeft,
+      size: size * 0.3, // Maintain aspect ratio
+      color: color,
     );
   }
 

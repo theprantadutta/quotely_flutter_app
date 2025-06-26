@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -174,10 +175,15 @@ Shared via Quotely
                 color: theme.primaryColor.withValues(alpha: 0.1),
               ),
               child: Center(
-                child: Image.asset(
-                  'assets/quotely_icon.png',
-                  height: 20,
-                  width: 20,
+                // child: Image.asset(
+                //   'assets/quotely_icon.png',
+                //   height: 20,
+                //   width: 20,
+                // ),
+                child: Icon(
+                  FontAwesomeIcons.quoteLeft,
+                  size: 20,
+                  color: primaryColor,
                 ),
               ),
             ),
@@ -196,6 +202,7 @@ class SingleFactSkeletor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primaryColor = theme.primaryColor;
     return Skeletonizer(
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -296,10 +303,15 @@ class SingleFactSkeletor extends StatelessWidget {
                   color: theme.primaryColor.withValues(alpha: 0.1),
                 ),
                 child: Center(
-                  child: Image.asset(
-                    'assets/quotely_icon.png',
-                    height: 20,
-                    width: 20,
+                  // child: Image.asset(
+                  //   'assets/quotely_icon.png',
+                  //   height: 20,
+                  //   width: 20,
+                  // ),
+                  child: Icon(
+                    FontAwesomeIcons.quoteLeft,
+                    size: 20,
+                    color: primaryColor,
                   ),
                 ),
               ),

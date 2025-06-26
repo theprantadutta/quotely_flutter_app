@@ -2,10 +2,7 @@ plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
     id 'com.google.gms.google-services'
-    // END: FlutterFire Configuration
-    // START: FlutterFire Configuration
-    id "com.google.firebase.firebase-perf" version "1.4.2" apply false
-    id "com.google.firebase.crashlytics" version "2.9.9" apply false
+    id 'com.google.firebase.crashlytics'
     // END: FlutterFire Configuration
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.

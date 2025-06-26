@@ -204,6 +204,76 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
             ),
+
+            // --- The Reset Settings button ---
+            const SizedBox(height: 40),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text(
+                'Reset to Defaults',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+                side:
+                    BorderSide(color: theme.colorScheme.error.withOpacity(0.5)),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+              ),
+              onPressed: () async {
+                // Show a confirmation dialog to prevent accidental resets
+                final bool? shouldReset = await showDialog<bool>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Reset All Settings?',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    content: const Text(
+                      'This will reset your theme, colors, font, and layout preferences to their original defaults. This action cannot be undone.',
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Wait, Cancel'),
+                        onPressed: () => Navigator.of(context).pop(false),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: theme.colorScheme.error,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text(
+                          'I\'m Sure, Reset',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                // If the user confirmed, then call the global reset function
+                if (shouldReset == true) {
+                  quotelyState.resetAllSettings();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Settings have been reset!'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
           ],
         ),
       ),

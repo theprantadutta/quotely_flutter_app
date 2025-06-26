@@ -262,6 +262,29 @@ class _QuotelyAppState extends State<QuotelyApp> {
     await FlutterDisplayMode.setPreferredMode(mostOptimalMode);
   }
 
+  /// Resets all appearance and layout settings to their original default values.
+  Future<void> resetAllSettings() async {
+    // 1. Update the state to reflect the default values immediately.
+    setState(() {
+      _themeMode = ThemeMode.light;
+      _flexScheme = kDefaultFlexTheme; // Your defined default theme
+      _fontFamily = 'Fira Code';
+      _isGridView = true;
+      _isBiometricEnabled = false; // Assuming false is the default
+    });
+
+    // 2. Log a single analytics event for this action.
+    analytics.logEvent(name: 'settings_reset_to_default');
+
+    // 3. Remove the saved preferences so the app uses defaults on next launch.
+    // We do this after updating the state for a snappy UI response.
+    await _sharedPreferences?.remove(kThemeModeKey);
+    await _sharedPreferences?.remove(kFlexSchemeKey);
+    await _sharedPreferences?.remove(kFontFamilyKey);
+    await _sharedPreferences?.remove(kIsGridViewKey);
+    await _sharedPreferences?.remove(kBiometricKey);
+  }
+
   @override
   void initState() {
     super.initState();

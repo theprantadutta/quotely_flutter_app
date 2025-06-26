@@ -57,6 +57,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.3
   in_app_purchase: ^3.2.3
   smooth_page_indicator: ^1.2.1
+  font_awesome_flutter: ^10.8.0
 
 dev_dependencies:
   flutter_test:

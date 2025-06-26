@@ -93,17 +93,17 @@ class PushNotifications {
     const String allTopicKey = 'subscribedToAllTopic';
 
     // Get SharedPreferences instance
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
 
     // Check if already subscribed
-    final bool isAlreadySubscribed = prefs.getBool(allTopicKey) ?? false;
+    final bool isAlreadySubscribed = preferences.getBool(allTopicKey) ?? false;
 
     if (!isAlreadySubscribed) {
       // Subscribe to the topic
       await NotificationService().subscribeToAllTopic();
 
       // Mark as subscribed in SharedPreferences
-      await prefs.setBool(allTopicKey, true);
+      await preferences.setBool(allTopicKey, true);
 
       debugPrint('Subscribed to all topic and updated preferences.');
     } else {

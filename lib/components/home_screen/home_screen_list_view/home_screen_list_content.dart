@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 
 class HomeScreenListContent extends StatelessWidget {
@@ -7,17 +8,23 @@ class HomeScreenListContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageHeight = MediaQuery.sizeOf(context).height * 0.02;
-    final imageWidth = MediaQuery.sizeOf(context).width * 0.05;
+    // final imageHeight = MediaQuery.sizeOf(context).height * 0.02;
+    // final imageWidth = MediaQuery.sizeOf(context).width * 0.05;
+    final kPrimaryColor = Theme.of(context).primaryColor;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8, bottom: 5),
-          child: Image.asset(
-            'assets/quotely_icon.png',
-            height: imageHeight,
-            width: imageWidth,
+          // child: Image.asset(
+          //   'assets/quotely_icon.png',
+          //   height: imageHeight,
+          //   width: imageWidth,
+          // ),
+          child: Icon(
+            FontAwesomeIcons.quoteLeft,
+            size: 20,
+            color: kPrimaryColor,
           ),
         ),
         Container(
@@ -35,10 +42,15 @@ class HomeScreenListContent extends StatelessWidget {
           padding: const EdgeInsets.only(left: 8, top: 5),
           child: Transform.rotate(
             angle: 180 * (3.14159265359 / 180), // Convert 90 degrees to radians
-            child: Image.asset(
-              'assets/quotely_icon.png',
-              height: imageHeight,
-              width: imageWidth,
+            // child: Image.asset(
+            //   'assets/quotely_icon.png',
+            //   height: imageHeight,
+            //   width: imageWidth,
+            // ),
+            child: Icon(
+              FontAwesomeIcons.quoteLeft,
+              size: 20,
+              color: kPrimaryColor,
             ),
           ),
         ),
@@ -66,17 +78,23 @@ class HomeScreenListContentSkeletor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageHeight = MediaQuery.sizeOf(context).height * 0.02;
-    final imageWidth = MediaQuery.sizeOf(context).width * 0.05;
+    // final imageHeight = MediaQuery.sizeOf(context).height * 0.02;
+    // final imageWidth = MediaQuery.sizeOf(context).width * 0.05;
+    final kPrimaryColor = Theme.of(context).primaryColor;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8, bottom: 5),
-          child: Image.asset(
-            'assets/quotely_icon.png',
-            height: imageHeight,
-            width: imageWidth,
+          // child: Image.asset(
+          //   'assets/quotely_icon.png',
+          //   height: imageHeight,
+          //   width: imageWidth,
+          // ),
+          child: Icon(
+            FontAwesomeIcons.quoteLeft,
+            size: 20,
+            color: kPrimaryColor,
           ),
         ),
         Container(
@@ -94,10 +112,15 @@ class HomeScreenListContentSkeletor extends StatelessWidget {
           padding: const EdgeInsets.only(left: 8, top: 5),
           child: Transform.rotate(
             angle: 180 * (3.14159265359 / 180), // Convert 90 degrees to radians
-            child: Image.asset(
-              'assets/quotely_icon.png',
-              height: imageHeight,
-              width: imageWidth,
+            // child: Image.asset(
+            //   'assets/quotely_icon.png',
+            //   height: imageHeight,
+            //   width: imageWidth,
+            // ),
+            child: Icon(
+              FontAwesomeIcons.quoteLeft,
+              size: 20,
+              color: kPrimaryColor,
             ),
           ),
         ),

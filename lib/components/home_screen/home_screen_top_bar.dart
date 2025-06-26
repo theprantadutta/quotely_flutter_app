@@ -1,6 +1,7 @@
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../database/database.dart';
@@ -37,9 +38,14 @@ class HomeScreenTopBar extends StatelessWidget {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => DriftDbViewer(db)));
                 },
-                child: Image.asset(
-                  'assets/quotely_icon.png',
-                  height: MediaQuery.sizeOf(context).height * 0.03,
+                // child: Image.asset(
+                //   'assets/quotely_icon.png',
+                //   height: MediaQuery.sizeOf(context).height * 0.03,
+                // ),
+                child: Icon(
+                  FontAwesomeIcons.quoteLeft,
+                  size: 20,
+                  color: kPrimaryColor,
                 ),
               ),
               const SizedBox(width: 10),

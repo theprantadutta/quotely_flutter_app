@@ -53,10 +53,20 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircleAvatar(
-                radius: 60,
-                backgroundColor: Colors.transparent,
-                backgroundImage: AssetImage('assets/quotely_icon.png'),
+              // CircleAvatar(
+              //   radius: 60,
+              //   backgroundColor: Colors.transparent,
+              //   backgroundImage: AssetImage('assets/play_store_icon.png'),
+              //   // child: Icon(
+              //   //   FontAwesomeIcons.quoteLeft,
+              //   //   size: 80,
+              //   //   color: kPrimaryColor,
+              //   // ),
+              // ),
+              Image.asset(
+                'assets/play_store_icon.png',
+                height: 80,
+                width: 80,
               ),
               const SizedBox(height: 20),
               Text(
