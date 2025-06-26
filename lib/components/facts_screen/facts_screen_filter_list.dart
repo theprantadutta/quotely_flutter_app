@@ -184,8 +184,8 @@ class _FactsScreenFilterListState extends ConsumerState<FactsScreenFilterList> {
     }
 
     try {
-      final fetchedCategories = await ref
-          .read(FetchAllFactsCategoriesProvider(pageNumber, pageSize).future);
+      final fetchedCategories =
+          await ref.read(fetchAllFactsCategoriesProvider.future);
 
       setState(() {
         hasError = false;

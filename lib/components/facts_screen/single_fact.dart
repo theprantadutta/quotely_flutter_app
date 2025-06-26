@@ -24,7 +24,7 @@ class SingleFact extends ConsumerWidget {
     ref
         .read(favoriteFactIdsProvider.notifier)
         .addOrUpdateViaStatus(aiFact.id, newValue);
-    await DriftFactService.changeFactUpdateStatus(aiFact, newValue);
+    await DriftFactService.changeFactFavoriteStatus(aiFact, newValue);
   }
 
   // void shareFact() {

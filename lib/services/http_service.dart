@@ -1,13 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 
 import '../main.dart';
 
 class HttpService {
-  static const kTimeOutDurationInSeconds = 30;
+  static const kTimeOutDurationInSeconds = 20;
   static final apiKey = dotenv.env['API_KEY'];
   static Future<Response> get<T>(String url) async {
     final dio = Dio();

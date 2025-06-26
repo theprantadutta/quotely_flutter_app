@@ -14,7 +14,7 @@ import '../../../components/settings_screen/appearance/appearance_screen.dart';
 import '../../../components/settings_screen/settings_screen_layout.dart';
 import '../../../components/shared/top_navigation_bar.dart';
 import '../../../screens/settings_notification_screen.dart';
-import '../../../screens/settings_offline_support_screen.dart';
+import '../settings_download_everything_screen.dart';
 import '../support_us_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -278,13 +278,13 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () => gotoAScreen(
                           context, SettingsNotificationScreen.kRouteName),
                     ),
-                    // Settings Offline Support
+                    // Settings Download Everything
                     SettingsScreenLayout(
                       iconData: Icons.wifi_off_outlined,
-                      title: 'Offline Support',
-                      description: 'Use the app even when online',
+                      title: 'Download Everything',
+                      description: 'Download everything for better offline use',
                       onTap: () => gotoAScreen(
-                          context, SettingsOfflineSupportScreen.kRouteName),
+                          context, SettingsDownloadEverythingScreen.kRouteName),
                     ),
 
                     /// Donation

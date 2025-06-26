@@ -39,7 +39,7 @@ class _FactsListState extends State<FactsList> {
         ),
         Expanded(
           child: StreamBuilder(
-            stream: DriftFactService.watchAllFavoriteFacts(null),
+            stream: DriftFactService.watchAllFavoriteFacts([]),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 // Using a Column and Expanded to prevent layout errors with ListView in StreamBuilder

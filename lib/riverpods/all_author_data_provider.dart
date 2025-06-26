@@ -12,7 +12,7 @@ Future<AuthorResponseDto> fetchAllAuthors(
   int pageNumber,
   int pageSize,
 ) async {
-  return await AuthorService().getAllAuthorsFromDatabase(
+  return await AuthorService().getAllAuthors(
     search: search,
     pageNumber: pageNumber,
     pageSize: pageSize,

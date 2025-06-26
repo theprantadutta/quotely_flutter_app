@@ -20,7 +20,7 @@ import '../screens/fact_of_the_day_list_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
 import '../screens/motivation_monday_screen.dart';
 import '../screens/onboarding_screen.dart';
-import '../screens/settings_offline_support_screen.dart';
+import '../screens/settings_download_everything_screen.dart';
 import '../screens/support_us_screen.dart';
 import '../screens/tab_screens/favorites_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
@@ -315,9 +315,9 @@ class AppNavigation {
       /// View Settings Offline Support
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
-        path: SettingsOfflineSupportScreen.kRouteName,
-        name: "Settings Offline Support",
-        builder: (context, state) => SettingsOfflineSupportScreen(
+        path: SettingsDownloadEverythingScreen.kRouteName,
+        name: "Settings Download Everything",
+        builder: (context, state) => SettingsDownloadEverythingScreen(
           key: state.pageKey,
         ),
       ),

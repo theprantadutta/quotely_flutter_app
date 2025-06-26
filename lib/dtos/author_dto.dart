@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import '../database/database.dart';
+
 part '../generated/dtos/author_dto.g.dart';
 
 @JsonSerializable()
@@ -32,6 +34,28 @@ class AuthorDto {
 
   static DateTime _fromJson(String date) => DateTime.parse(date).toUtc();
   static String _toJson(DateTime date) => date.toUtc().toIso8601String();
+
+  /// Creates an AuthorDto from a Drift 'Author' entity.
+  factory AuthorDto.fromDrift(Author author) {
+    return AuthorDto(
+      id: author.id,
+      name: author.name,
+      bio: author.bio,
+      description: author.description,
+      link: author.link,
+      quoteCount: author.quoteCount,
+      slug: author.slug,
+      imageUrl: author.imageUrl,
+      dateAdded: author.dateAdded,
+      dateModified: author.dateModified,
+    );
+  }
+
+  /// --- ADD THIS STATIC METHOD ---
+  /// Converts a list of Drift 'Author' entities to a list of 'AuthorDto's.
+  static List<AuthorDto> fromAuthorList(List<Author> authors) {
+    return authors.map((author) => AuthorDto.fromDrift(author)).toList();
+  }
 
   /// Connect the generated [_$AuthorDtoFromJson] function to the `fromJson`
   /// factory.

@@ -7,11 +7,6 @@ part '../generated/riverpods/all_facts_categories_data_provider.g.dart';
 @Riverpod(keepAlive: true)
 Future<List<String>> fetchAllFactsCategories(
   Ref ref,
-  int pageNumber,
-  int pageSize,
 ) async {
-  return await FactService.getAllFactsCategoriesFromDatabase(
-    pageNumber: pageNumber,
-    pageSize: pageSize,
-  );
+  return await FactService.getAllFactsCategories();
 }

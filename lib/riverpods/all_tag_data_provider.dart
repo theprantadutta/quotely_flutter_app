@@ -12,7 +12,7 @@ Future<TagResponseDto> fetchAllTags(
   int pageNumber,
   int pageSize,
 ) async {
-  return await TagService().getAllTagsFromDatabase(
+  return await TagService.getAllTags(
     pageNumber: pageNumber,
     pageSize: pageSize,
   );
