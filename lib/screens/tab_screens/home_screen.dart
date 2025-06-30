@@ -343,6 +343,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onRetryPressed: () {
             setState(() {
               hasError = false;
+              hasMoreData = true;
             });
             _fetchQuotes();
           },
@@ -361,7 +362,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (quotes.isEmpty && !isLoadingMore) {
       return SomethingWentWrong(
         title: "No quotes found.",
-        onRetryPressed: () => _fetchQuotes(),
+        onRetryPressed: () {
+          setState(() {
+            hasError = false;
+            hasMoreData = true;
+          });
+          _fetchQuotes();
+        },
       );
     }
 

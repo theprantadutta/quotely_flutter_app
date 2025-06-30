@@ -4,39 +4,59 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
-import 'package:quotely_flutter_app/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../navigation/app_navigation.dart';
 
 class PushNotifications {
   static final _firebaseMessaging = FirebaseMessaging.instance;
-  static final FlutterLocalNotificationsPlugin
-      _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  // request notification permission
-  static Future init() async {
-    // On background notification tapped
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? message) {
-      if (message == null) return; // Exit early if message is null
+  static final _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  static const String _channelId = 'quotely_notification_channel';
+  static const String _initialSubscriptionKey = 'initial-subscription';
 
-      debugPrint('Message: ${message.toMap().toString()}');
-      debugPrint('Data: ${message.data.toString()}');
+  // Main initialization
+  static Future<void> init() async {
+    try {
+      // 1. Setup notification channel (Android)
+      await _createNotificationChannel();
 
-      if (message.notification != null) {
-        debugPrint("Background Notification Tapped");
+      // 2. Request permissions
+      await _requestNotificationPermissions();
 
-        // final noticeId = message.data['noticeId'];
+      // 3. Initialize local notifications
+      await _initializeLocalNotifications();
 
-        AppNavigation.rootNavigatorKey.currentContext?.push(
-          // noticeId != null
-          //     ? '${QuoteOfTheDayScreen.kRouteName}'
-          //     : QuoteOfTheDayScreen.kRouteName,
-          QuoteOfTheDayScreen.kRouteName,
-        );
-      }
-    });
+      // 4. Setup FCM token and listeners
+      await _setupFcmServices();
 
+      // 5. Handle initial message (app launched from terminated state)
+      await _handleInitialMessage();
+
+      // 6. Subscribe to topics (once)
+      await _subscribeToTopics();
+    } catch (e) {
+      debugPrint('PushNotifications initialization failed: $e');
+    }
+  }
+
+  // Notification Channel Setup (Android)
+  static Future<void> _createNotificationChannel() async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      _channelId,
+      'Quotely Notifications',
+      description: 'Notifications for new releases and updates.',
+      importance: Importance.max,
+    );
+
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+  }
+
+  // Permission Handling
+  static Future<void> _requestNotificationPermissions() async {
     await _firebaseMessaging.requestPermission(
       alert: true,
       announcement: true,
@@ -47,152 +67,104 @@ class PushNotifications {
       sound: true,
     );
 
-    getFCMToken();
-
-    // Listen to background notifications
-    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
-
-    // to handle foreground notifications
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      String payloadData = jsonEncode(message.data);
-      debugPrint("Got a message in foreground");
-      if (message.notification != null) {
-        PushNotifications.showSimpleNotification(
-          title: message.notification!.title!,
-          body: message.notification!.body!,
-          payload: payloadData,
-        );
-      }
-    });
-
-    // for handling in terminated state
-    final RemoteMessage? message =
-        await FirebaseMessaging.instance.getInitialMessage();
-
-    if (message != null) {
-      debugPrint("Launched from terminated state");
-      Future.delayed(
-        const Duration(seconds: 1),
-        () {
-          // AppNavigation.rootNavigatorKey.currentState!.pushNamed(
-          //   NoticeScreen.name,
-          //   arguments: message,
-          // );
-        },
-      );
-    }
-
     await _firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
     );
-
-    // await _firebaseMessaging.subscribeToAllTopic();
-
-    const String allTopicKey = 'subscribedToAllTopic';
-
-    // Get SharedPreferences instance
-    final SharedPreferences preferences = await SharedPreferences.getInstance();
-
-    // Check if already subscribed
-    final bool isAlreadySubscribed = preferences.getBool(allTopicKey) ?? false;
-
-    if (!isAlreadySubscribed) {
-      // Subscribe to the topic
-      await NotificationService().subscribeToAllTopic();
-
-      // Mark as subscribed in SharedPreferences
-      await preferences.setBool(allTopicKey, true);
-
-      debugPrint('Subscribed to all topic and updated preferences.');
-    } else {
-      debugPrint('Already subscribed to all topic.');
-    }
   }
 
-  // get the fcm device token
-  static Future getFCMToken({int maxRetires = 3}) async {
-    try {
-      // get the device fcm token
-      String? token = await _firebaseMessaging.getToken();
-
-      if (kDebugMode) {
-        debugPrint("Firebae FCM Token: $token");
-      }
-
-      return token;
-    } catch (e) {
-      debugPrint("failed to get device token");
-      if (maxRetires > 0) {
-        debugPrint("try after 10 sec");
-        await Future.delayed(const Duration(seconds: 10));
-        return getFCMToken(maxRetires: maxRetires - 1);
-      } else {
-        return null;
-      }
-    }
-  }
-
-  // initalize local notifications
-  static Future localNotiInit() async {
-    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-    const AndroidInitializationSettings initializationSettingsAndroid =
+  // Local Notifications Initialization
+  static Future<void> _initializeLocalNotifications() async {
+    const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
-            // onDidReceiveLocalNotification: (id, title, body, payload) {},
-            );
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings();
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
+      android: androidSettings,
+      iOS: iosSettings,
     );
-    _flutterLocalNotificationsPlugin.initialize(
+
+    await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: onNotificationTap,
-      onDidReceiveBackgroundNotificationResponse: onNotificationTap,
+      onDidReceiveNotificationResponse: _onNotificationTap,
     );
   }
 
-  // on tap local notification in foreground
-  static void onNotificationTap(NotificationResponse notificationResponse) {
-    // AppNavigation.rootNavigatorKey.currentState!.pushNamed(
-    //   NoticeScreen.name,
-    //   arguments: notificationResponse,
-    // );
+  // FCM Services Setup
+  static Future<void> _setupFcmServices() async {
+    // Get and log FCM token
+    await getFCMToken();
+
+    // Setup message handlers
+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessageTap);
+    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
   }
 
-  // function to lisen to background changes
-  static Future _firebaseBackgroundMessage(RemoteMessage? message) async {
-    if (message?.notification != null) {
-      debugPrint("Some notification Received");
+  // Handle initial message (app launched from terminated state)
+  static Future<void> _handleInitialMessage() async {
+    final RemoteMessage? message = await _firebaseMessaging.getInitialMessage();
+    if (message != null) {
+      debugPrint("Launched from terminated state");
+      _handleNotificationTap(message.data);
     }
   }
 
-  // show a simple notification
-  static Future showSimpleNotification({
+  // Topic Subscription
+  static Future<void> _subscribeToTopics() async {
+    final preferences = await SharedPreferences.getInstance();
+    final isAlreadySubscribed =
+        preferences.getBool(_initialSubscriptionKey) ?? false;
+
+    if (!isAlreadySubscribed) {
+      await _firebaseMessaging.subscribeToTopic('all');
+      await preferences.setBool(_initialSubscriptionKey, true);
+      debugPrint('Subscribed to "all" topic');
+    }
+  }
+
+  // FCM Token Handling
+  static Future<String?> getFCMToken({int maxRetries = 3}) async {
+    try {
+      final token = await _firebaseMessaging.getToken();
+      if (kDebugMode && token != null) {
+        debugPrint("Firebase FCM Token: $token");
+      }
+      return token;
+    } catch (e) {
+      debugPrint("Failed to get FCM token: $e");
+      if (maxRetries > 0) {
+        await Future.delayed(const Duration(seconds: 10));
+        return getFCMToken(maxRetries: maxRetries - 1);
+      }
+      return null;
+    }
+  }
+
+  // Notification Display
+  static Future<void> showSimpleNotification({
     required String title,
     required String body,
     required String payload,
   }) async {
-    const AndroidNotificationDetails androidNotificationDetails =
+    const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
-      'com.pranta.quotely',
-      'Quotely',
-      channelDescription: 'Quotely Application',
+      _channelId,
+      'Quotely Notifications',
+      channelDescription: 'Notifications for new releases and updates.',
       importance: Importance.max,
       priority: Priority.max,
-      ticker: 'ticker',
       icon: '@mipmap/ic_launcher',
-      showWhen: true,
     );
+
     const NotificationDetails notificationDetails = NotificationDetails(
-      android: androidNotificationDetails,
+      android: androidDetails,
     );
-    // Generate a unique notification ID
-    int notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    final notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     await _flutterLocalNotificationsPlugin.show(
       notificationId,
       title,
@@ -200,5 +172,65 @@ class PushNotifications {
       notificationDetails,
       payload: payload,
     );
+  }
+
+  // Message Handlers
+  static Future<void> _handleForegroundMessage(RemoteMessage message) async {
+    debugPrint("Foreground message received");
+    if (message.notification != null) {
+      await showSimpleNotification(
+        title: message.notification!.title!,
+        body: message.notification!.body!,
+        payload: jsonEncode(message.data),
+      );
+    }
+  }
+
+  static void _handleBackgroundMessageTap(RemoteMessage message) {
+    debugPrint("Background notification tapped");
+    _handleNotificationTap(message.data);
+  }
+
+  static Future<void> _firebaseBackgroundMessage(RemoteMessage? message) async {
+    if (message?.notification != null) {
+      debugPrint("Background notification received");
+    }
+  }
+
+  // Notification Tap Handler
+  static void _onNotificationTap(NotificationResponse response) {
+    if (response.payload != null) {
+      try {
+        final data = jsonDecode(response.payload!);
+        _handleNotificationTap(data);
+      } catch (e) {
+        debugPrint("Error parsing notification payload: $e");
+      }
+    }
+  }
+
+  static void _handleNotificationTap(Map<String, dynamic> data) {
+    // Get the current context from your navigation key
+    final context = AppNavigation.rootNavigatorKey.currentContext;
+    if (context == null) {
+      debugPrint('No context available for navigation');
+      return;
+    }
+
+    // Check if routeName exists and is a non-empty string
+    final routeName = data['routeName']?.toString();
+    if (routeName == null || routeName.isEmpty) {
+      debugPrint('No valid routeName found in notification data: $data');
+      return;
+    }
+
+    try {
+      // Use GoRouter to navigate to the specified route
+      debugPrint('Navigating to route: $routeName');
+      GoRouter.of(context).push(routeName);
+    } catch (e) {
+      debugPrint('Failed to navigate to route $routeName: $e');
+      debugPrint('Full notification data: $data');
+    }
   }
 }
