@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
+import 'package:quotely_flutter_app/notifications/push_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
@@ -49,7 +50,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _fetchQuotes();
     addAllFavoriteIds();
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _checkAndShowTermsDialog(),
+      (_) async {
+        await _checkAndShowTermsDialog();
+        await PushNotifications.asyncQueue.start();
+      },
     );
   }
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:async_queue/async_queue.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -13,28 +14,64 @@ class PushNotifications {
   static final _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   static const String _channelId = 'quotely_notification_channel';
+  static final AsyncQueue asyncQueue = AsyncQueue();
 
   // Main initialization
   static Future<void> init() async {
     try {
       // 1. Setup notification channel (Android)
-      await _createNotificationChannel();
+      // await _createNotificationChannel();
+      asyncQueue.addJob(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 200),
+          () => _createNotificationChannel(),
+        ),
+      );
 
       // 2. Request permissions
-      await _requestNotificationPermissions();
+      // await _requestNotificationPermissions();
+      asyncQueue.addJob(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 400),
+          () => _requestNotificationPermissions(),
+        ),
+      );
 
       // 3. Initialize local notifications
-      await _initializeLocalNotifications();
+      // await _initializeLocalNotifications();
+      asyncQueue.addJob(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 600),
+          () => _initializeLocalNotifications(),
+        ),
+      );
 
       // 4. Setup FCM token and listeners
-      await _setupFcmServices();
+      // await _setupFcmServices();
+      asyncQueue.addJob(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 800),
+          () => _setupFcmServices(),
+        ),
+      );
 
       // 5. Handle initial message (app launched from terminated state)
-      await _handleInitialMessage();
+      // await _handleInitialMessage();
+      asyncQueue.addJob(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 1000),
+          () => _handleInitialMessage(),
+        ),
+      );
 
       // 6. Subscribe to topics (once)
       // await _subscribeToTopics();
-      NotificationService().initializeNotificationPreferencesOnce();
+      asyncQueue.addJob(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 1200),
+          () => NotificationService().initializeNotificationPreferencesOnce(),
+        ),
+      );
     } catch (e) {
       debugPrint('PushNotifications initialization failed: $e');
     }

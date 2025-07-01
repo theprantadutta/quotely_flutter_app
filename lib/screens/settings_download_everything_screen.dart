@@ -318,7 +318,7 @@ class _SettingsDownloadEverythingScreenState
                 size: 24),
             label: Text(
               hasData ? 'Sync Latest Content' : 'Download Everything',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
           ),
         ],

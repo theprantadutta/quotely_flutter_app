@@ -1,7 +1,14 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:quotely_flutter_app/constants/selectors.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../components/layouts/main_layout.dart';
+import '../components/shared/dark_gradient_background.dart';
 
 class SupportUsScreen extends StatefulWidget {
   static const kRouteName = '/support-us';
@@ -133,97 +140,115 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
               (p) => p?.id == 'buy_me_a_coffee_1',
               orElse: () => null,
             );
-
+    final kPrimaryColor = Theme.of(context).primaryColor;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Support Us'),
-        centerTitle: true,
-        elevation: 0,
+        backgroundColor:
+            kPrimaryColor.withValues(alpha: isDarkTheme ? 0.6 : 0.9),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        title: MainLayoutAppBar(
+          title: 'Support Us',
+        ),
+        leading: IconButton(
+          onPressed: () => context.pop(),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            weight: 20,
+          ),
+        ),
       ),
-      body: _loading
-          ? Center(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(_statusMessage)
-            ]))
-          : CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
-                            colors: [
-                              theme.colorScheme.primary,
-                              theme.colorScheme.secondary
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ).createShader(bounds),
-                          child: const Icon(Icons.volunteer_activism,
-                              size: 80, color: Colors.white),
+      body: Stack(
+        children: [
+          DarkGradientBackground(),
+          _loading
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(_statusMessage)
+                ]))
+              : CustomScrollView(
+                  slivers: [
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 10),
+                            ShaderMask(
+                              shaderCallback: (bounds) => LinearGradient(
+                                colors: [
+                                  theme.colorScheme.primary,
+                                  theme.colorScheme.secondary
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ).createShader(bounds),
+                              child: const Icon(Icons.volunteer_activism,
+                                  size: 80, color: Colors.white),
+                            ),
+                            const SizedBox(height: 20),
+                            Text('Support Our Journey',
+                                style: theme.textTheme.headlineMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Quotely is a passion project. Your support helps us dedicate more time to new features and keep the app free for everyone.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                            const SizedBox(height: 30),
+                          ],
                         ),
-                        const SizedBox(height: 20),
-                        Text('Support Our Journey',
-                            style: theme.textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Quotely is a passion project. Your support helps us dedicate more time to new features and keep the app free for everyone.',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                        const SizedBox(height: 30),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _buildSectionHeader(context, "Show Your Support"),
-                      if (supportProduct != null)
-                        _buildSupportTile(
-                          context: context,
-                          icon: Icons.favorite_rounded,
-                          iconColor: Colors.pink.shade400,
-                          title: supportProduct.title,
-                          subtitle:
-                              '${supportProduct.description} (${supportProduct.price})',
-                          onTap: () => _buyProduct(supportProduct),
-                        ),
-                      if (coffeeProduct != null)
-                        _buildSupportTile(
-                          context: context,
-                          icon: Icons.coffee_rounded,
-                          iconColor: Colors.brown.shade400,
-                          title: coffeeProduct.title,
-                          subtitle:
-                              '${coffeeProduct.description} (${coffeeProduct.price})',
-                          onTap: () => _buyProduct(coffeeProduct),
-                        ),
-                      const SizedBox(height: 20),
-                      _buildSectionHeader(context, "Other Ways to Help"),
-                      _buildSupportTile(
-                        context: context,
-                        icon: Icons.share_rounded,
-                        iconColor: theme.colorScheme.primary,
-                        title: 'Share the App',
-                        subtitle: 'Help the community grow by sharing.',
-                        onTap: () => _shareApp(context),
                       ),
-                    ]),
-                  ),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _buildSectionHeader(context, "Show Your Support"),
+                          if (supportProduct != null)
+                            _buildSupportTile(
+                              context: context,
+                              icon: Icons.favorite_rounded,
+                              iconColor: Colors.pink.shade400,
+                              title: supportProduct.title,
+                              subtitle:
+                                  '${supportProduct.description} (${supportProduct.price})',
+                              onTap: () => _buyProduct(supportProduct),
+                            ),
+                          if (coffeeProduct != null)
+                            _buildSupportTile(
+                              context: context,
+                              icon: Icons.coffee_rounded,
+                              iconColor: Colors.brown.shade400,
+                              title: coffeeProduct.title,
+                              subtitle:
+                                  '${coffeeProduct.description} (${coffeeProduct.price})',
+                              onTap: () => _buyProduct(coffeeProduct),
+                            ),
+                          const SizedBox(height: 20),
+                          _buildSectionHeader(context, "Other Ways to Help"),
+                          _buildSupportTile(
+                            context: context,
+                            icon: Icons.share_rounded,
+                            iconColor: theme.colorScheme.primary,
+                            title: 'Share the App',
+                            subtitle: 'Help the community grow by sharing.',
+                            onTap: () => _shareApp(context),
+                          ),
+                        ]),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  ],
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 40)),
-              ],
-            ),
+        ],
+      ),
     );
   }
 
@@ -252,15 +277,21 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Material(
-        color: theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
+      child: Container(
+        decoration: BoxDecoration(
+          // color: theme.colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(16),
+          gradient: kGetDefaultGradient(context),
+        ),
+        child: InkResponse(
+          // Using InkResponse for splash and highlight effects
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           splashColor: iconColor.withOpacity(0.1),
           highlightColor: iconColor.withOpacity(0.1),
-          child: Container(
+          // The child of InkResponse should be the actual content
+          child: Padding(
+            // Moved padding inside InkResponse's child
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
@@ -270,13 +301,18 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title,
-                          style: theme.textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                        title,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 4),
-                      Text(subtitle,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant)),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                 ),
