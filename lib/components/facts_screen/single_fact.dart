@@ -8,6 +8,7 @@ import '../../constants/selectors.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../services/drift_fact_service.dart';
 import '../../state_providers/favorite_fact_ids.dart';
+import 'report_fact_dialog.dart';
 
 class SingleFact extends ConsumerWidget {
   final AiFactDto aiFact;
@@ -27,20 +28,6 @@ class SingleFact extends ConsumerWidget {
     await DriftFactService.changeFactFavoriteStatus(aiFact, newValue);
   }
 
-  // void shareFact() {
-  //   final shareText = '"${aiFact.content}"\n\nShared via Quotely';
-  //   SharePlus.instance.share(
-  //     ShareParams(
-  //       text: shareText,
-  //       subject: 'Amazing quote by Quotely',
-  //       sharePositionOrigin: Rect.fromPoints(
-  //         Offset.zero,
-  //         const Offset(0, 0),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   Future<void> shareFact() async {
     final shareText = '''
 "${aiFact.content}"
@@ -52,6 +39,15 @@ Shared via Quotely
       shareText,
       subject: 'Amazing fact from Quotely',
       sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
+    );
+  }
+
+  void _showReportFactDialog(BuildContext context, AiFactDto fact) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return ReportFactDialog(fact: fact);
+      },
     );
   }
 
@@ -117,6 +113,16 @@ Shared via Quotely
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    IconButton(
+                      onPressed: () => _showReportFactDialog(context, aiFact),
+                      icon: Icon(
+                        Icons.flag_outlined, // Report icon
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                      splashRadius: 20,
+                    ),
+
                     // Share button
                     IconButton(
                       onPressed: shareFact,
@@ -277,6 +283,16 @@ class SingleFactSkeletor extends StatelessWidget {
                         onPressed: () {},
                         icon: Icon(
                           Icons.favorite_outline_rounded,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                        splashRadius: 20,
+                      ),
+
+                      IconButton(
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.flag_outlined,
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.6),
                         ),

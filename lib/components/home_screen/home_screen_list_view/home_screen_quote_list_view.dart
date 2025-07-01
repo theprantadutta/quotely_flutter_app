@@ -10,6 +10,7 @@ import '../../../constants/selectors.dart';
 import '../../../screens/author_detail_screen.dart';
 import '../../../services/drift_quote_service.dart';
 import '../../../state_providers/favorite_quote_ids.dart';
+import '../report_quote_dialog.dart';
 
 class HomeScreenQuoteListView extends ConsumerStatefulWidget {
   final List<QuoteDto> quotes;
@@ -88,6 +89,15 @@ Shared via Quotely
         .read(favoriteQuoteIdsProvider.notifier)
         .addOrUpdateViaStatus(quote.id, newValue);
     await DriftQuoteService.changeQuoteUpdateStatus(quote, newValue);
+  }
+
+  void _showReportQuoteDialog(BuildContext context, QuoteDto quote) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return ReportQuoteDialog(quote: quote);
+      },
+    );
   }
 
   @override
@@ -242,6 +252,21 @@ Shared via Quotely
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: [
+                                GestureDetector(
+                                  onTap: () =>
+                                      _showReportQuoteDialog(context, quote),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Icon(
+                                      Icons.flag_outlined,
+                                      size: 20,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ),
                                 GestureDetector(
                                   onTap: () => _toggleFavorite(quote),
                                   child: Container(
@@ -437,6 +462,13 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
                           // Action buttons
                           Row(
                             children: [
+                              IconButton(
+                                icon: const Icon(Icons.flag_outlined, size: 20),
+                                onPressed: () => {},
+                                splashRadius: 20,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
                               IconButton(
                                 icon: const Icon(Icons.share, size: 20),
                                 onPressed: () => {},

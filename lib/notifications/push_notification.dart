@@ -4,7 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quotely_flutter_app/services/notification_service.dart';
 
 import '../navigation/app_navigation.dart';
 
@@ -13,7 +13,6 @@ class PushNotifications {
   static final _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   static const String _channelId = 'quotely_notification_channel';
-  static const String _initialSubscriptionKey = 'initial-subscription';
 
   // Main initialization
   static Future<void> init() async {
@@ -34,7 +33,8 @@ class PushNotifications {
       await _handleInitialMessage();
 
       // 6. Subscribe to topics (once)
-      await _subscribeToTopics();
+      // await _subscribeToTopics();
+      NotificationService().initializeNotificationPreferencesOnce();
     } catch (e) {
       debugPrint('PushNotifications initialization failed: $e');
     }
@@ -114,17 +114,17 @@ class PushNotifications {
   }
 
   // Topic Subscription
-  static Future<void> _subscribeToTopics() async {
-    final preferences = await SharedPreferences.getInstance();
-    final isAlreadySubscribed =
-        preferences.getBool(_initialSubscriptionKey) ?? false;
+  // static Future<void> _subscribeToTopics() async {
+  //   final preferences = await SharedPreferences.getInstance();
+  //   final isAlreadySubscribed =
+  //       preferences.getBool(_initialSubscriptionKey) ?? false;
 
-    if (!isAlreadySubscribed) {
-      await _firebaseMessaging.subscribeToTopic('all');
-      await preferences.setBool(_initialSubscriptionKey, true);
-      debugPrint('Subscribed to "all" topic');
-    }
-  }
+  //   if (!isAlreadySubscribed) {
+  //     await _firebaseMessaging.subscribeToTopic('all');
+  //     await preferences.setBool(_initialSubscriptionKey, true);
+  //     debugPrint('Subscribed to "all" topic');
+  //   }
+  // }
 
   // FCM Token Handling
   static Future<String?> getFCMToken({int maxRetries = 3}) async {

@@ -2,13 +2,14 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../../../constants/selectors.dart';
 import '../../../dtos/quote_dto.dart';
 import '../../../main.dart';
 import '../../../services/drift_quote_service.dart';
-import 'package:share_plus/share_plus.dart';
-
 import '../../../state_providers/favorite_quote_ids.dart';
+import '../report_quote_dialog.dart';
 import 'home_screen_grid_content.dart';
 
 class HomeScreenQuoteSingleGrid extends ConsumerStatefulWidget {
@@ -104,7 +105,8 @@ Shared via Quotely
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildTagsRow(context, isDarkTheme),
-                    _buildActionsRow(context, isCurrentFavorite),
+                    _buildActionsRow(
+                        context, isCurrentFavorite, widget.currentQuote),
                   ],
                 ),
               ],
@@ -151,13 +153,37 @@ Shared via Quotely
     );
   }
 
-  Widget _buildActionsRow(BuildContext context, bool isCurrentFavorite) {
+  void _showReportQuoteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return ReportQuoteDialog(quote: widget.currentQuote);
+      },
+    );
+  }
+
+  Widget _buildActionsRow(
+      BuildContext context, bool isCurrentFavorite, QuoteDto quote) {
     return Expanded(
-      flex: 3,
+      flex: 4,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
+            GestureDetector(
+              onTap: () => _showReportQuoteDialog(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  Icons.flag_outlined,
+                  size: 22,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
+              ),
+            ),
             GestureDetector(
               onTap: _toggleFavorite,
               child: Container(
@@ -324,6 +350,17 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                Icons.flag_outlined,
+                size: 20,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
+              ),
+            ),
             Container(
               padding: const EdgeInsets.all(8),
               child: AnimatedSwitcher(
