@@ -5,8 +5,8 @@ Quotely is a Flutter app designed for quote enthusiasts. It allows users to expl
 [![Download Latest APK](https://img.shields.io/badge/Download-Latest%20APK-brightgreen?style=for-the-badge&logo=android)](https://github.com/theprantadutta/quotely_flutter_app/releases/latest/download/quotely.apk)
 
 <p align="center">  
-  <img alt="Light Theme Screenshot" src="./screenshots/quotely_1_light.jpg" width="45%" />  
-  <img alt="Dark Theme Screenshot" src="./screenshots/quotely_1_dark.jpg" width="45%" />  
+  <img alt="Light Theme Screenshot" src="./screenshots/1_quotely_light.jpg" width="45%" />  
+  <img alt="Dark Theme Screenshot" src="./screenshots/1_quotely_dark.jpg" width="45%" />  
 </p>  
 
 ## Features  
@@ -26,33 +26,33 @@ Quotely is a Flutter app designed for quote enthusiasts. It allows users to expl
 ## Screenshots  
 
 <p align="center">  
-  <img alt="Light Theme Screenshot" src="./screenshots/quotely_1_light.jpg" width="45%" />  
-  <img alt="Dark Theme Screenshot" src="./screenshots/quotely_1_dark.jpg" width="45%" />  
+  <img alt="Light Theme Screenshot" src="./screenshots/1_quotely_light.jpg" width="45%" />  
+  <img alt="Dark Theme Screenshot" src="./screenshots/1_quotely_dark.jpg" width="45%" />  
 </p>  
 
 <p align="center">  
-  <img alt="Light Theme Screenshot" src="./screenshots/quotely_2_light.jpg" width="45%" />  
-  <img alt="Dark Theme Screenshot" src="./screenshots/quotely_2_dark.jpg" width="45%" />  
+  <img alt="Light Theme Screenshot" src="./screenshots/2_quotely_light.jpg" width="45%" />  
+  <img alt="Dark Theme Screenshot" src="./screenshots/2_quotely_dark.jpg" width="45%" />  
 </p>  
 
 <p align="center">  
-  <img alt="Light Theme Screenshot" src="./screenshots/quotely_3_light.jpg" width="45%" />  
-  <img alt="Dark Theme Screenshot" src="./screenshots/quotely_3_dark.jpg" width="45%" />  
+  <img alt="Light Theme Screenshot" src="./screenshots/3_quotely_light.jpg" width="45%" />  
+  <img alt="Dark Theme Screenshot" src="./screenshots/3_quotely_dark.jpg" width="45%" />  
 </p>  
 
 <p align="center">  
-  <img alt="Light Theme Screenshot" src="./screenshots/quotely_4_light.jpg" width="45%" />  
-  <img alt="Dark Theme Screenshot" src="./screenshots/quotely_4_dark.jpg" width="45%" />  
+  <img alt="Light Theme Screenshot" src="./screenshots/4_quotely_light.jpg" width="45%" />  
+  <img alt="Dark Theme Screenshot" src="./screenshots/4_quotely_dark.jpg" width="45%" />  
 </p>  
 
 <p align="center">  
-  <img alt="Light Theme Screenshot" src="./screenshots/quotely_5_light.jpg" width="45%" />  
-  <img alt="Dark Theme Screenshot" src="./screenshots/quotely_5_dark.jpg" width="45%" />  
+  <img alt="Light Theme Screenshot" src="./screenshots/5_quotely_light.jpg" width="45%" />  
+  <img alt="Dark Theme Screenshot" src="./screenshots/5_quotely_dark.jpg" width="45%" />  
 </p>  
 
 <p align="center">  
-  <img alt="Light Theme Screenshot" src="./screenshots/quotely_6_light.jpg" width="45%" />  
-  <img alt="Dark Theme Screenshot" src="./screenshots/quotely_6_dark.jpg" width="45%" />  
+  <img alt="Light Theme Screenshot" src="./screenshots/6_quotely_light.jpg" width="45%" />  
+  <img alt="Dark Theme Screenshot" src="./screenshots/6_quotely_dark.jpg" width="45%" />  
 </p>  
 </p>  
 
