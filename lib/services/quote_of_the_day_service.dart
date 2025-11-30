@@ -11,7 +11,8 @@ class QuoteOfTheDayService {
     required int pageSize,
   }) async {
     final response = await HttpService.get(
-        '$kApiUrl/$kGetAllQuoteOfTheDay?pageNumber=$pageNumber&pageSize=$pageSize');
+      '$kApiUrl/$kGetAllQuoteOfTheDay?pageNumber=$pageNumber&pageSize=$pageSize',
+    );
     if (response.statusCode == 200) {
       return QuoteOfTheDayResponseDto.fromJson(json.decode(response.data));
     }

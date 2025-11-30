@@ -42,9 +42,10 @@ class ScaleBuilder extends TransitionContainerBuilder<double> {
 
   @override
   Animation animation(AnimationController controller) {
-    return Tween(begin: pi / 6, end: pi / 3).animate(
-      CurvedAnimation(parent: controller, curve: curve),
-    );
+    return Tween(
+      begin: pi / 6,
+      end: pi / 3,
+    ).animate(CurvedAnimation(parent: controller, curve: curve));
   }
 
   @override
@@ -64,17 +65,15 @@ class FlipBuilder extends TransitionContainerBuilder<double> {
   final double height;
 
   /// Create flip builder
-  FlipBuilder(
-    this.height, {
-    required Curve curve,
-    required this.bottomChild,
-  }) : super(curve);
+  FlipBuilder(this.height, {required Curve curve, required this.bottomChild})
+    : super(curve);
 
   @override
   Animation animation(AnimationController controller) {
-    return Tween(begin: 0.0, end: pi / 2).animate(
-      CurvedAnimation(parent: controller, curve: curve),
-    );
+    return Tween(
+      begin: 0.0,
+      end: pi / 2,
+    ).animate(CurvedAnimation(parent: controller, curve: curve));
   }
 
   @override

@@ -6,20 +6,8 @@ const kBottomDestinations = <Widget>[
     icon: Icon(Icons.home_outlined),
     label: 'Home',
   ),
-  NavigationDestination(
-    icon: Icon(Icons.favorite_outline),
-    label: 'Favorites',
-  ),
-  NavigationDestination(
-    icon: Icon(Icons.person_2_outlined),
-    label: 'Authors',
-  ),
-  NavigationDestination(
-    icon: Icon(Icons.fact_check_outlined),
-    label: 'Facts',
-  ),
-  NavigationDestination(
-    icon: Icon(Icons.settings_outlined),
-    label: 'Settings',
-  ),
+  NavigationDestination(icon: Icon(Icons.favorite_outline), label: 'Favorites'),
+  NavigationDestination(icon: Icon(Icons.person_2_outlined), label: 'Authors'),
+  NavigationDestination(icon: Icon(Icons.fact_check_outlined), label: 'Facts'),
+  NavigationDestination(icon: Icon(Icons.settings_outlined), label: 'Settings'),
 ];

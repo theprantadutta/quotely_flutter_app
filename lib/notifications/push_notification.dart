@@ -88,7 +88,8 @@ class PushNotifications {
 
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
   }
 
@@ -119,10 +120,7 @@ class PushNotifications {
         DarwinInitializationSettings();
 
     const InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+        InitializationSettings(android: androidSettings, iOS: iosSettings);
 
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
@@ -189,13 +187,13 @@ class PushNotifications {
   }) async {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
-      _channelId,
-      'Quotely Notifications',
-      channelDescription: 'Notifications for new releases and updates.',
-      importance: Importance.max,
-      priority: Priority.max,
-      icon: '@mipmap/ic_launcher',
-    );
+          _channelId,
+          'Quotely Notifications',
+          channelDescription: 'Notifications for new releases and updates.',
+          importance: Importance.max,
+          priority: Priority.max,
+          icon: '@mipmap/ic_launcher',
+        );
 
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,

@@ -33,12 +33,15 @@ class LegalContentScreen extends StatelessWidget {
               styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
                 p: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
                 h1: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary),
-                h2: theme.textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
-                h3: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+                h2: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                h3: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             );
           }

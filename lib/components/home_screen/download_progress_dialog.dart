@@ -51,11 +51,13 @@ class _DownloadProgressDialogState extends State<DownloadProgressDialog> {
     } else if (status.isDenied) {
       // Permission denied, show a message or prompt
       debugPrint(
-          'Permission denied. You need this permission to install apps.');
+        'Permission denied. You need this permission to install apps.',
+      );
     } else if (status.isPermanentlyDenied) {
       // Permission permanently denied, direct user to app settings
       debugPrint(
-          'Permission permanently denied. Please enable it from settings.');
+        'Permission permanently denied. Please enable it from settings.',
+      );
       await openAppSettings(); // Open app settings to manually grant the permission
     }
   }
@@ -127,7 +129,8 @@ class _DownloadProgressDialogState extends State<DownloadProgressDialog> {
         return AlertDialog(
           title: const Text('Download Failed'),
           content: const Text(
-              'Failed to download the update after multiple attempts. Please try again later.'),
+            'Failed to download the update after multiple attempts. Please try again later.',
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text('Exit'),
@@ -149,7 +152,8 @@ class _DownloadProgressDialogState extends State<DownloadProgressDialog> {
         return AlertDialog(
           title: const Text('Download Complete 🚀'),
           content: const Text(
-              'The app has been downloaded successfully. You can now install it.'),
+            'The app has been downloaded successfully. You can now install it.',
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text('Install Now'),
@@ -168,10 +172,12 @@ class _DownloadProgressDialogState extends State<DownloadProgressDialog> {
 
   @override
   Widget build(BuildContext context) {
-    String downloadedSize =
-        (receivedBytes / (1024 * 1024)).toStringAsFixed(2); // Convert to MB
-    String totalSize =
-        (totalBytes / (1024 * 1024)).toStringAsFixed(2); // Convert to MB
+    String downloadedSize = (receivedBytes / (1024 * 1024)).toStringAsFixed(
+      2,
+    ); // Convert to MB
+    String totalSize = (totalBytes / (1024 * 1024)).toStringAsFixed(
+      2,
+    ); // Convert to MB
     final kPrimaryColor = Theme.of(context).primaryColor;
     return AlertDialog(
       title: const Text('Downloading Update'),

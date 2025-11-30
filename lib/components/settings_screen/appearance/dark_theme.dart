@@ -24,7 +24,7 @@ class _DarkThemeState extends State<DarkTheme> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Switch(
-            activeColor: kPrimaryColor,
+            activeThumbColor: kPrimaryColor,
             inactiveThumbColor: kPrimaryColor.withValues(alpha: 0.3),
             inactiveTrackColor: kPrimaryColor.withValues(alpha: 0.3),
             trackColor: WidgetStateProperty.all(
@@ -34,17 +34,14 @@ class _DarkThemeState extends State<DarkTheme> {
               kPrimaryColor.withValues(alpha: 0.2),
             ),
             value: QuotelyApp.of(context).isDarkMode,
-            onChanged: (value) => QuotelyApp.of(context).changeTheme(
-              value ? ThemeMode.dark : ThemeMode.light,
-            ),
+            onChanged: (value) => QuotelyApp.of(
+              context,
+            ).changeTheme(value ? ThemeMode.dark : ThemeMode.light),
           ),
           const SizedBox(width: 10),
           const Text(
             'Set Dark Theme',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           ),
         ],
       ),

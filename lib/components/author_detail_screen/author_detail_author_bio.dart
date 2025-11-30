@@ -24,17 +24,19 @@ class AuthorDetailAuthorBio extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkTheme ? Colors.grey[900]!.withOpacity(0.6) : Colors.white,
+        color: isDarkTheme
+            ? Colors.grey[900]!.withValues(alpha: 0.6)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
         border: Border.all(
-          color: theme.primaryColor.withOpacity(0.1),
+          color: theme.primaryColor.withValues(alpha: 0.1),
           width: 1.5,
         ),
       ),
@@ -47,7 +49,7 @@ class AuthorDetailAuthorBio extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: theme.primaryColor.withOpacity(0.3),
+                  color: theme.primaryColor.withValues(alpha: 0.3),
                   width: 3,
                 ),
               ),
@@ -80,9 +82,9 @@ class AuthorDetailAuthorBio extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                     gradient: LinearGradient(
                       colors: [
-                        theme.primaryColor.withOpacity(0.2),
+                        theme.primaryColor.withValues(alpha: 0.2),
                         theme.primaryColor,
-                        theme.primaryColor.withOpacity(0.2),
+                        theme.primaryColor.withValues(alpha: 0.2),
                       ],
                     ),
                   ),
@@ -148,8 +150,12 @@ class AuthorDetailAuthorBio extends StatelessWidget {
     );
   }
 
-  Widget _buildMetaChip(BuildContext context, IconData icon, String text,
-      {VoidCallback? onTap}) {
+  Widget _buildMetaChip(
+    BuildContext context,
+    IconData icon,
+    String text, {
+    VoidCallback? onTap,
+  }) {
     final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
@@ -157,24 +163,17 @@ class AuthorDetailAuthorBio extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: theme.primaryColor.withOpacity(0.1),
+          color: theme.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 14,
-              color: theme.primaryColor,
-            ),
+            Icon(icon, size: 14, color: theme.primaryColor),
             const SizedBox(width: 6),
             Text(
               text,
-              style: TextStyle(
-                fontSize: 12,
-                color: theme.primaryColor,
-              ),
+              style: TextStyle(fontSize: 12, color: theme.primaryColor),
             ),
           ],
         ),
@@ -202,18 +201,19 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color:
-              isDarkTheme ? Colors.grey[900]!.withOpacity(0.6) : Colors.white,
+          color: isDarkTheme
+              ? Colors.grey[900]!.withValues(alpha: 0.6)
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
           ],
           border: Border.all(
-            color: theme.primaryColor.withOpacity(0.1),
+            color: theme.primaryColor.withValues(alpha: 0.1),
             width: 1.5,
           ),
         ),
@@ -226,7 +226,7 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: theme.primaryColor.withOpacity(0.3),
+                    color: theme.primaryColor.withValues(alpha: 0.3),
                     width: 3,
                   ),
                 ),
@@ -259,9 +259,9 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
                       borderRadius: BorderRadius.circular(2),
                       gradient: LinearGradient(
                         colors: [
-                          theme.primaryColor.withOpacity(0.2),
+                          theme.primaryColor.withValues(alpha: 0.2),
                           theme.primaryColor,
-                          theme.primaryColor.withOpacity(0.2),
+                          theme.primaryColor.withValues(alpha: 0.2),
                         ],
                       ),
                     ),
@@ -327,8 +327,12 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
     );
   }
 
-  Widget _buildMetaChip(BuildContext context, IconData icon, String text,
-      {VoidCallback? onTap}) {
+  Widget _buildMetaChip(
+    BuildContext context,
+    IconData icon,
+    String text, {
+    VoidCallback? onTap,
+  }) {
     final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
@@ -336,24 +340,17 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: theme.primaryColor.withOpacity(0.1),
+          color: theme.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 14,
-              color: theme.primaryColor,
-            ),
+            Icon(icon, size: 14, color: theme.primaryColor),
             const SizedBox(width: 6),
             Text(
               text,
-              style: TextStyle(
-                fontSize: 12,
-                color: theme.primaryColor,
-              ),
+              style: TextStyle(fontSize: 12, color: theme.primaryColor),
             ),
           ],
         ),

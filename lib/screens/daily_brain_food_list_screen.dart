@@ -13,10 +13,7 @@ class DailyBrainFoodListScreen extends StatelessWidget {
       title: 'All Daily Brain Food',
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 10,
-          ),
+          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
           child: DailyBrainFoodListComponent(),
         ),
       ),

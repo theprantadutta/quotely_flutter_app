@@ -17,50 +17,29 @@ void showSuccessToast({
   required BuildContext context,
   required String title,
   required String description,
-}) =>
-    MotionToast.success(
-      title: Text(
-        title,
-        style: kTitleTextStyle,
-      ),
-      description: Text(
-        description,
-        style: kDescriptionTextStyle,
-      ),
-      toastDuration: const Duration(seconds: 3),
-      barrierColor: Theme.of(context).primaryColor,
-    ).show(context);
+}) => MotionToast.success(
+  title: Text(title, style: kTitleTextStyle),
+  description: Text(description, style: kDescriptionTextStyle),
+  toastDuration: const Duration(seconds: 3),
+  barrierColor: Theme.of(context).primaryColor,
+).show(context);
 
 void showWarningToast({
   required BuildContext context,
   required String title,
   required String description,
-}) =>
-    MotionToast.warning(
-      title: Text(
-        title,
-        style: kTitleTextStyle,
-      ),
-      description: Text(
-        description,
-        style: kDescriptionTextStyle,
-      ),
-      toastDuration: const Duration(seconds: 3),
-    ).show(context);
+}) => MotionToast.warning(
+  title: Text(title, style: kTitleTextStyle),
+  description: Text(description, style: kDescriptionTextStyle),
+  toastDuration: const Duration(seconds: 3),
+).show(context);
 
 void showErrorToast({
   required BuildContext context,
   required String title,
   required String description,
-}) =>
-    MotionToast.error(
-      title: Text(
-        title,
-        style: kTitleTextStyle,
-      ),
-      description: Text(
-        description,
-        style: kDescriptionTextStyle,
-      ),
-      toastDuration: const Duration(seconds: 5),
-    ).show(context);
+}) => MotionToast.error(
+  title: Text(title, style: kTitleTextStyle),
+  description: Text(description, style: kDescriptionTextStyle),
+  toastDuration: const Duration(seconds: 5),
+).show(context);

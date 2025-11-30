@@ -10,10 +10,7 @@ class AiFactResponseDto {
   final List<AiFactDto> aiFacts;
   final PaginationDto pagination;
 
-  AiFactResponseDto({
-    required this.aiFacts,
-    required this.pagination,
-  });
+  AiFactResponseDto({required this.aiFacts, required this.pagination});
 
   /// Connect the generated [_$AiFactResponseDtoFromJson] function to the `fromJson`
   /// factory.

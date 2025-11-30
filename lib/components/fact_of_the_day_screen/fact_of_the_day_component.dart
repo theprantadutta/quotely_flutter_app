@@ -27,9 +27,8 @@ class FactOfTheDayComponent extends ConsumerWidget {
           onRetryPressed: () => ref.refresh(fetchTodayFactOfTheDayProvider),
         ),
       ),
-      loading: () => const Skeletonizer(
-        child: SingleFactOfTheDayComponentSkeletor(),
-      ),
+      loading: () =>
+          const Skeletonizer(child: SingleFactOfTheDayComponentSkeletor()),
     );
   }
 }

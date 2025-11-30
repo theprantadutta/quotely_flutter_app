@@ -20,12 +20,9 @@ class DailyBrainFoodComponent extends ConsumerWidget {
           category: data.aiFactCategory,
         );
       },
-      error: (err, stack) => const Center(
-        child: Text('Something Went Wrong'),
-      ),
-      loading: () => const Skeletonizer(
-        child: SingleFactOfTheDayComponentSkeletor(),
-      ),
+      error: (err, stack) => const Center(child: Text('Something Went Wrong')),
+      loading: () =>
+          const Skeletonizer(child: SingleFactOfTheDayComponentSkeletor()),
     );
   }
 }

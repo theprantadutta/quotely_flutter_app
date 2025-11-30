@@ -31,10 +31,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
         children: [
           Text(
             'Quote Date: ${DateFormat('dd MMM, yyyy').format(quoteDate)}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           Column(
             children: [
@@ -51,12 +48,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
                   color: kPrimaryColor,
                 ),
               ),
-              Text(
-                content,
-                style: const TextStyle(
-                  fontSize: 18,
-                ),
-              ),
+              Text(content, style: const TextStyle(fontSize: 18)),
               const SizedBox(height: 10),
               Align(
                 alignment: Alignment.centerRight,
@@ -97,10 +89,7 @@ class SingleQuoteOfTheComponentSkeletor extends StatelessWidget {
         children: [
           const Text(
             'Quote Date: 15 Nov, 2024',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           Column(
             children: [
@@ -119,19 +108,14 @@ class SingleQuoteOfTheComponentSkeletor extends StatelessWidget {
               ),
               const Text(
                 'Every time you smile at someone, it is an action of love, a gift to that person, a beautiful thing',
-                style: TextStyle(
-                  fontSize: 18,
-                ),
+                style: TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 10),
               const Align(
                 alignment: Alignment.centerRight,
                 child: Text(
                   '- MOther Teresa',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
               ),
             ],

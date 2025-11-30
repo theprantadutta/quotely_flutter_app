@@ -10,10 +10,7 @@ class AuthorResponseDto {
   final List<AuthorDto> authors;
   final PaginationDto pagination;
 
-  AuthorResponseDto({
-    required this.authors,
-    required this.pagination,
-  });
+  AuthorResponseDto({required this.authors, required this.pagination});
 
   /// Connect the generated [_$AuthorResponseDtoFromJson] function to the `fromJson`
   /// factory.

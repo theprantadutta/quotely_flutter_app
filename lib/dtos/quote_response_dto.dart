@@ -10,10 +10,7 @@ class QuoteResponseDto {
   final List<QuoteDto> quotes;
   final PaginationDto pagination;
 
-  QuoteResponseDto({
-    required this.quotes,
-    required this.pagination,
-  });
+  QuoteResponseDto({required this.quotes, required this.pagination});
 
   /// Connect the generated [_$QuoteResponseDtoFromJson] function to the `fromJson`
   /// factory.

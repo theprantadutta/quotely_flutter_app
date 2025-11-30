@@ -26,13 +26,13 @@ class SingleFactOfTheDayComponent extends StatelessWidget {
         gradient: kGetDefaultGradient(context),
         boxShadow: [
           BoxShadow(
-            color: kPrimaryColor.withOpacity(0.05),
+            color: kPrimaryColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: kPrimaryColor.withOpacity(0.1)),
+        border: Border.all(color: kPrimaryColor.withValues(alpha: 0.1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -41,7 +41,7 @@ class SingleFactOfTheDayComponent extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: kPrimaryColor.withOpacity(0.1),
+              color: kPrimaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(30),
             ),
             child: Text(
@@ -65,7 +65,7 @@ class SingleFactOfTheDayComponent extends StatelessWidget {
           Text(
             'Fact Date: ${DateFormat('dd MMM, yyyy').format(factDate)}',
             style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -77,9 +77,7 @@ class SingleFactOfTheDayComponent extends StatelessWidget {
 }
 
 class SingleFactOfTheDayComponentSkeletor extends StatelessWidget {
-  const SingleFactOfTheDayComponentSkeletor({
-    super.key,
-  });
+  const SingleFactOfTheDayComponentSkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -93,13 +91,13 @@ class SingleFactOfTheDayComponentSkeletor extends StatelessWidget {
         gradient: kGetDefaultGradient(context),
         boxShadow: [
           BoxShadow(
-            color: kPrimaryColor.withOpacity(0.05),
+            color: kPrimaryColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: kPrimaryColor.withOpacity(0.1)),
+        border: Border.all(color: kPrimaryColor.withValues(alpha: 0.1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -108,7 +106,7 @@ class SingleFactOfTheDayComponentSkeletor extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: kPrimaryColor.withOpacity(0.1),
+              color: kPrimaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(30),
             ),
             child: Text(
@@ -132,7 +130,7 @@ class SingleFactOfTheDayComponentSkeletor extends StatelessWidget {
           Text(
             'Fact Date: 25 Jan, 2024',
             style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),

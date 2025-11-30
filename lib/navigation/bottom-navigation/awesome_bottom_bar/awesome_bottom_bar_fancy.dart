@@ -45,26 +45,11 @@ class _AwesomeBottomBarFancyBorderLayoutState
         styleIconFooter: StyleIconFooter.dot,
         pad: 2,
         items: const [
-          TabItem(
-            icon: Icons.home_outlined,
-            title: 'Home',
-          ),
-          TabItem(
-            icon: Icons.favorite_outline,
-            title: 'Favorites',
-          ),
-          TabItem(
-            icon: Icons.person_2_outlined,
-            title: 'Authors',
-          ),
-          TabItem(
-            icon: Icons.fact_check_outlined,
-            title: 'Facts',
-          ),
-          TabItem(
-            icon: Icons.settings_outlined,
-            title: 'Settings',
-          ),
+          TabItem(icon: Icons.home_outlined, title: 'Home'),
+          TabItem(icon: Icons.favorite_outline, title: 'Favorites'),
+          TabItem(icon: Icons.person_2_outlined, title: 'Authors'),
+          TabItem(icon: Icons.fact_check_outlined, title: 'Facts'),
+          TabItem(icon: Icons.settings_outlined, title: 'Settings'),
         ],
       ),
     );

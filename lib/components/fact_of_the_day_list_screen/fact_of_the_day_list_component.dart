@@ -41,10 +41,7 @@ class _FactOfTheDayListComponentState
             pageNumber++;
           });
           final _ = await ref.refresh(
-            fetchAllFactOfTheDayProvider(
-              pageNumber,
-              pageSize,
-            ).future,
+            fetchAllFactOfTheDayProvider(pageNumber, pageSize).future,
           );
         }
       } catch (e) {
@@ -66,10 +63,7 @@ class _FactOfTheDayListComponentState
     debugPrint('Refreshing Facts...');
     try {
       final _ = await ref.refresh(
-        fetchAllFactOfTheDayProvider(
-          pageNumber,
-          pageSize,
-        ).future,
+        fetchAllFactOfTheDayProvider(pageNumber, pageSize).future,
       );
       setState(() {
         pageNumber = 1;
@@ -115,7 +109,8 @@ class _FactOfTheDayListComponentState
               itemBuilder: (context, index) {
                 if (index == facts.length) {
                   return Skeletonizer(
-                      child: const SingleFactOfTheDaySkeletor());
+                    child: const SingleFactOfTheDaySkeletor(),
+                  );
                 }
                 final currentFact = facts[index];
                 return SingleFactOfTheDay(
@@ -128,9 +123,8 @@ class _FactOfTheDayListComponentState
           },
           error: (error, stackTrace) => Center(
             child: SomethingWentWrong(
-              onRetryPressed: () => ref.refresh(
-                fetchAllFactOfTheDayProvider(1, 10),
-              ),
+              onRetryPressed: () =>
+                  ref.refresh(fetchAllFactOfTheDayProvider(1, 10)),
             ),
           ),
           loading: () {
@@ -149,7 +143,8 @@ class _FactOfTheDayListComponentState
               itemBuilder: (context, index) {
                 if (index == facts.length) {
                   return Skeletonizer(
-                      child: const SingleFactOfTheDaySkeletor());
+                    child: const SingleFactOfTheDaySkeletor(),
+                  );
                 }
                 final currentFact = facts[index];
                 return SingleFactOfTheDay(

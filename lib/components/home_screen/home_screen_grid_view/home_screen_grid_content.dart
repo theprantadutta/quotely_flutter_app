@@ -81,9 +81,7 @@ class HomeScreenGridContent extends StatelessWidget {
     );
   }
 
-  Widget _buildAuthorText(
-    Color authorColor,
-  ) {
+  Widget _buildAuthorText(Color authorColor) {
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(

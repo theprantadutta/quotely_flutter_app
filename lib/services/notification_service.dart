@@ -95,7 +95,8 @@ class NotificationService {
       // to *enable* based on preferences.
       if (kDebugMode) {
         print(
-            'Global notifications are disabled. Skipping specific topic subscriptions.');
+          'Global notifications are disabled. Skipping specific topic subscriptions.',
+        );
       }
     }
   }

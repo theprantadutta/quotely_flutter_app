@@ -142,20 +142,22 @@ class FactService {
         if (aiProviders.isNotEmpty) 'aiProviders': aiProviders.join(','),
       };
 
-      final uri = Uri.parse('$kApiUrl/$kGetAllAiFacts').replace(
-        queryParameters: queryParameters,
-      );
+      final uri = Uri.parse(
+        '$kApiUrl/$kGetAllAiFacts',
+      ).replace(queryParameters: queryParameters);
 
       final response = await HttpService.get(uri.toString());
 
       if (response.statusCode == 200) {
-        final aiFactResponseDto =
-            AiFactResponseDto.fromJson(json.decode(response.data));
+        final aiFactResponseDto = AiFactResponseDto.fromJson(
+          json.decode(response.data),
+        );
 
         // Save new facts to the local database before returning
         if (aiFactResponseDto.aiFacts.isNotEmpty) {
           await DriftFactService.saveNewFactsToDatabase(
-              aiFactResponseDto.aiFacts);
+            aiFactResponseDto.aiFacts,
+          );
         }
 
         // --- EFFICIENT FAVORITE CHECK (for Online Data) ---
@@ -169,7 +171,8 @@ class FactService {
         return aiFactResponseDto;
       }
       throw Exception(
-          'API request failed with status code: ${response.statusCode}');
+        'API request failed with status code: ${response.statusCode}',
+      );
     } catch (e) {
       // Fallback to local database if the API call fails
       final localFacts = await DriftFactService.getLocalFactsWithPagination(
@@ -195,8 +198,11 @@ class FactService {
       // Return the locally fetched data wrapped in the response DTO
       return AiFactResponseDto(
         aiFacts: factDtos,
-        pagination:
-            PaginationDto(pageNumber: 0, pageSize: 0, totalItemCount: 0),
+        pagination: PaginationDto(
+          pageNumber: 0,
+          pageSize: 0,
+          totalItemCount: 0,
+        ),
       );
     }
   }
@@ -242,8 +248,9 @@ class FactService {
       final response = await HttpService.get(url);
 
       if (response.statusCode == 200) {
-        final dynamic data =
-            response.data is String ? jsonDecode(response.data) : response.data;
+        final dynamic data = response.data is String
+            ? jsonDecode(response.data)
+            : response.data;
 
         if (data is List) {
           final categories = data.map((item) => item.toString()).toList();
@@ -253,19 +260,22 @@ class FactService {
           await prefs.setStringList(kCategoriesCacheKey, categories);
 
           debugPrint(
-              "Successfully fetched and cached ${categories.length} fact categories.");
+            "Successfully fetched and cached ${categories.length} fact categories.",
+          );
           return categories;
         }
         // If the data is not a list, it's an unexpected format.
         throw const FormatException(
-            'API response for categories was not a list.');
+          'API response for categories was not a list.',
+        );
       }
       // If the status code is not 200, throw to trigger the catch block.
       throw Exception('API request failed with status ${response.statusCode}');
     } catch (e) {
       if (kDebugMode) {
         print(
-            'API call for categories failed, falling back to SharedPreferences. Error: $e');
+          'API call for categories failed, falling back to SharedPreferences. Error: $e',
+        );
       }
 
       // --- OFFLINE FALLBACK ---

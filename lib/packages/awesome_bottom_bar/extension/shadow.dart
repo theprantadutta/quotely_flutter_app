@@ -10,5 +10,5 @@ List<BoxShadow> shadow = [
       offset: Offset(0, 6), // changes position of shadow
     )
   else
-    const BoxShadow(color: Colors.transparent)
+    const BoxShadow(color: Colors.transparent),
 ];

@@ -203,10 +203,7 @@ import 'package:quotely_flutter_app/navigation/bottom-navigation/bottom_destinat
 class BottomNavigationLayout extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const BottomNavigationLayout({
-    super.key,
-    required this.navigationShell,
-  });
+  const BottomNavigationLayout({super.key, required this.navigationShell});
 
   // This function handles tapping on the navigation bar items.
   // It tells go_router to switch to the correct branch (tab).
@@ -230,7 +227,8 @@ class BottomNavigationLayout extends StatelessWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final bool shouldPop = await showDialog(
+        final bool shouldPop =
+            await showDialog(
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Exit App?'),
@@ -275,9 +273,7 @@ class BottomNavigationLayout extends StatelessWidget {
           data: NavigationBarThemeData(
             iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
               (Set<WidgetState> states) => states.contains(WidgetState.selected)
-                  ? const IconThemeData(
-                      color: Colors.white,
-                    )
+                  ? const IconThemeData(color: Colors.white)
                   : const IconThemeData(),
             ),
           ),
@@ -302,19 +298,19 @@ class BottomNavigationLayout extends StatelessWidget {
               selectedIndex: navigationShell.currentIndex,
               indicatorColor: kPrimaryColor.withAlpha(230),
               destinations: kBottomDestinations,
-              labelTextStyle: WidgetStateProperty.resolveWith(
-                (states) {
-                  final style =
-                      TextStyle(fontSize: 12, fontWeight: FontWeight.w500);
-                  if (states.contains(WidgetState.selected)) {
-                    return style.copyWith(
-                      color: kPrimaryColor,
-                      fontWeight: FontWeight.w700,
-                    );
-                  }
-                  return style;
-                },
-              ),
+              labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                final style = TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                );
+                if (states.contains(WidgetState.selected)) {
+                  return style.copyWith(
+                    color: kPrimaryColor,
+                    fontWeight: FontWeight.w700,
+                  );
+                }
+                return style;
+              }),
             ),
           ),
         ),

@@ -92,8 +92,15 @@ class ConvexPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     var host = Rect.fromLTWH(0, 0, size.width, size.height);
-    var percent = textDirection == TextDirection.rtl ? (1 - leftPercent.value) : leftPercent.value;
-    var guest = Rect.fromLTWH(size.width * percent - width / 2, top, width, height);
+    var percent = textDirection == TextDirection.rtl
+        ? (1 - leftPercent.value)
+        : leftPercent.value;
+    var guest = Rect.fromLTWH(
+      size.width * percent - width / 2,
+      top,
+      width,
+      height,
+    );
     var path = _shape.getOuterPath(host, guest);
     canvas.drawPath(path, _shadowPaint);
     canvas.drawPath(path, _paint);
@@ -101,6 +108,7 @@ class ConvexPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ConvexPainter oldDelegate) {
-    return oldDelegate.leftPercent.value != leftPercent.value || oldDelegate._paint != _paint;
+    return oldDelegate.leftPercent.value != leftPercent.value ||
+        oldDelegate._paint != _paint;
   }
 }

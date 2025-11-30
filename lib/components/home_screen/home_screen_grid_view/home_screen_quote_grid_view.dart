@@ -45,11 +45,7 @@ class HomeScreenQuoteGridView extends StatelessWidget {
               : null,
         ),
         itemCount: quotes.length,
-        itemBuilder: (
-          BuildContext context,
-          int itemIndex,
-          int pageViewIndex,
-        ) {
+        itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
           final currentQuote = quotes[itemIndex];
           return HomeScreenQuoteSingleGrid(
             defaultHeight: defaultHeight,
@@ -81,15 +77,12 @@ class HomeScreenQuoteGridViewSkeletor extends StatelessWidget {
             scrollDirection: Axis.vertical,
           ),
           itemCount: 15,
-          itemBuilder: (
-            BuildContext context,
-            int itemIndex,
-            int pageViewIndex,
-          ) {
-            return HomeScreenQuoteSingleGridSkeletor(
-              defaultHeight: defaultHeight,
-            );
-          },
+          itemBuilder:
+              (BuildContext context, int itemIndex, int pageViewIndex) {
+                return HomeScreenQuoteSingleGridSkeletor(
+                  defaultHeight: defaultHeight,
+                );
+              },
         ),
       ),
     );

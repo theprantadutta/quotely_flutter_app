@@ -6,8 +6,9 @@ int compareVersion(String v1, String v2) {
   final v1Parts = parseVersion(v1);
   final v2Parts = parseVersion(v2);
 
-  final maxLength =
-      v1Parts.length > v2Parts.length ? v1Parts.length : v2Parts.length;
+  final maxLength = v1Parts.length > v2Parts.length
+      ? v1Parts.length
+      : v2Parts.length;
 
   for (var i = 0; i < maxLength; i++) {
     final v1Part = i < v1Parts.length ? v1Parts[i] : 0;

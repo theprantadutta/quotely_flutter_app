@@ -29,9 +29,8 @@ class WeirdFactWednesdayComponent extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const Skeletonizer(
-        child: SingleFactOfTheDayComponentSkeletor(),
-      ),
+      loading: () =>
+          const Skeletonizer(child: SingleFactOfTheDayComponentSkeletor()),
     );
   }
 }

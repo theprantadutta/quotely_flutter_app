@@ -57,10 +57,7 @@ import 'package:quotely_flutter_app/dtos/author_dto.dart';
 class AuthorDetailAuthorQuotes extends StatelessWidget {
   final AuthorDto author;
 
-  const AuthorDetailAuthorQuotes({
-    super.key,
-    required this.author,
-  });
+  const AuthorDetailAuthorQuotes({super.key, required this.author});
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +75,13 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                theme.primaryColor.withOpacity(0.08),
-                theme.primaryColor.withOpacity(0.02),
+                theme.primaryColor.withValues(alpha: 0.08),
+                theme.primaryColor.withValues(alpha: 0.02),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: theme.primaryColor.withOpacity(0.15),
+              color: theme.primaryColor.withValues(alpha: 0.15),
               width: 1.5,
             ),
           ),
@@ -96,7 +93,7 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.format_quote_rounded,
-                    color: theme.primaryColor.withOpacity(0.7),
+                    color: theme.primaryColor.withValues(alpha: 0.7),
                     size: 24,
                   ),
                   const SizedBox(width: 10),
@@ -117,7 +114,7 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
                   const SizedBox(width: 10),
                   Icon(
                     Icons.format_quote_rounded,
-                    color: theme.primaryColor.withOpacity(0.7),
+                    color: theme.primaryColor.withValues(alpha: 0.7),
                     size: 24,
                   ),
                 ],
@@ -128,7 +125,7 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
               // Description with subtle divider
               if (author.description.isNotEmpty) ...[
                 Divider(
-                  color: theme.primaryColor.withOpacity(0.1),
+                  color: theme.primaryColor.withValues(alpha: 0.1),
                   thickness: 1,
                   indent: 40,
                   endIndent: 40,
@@ -151,9 +148,7 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Keep the original quote list component exactly as is
-        AuthorDetailAuthorQuoteList(
-          author: author,
-        ),
+        AuthorDetailAuthorQuoteList(author: author),
       ],
     );
   }

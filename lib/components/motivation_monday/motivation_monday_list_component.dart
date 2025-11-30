@@ -40,10 +40,7 @@ class _MotivationMondayListComponentState
             pageNumber++;
           });
           final _ = await ref.refresh(
-            fetchAllMotivationMondayProvider(
-              pageNumber,
-              pageSize,
-            ).future,
+            fetchAllMotivationMondayProvider(pageNumber, pageSize).future,
           );
         }
       } catch (e) {
@@ -65,10 +62,7 @@ class _MotivationMondayListComponentState
     debugPrint('Refreshing Quotes...');
     try {
       final _ = await ref.refresh(
-        fetchAllMotivationMondayProvider(
-          pageNumber,
-          pageSize,
-        ).future,
+        fetchAllMotivationMondayProvider(pageNumber, pageSize).future,
       );
       setState(() {
         pageNumber = 1;
@@ -113,7 +107,8 @@ class _MotivationMondayListComponentState
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
                   return Skeletonizer(
-                      child: const SingleQuoteOfTheDaySkeletor());
+                    child: const SingleQuoteOfTheDaySkeletor(),
+                  );
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(
@@ -125,9 +120,8 @@ class _MotivationMondayListComponentState
               },
             );
           },
-          error: (error, stackTrace) => const Center(
-            child: Text('Something Went Wrong'),
-          ),
+          error: (error, stackTrace) =>
+              const Center(child: Text('Something Went Wrong')),
           loading: () {
             if (quotes.isEmpty) {
               return Skeletonizer(
@@ -144,7 +138,8 @@ class _MotivationMondayListComponentState
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
                   return Skeletonizer(
-                      child: const SingleQuoteOfTheDaySkeletor());
+                    child: const SingleQuoteOfTheDaySkeletor(),
+                  );
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(

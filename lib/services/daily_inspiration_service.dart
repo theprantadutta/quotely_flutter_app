@@ -11,7 +11,8 @@ class DailyInspirationService {
     required int pageSize,
   }) async {
     final response = await HttpService.get(
-        '$kApiUrl/$kGetAllDailyInspiration?pageNumber=$pageNumber&pageSize=$pageSize');
+      '$kApiUrl/$kGetAllDailyInspiration?pageNumber=$pageNumber&pageSize=$pageSize',
+    );
     if (response.statusCode == 200) {
       return DailyInspirationResponseDto.fromJson(json.decode(response.data));
     }
@@ -19,8 +20,9 @@ class DailyInspirationService {
   }
 
   Future<DailyInspirationDto> getTodayDailyInspirationFromDatabase() async {
-    final response =
-        await HttpService.get('$kApiUrl/$kGetTodayDailyInspiration');
+    final response = await HttpService.get(
+      '$kApiUrl/$kGetTodayDailyInspiration',
+    );
     if (response.statusCode == 200) {
       return DailyInspirationDto.fromJson(json.decode(response.data));
     }

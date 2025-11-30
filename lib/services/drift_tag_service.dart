@@ -14,7 +14,7 @@ class DriftTagService {
     final db = getIt.get<AppDatabase>();
     final query = db.select(db.tags)
       ..orderBy([
-        (t) => OrderingTerm(expression: t.quoteCount, mode: OrderingMode.desc)
+        (t) => OrderingTerm(expression: t.quoteCount, mode: OrderingMode.desc),
       ]);
     return query.watch();
   }
@@ -24,7 +24,7 @@ class DriftTagService {
     final db = getIt.get<AppDatabase>();
     final query = db.select(db.tags)
       ..orderBy([
-        (t) => OrderingTerm(expression: t.quoteCount, mode: OrderingMode.desc)
+        (t) => OrderingTerm(expression: t.quoteCount, mode: OrderingMode.desc),
       ]);
     return query.get();
   }
@@ -47,11 +47,7 @@ class DriftTagService {
         );
 
         // Insert the tag, or update it if a tag with the same ID already exists.
-        batch.insert(
-          db.tags,
-          tagCompanion,
-          mode: InsertMode.insertOrReplace,
-        );
+        batch.insert(db.tags, tagCompanion, mode: InsertMode.insertOrReplace);
       }
     });
   }
@@ -67,7 +63,7 @@ class DriftTagService {
     // The query will order by the most used tags first.
     final query = db.select(db.tags)
       ..orderBy([
-        (t) => OrderingTerm(expression: t.quoteCount, mode: OrderingMode.desc)
+        (t) => OrderingTerm(expression: t.quoteCount, mode: OrderingMode.desc),
       ])
       ..limit(pageSize, offset: offset);
 

@@ -29,10 +29,7 @@ class _FactsListState extends State<FactsList> {
             children: [
               Text(
                 'All Favorite Facts',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -73,10 +70,7 @@ class _FactsListState extends State<FactsList> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.hourglass_empty_outlined,
-                          size: 80,
-                        ),
+                        Icon(Icons.hourglass_empty_outlined, size: 80),
                         SizedBox(height: 10),
                         Text(
                           'No Favorites added yet.',
@@ -90,9 +84,7 @@ class _FactsListState extends State<FactsList> {
                         Text(
                           'When you like a fact, it\'s going to show up here, this section helps you to read your Favorite facts over and over',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
+                          style: TextStyle(fontSize: 15),
                         ),
                       ],
                     ),

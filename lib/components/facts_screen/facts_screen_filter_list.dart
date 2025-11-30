@@ -184,8 +184,9 @@ class _FactsScreenFilterListState extends ConsumerState<FactsScreenFilterList> {
     }
 
     try {
-      final fetchedCategories =
-          await ref.read(fetchAllFactsCategoriesProvider.future);
+      final fetchedCategories = await ref.read(
+        fetchAllFactsCategoriesProvider.future,
+      );
 
       setState(() {
         hasError = false;
@@ -312,8 +313,9 @@ class _FactsScreenFilterListState extends ConsumerState<FactsScreenFilterList> {
         itemBuilder: (context, index) {
           if (index < aiCategories.length) {
             final currentCategory = aiCategories[index];
-            final isSelected =
-                widget.allSelectedCategories.contains(currentCategory);
+            final isSelected = widget.allSelectedCategories.contains(
+              currentCategory,
+            );
             return GestureDetector(
               onTap: () => widget.onSelectedCategoryChange(currentCategory),
               child: AllFilterList(

@@ -35,8 +35,9 @@ class HomeScreenTopBar extends StatelessWidget {
                 onTap: () {
                   if (!kDebugMode) return;
                   final db = getIt.get<AppDatabase>();
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => DriftDbViewer(db)));
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => DriftDbViewer(db)),
+                  );
                 },
                 // child: Image.asset(
                 //   'assets/quotely_icon.png',
@@ -51,10 +52,7 @@ class HomeScreenTopBar extends StatelessWidget {
               const SizedBox(width: 10),
               const Text(
                 'Quotely',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
               const SizedBox(width: 10),
               if (loading)
@@ -75,8 +73,8 @@ class HomeScreenTopBar extends StatelessWidget {
                   color: !isGridView
                       ? iconColor
                       : isDarkTheme
-                          ? Colors.grey.shade700
-                          : Colors.grey.shade400,
+                      ? Colors.grey.shade700
+                      : Colors.grey.shade400,
                 ),
               ),
               const SizedBox(width: 10),
@@ -90,8 +88,8 @@ class HomeScreenTopBar extends StatelessWidget {
                   color: isGridView
                       ? iconColor
                       : isDarkTheme
-                          ? Colors.grey.shade700
-                          : Colors.grey.shade400,
+                      ? Colors.grey.shade700
+                      : Colors.grey.shade400,
                 ),
               ),
             ],

@@ -20,12 +20,9 @@ class QuoteOfTheDayComponent extends ConsumerWidget {
           content: data.content,
         );
       },
-      error: (err, stack) => const Center(
-        child: Text('Something Went Wrong'),
-      ),
-      loading: () => const Skeletonizer(
-        child: SingleQuoteOfTheComponentSkeletor(),
-      ),
+      error: (err, stack) => const Center(child: Text('Something Went Wrong')),
+      loading: () =>
+          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
     );
   }
 }

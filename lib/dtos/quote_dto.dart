@@ -34,16 +34,16 @@ class QuoteDto {
   static String _toJson(DateTime date) => date.toUtc().toIso8601String();
 
   factory QuoteDto.fromQuote(Quote quote) => QuoteDto(
-        id: quote.id,
-        author: quote.author,
-        content: quote.content,
-        tags: quote.tags.split(','),
-        authorSlug: quote.authorSlug,
-        length: quote.length,
-        isFavorite: quote.isFavorite,
-        dateAdded: quote.dateAdded,
-        dateModified: quote.dateModified,
-      );
+    id: quote.id,
+    author: quote.author,
+    content: quote.content,
+    tags: quote.tags.split(','),
+    authorSlug: quote.authorSlug,
+    length: quote.length,
+    isFavorite: quote.isFavorite,
+    dateAdded: quote.dateAdded,
+    dateModified: quote.dateModified,
+  );
 
   static List<QuoteDto> fromQuoteList(List<Quote> quotes) {
     return quotes.map((quote) => QuoteDto.fromQuote(quote)).toList();

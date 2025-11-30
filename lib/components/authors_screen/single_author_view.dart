@@ -62,7 +62,7 @@ class SingleAuthorView extends StatelessWidget {
                     gradient: kGetDefaultGradient(context),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 6,
                         offset: const Offset(0, 3),
                       ),
@@ -108,10 +108,12 @@ class SingleAuthorView extends StatelessWidget {
 
                 // Quote count chip
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: theme.primaryColor.withOpacity(0.1),
+                    color: theme.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -158,7 +160,7 @@ class SingleAuthorViewSkeletor extends StatelessWidget {
                     gradient: kGetDefaultGradient(context),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 6,
                         offset: const Offset(0, 3),
                       ),
@@ -204,10 +206,12 @@ class SingleAuthorViewSkeletor extends StatelessWidget {
 
                 // Quote count chip
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: theme.primaryColor.withOpacity(0.1),
+                    color: theme.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

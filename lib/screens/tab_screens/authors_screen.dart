@@ -19,10 +19,7 @@ class _AuthorsScreenState extends State<AuthorsScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 10,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Column(
           children: [
             const TopNavigationBar(title: 'Authors'),
@@ -30,9 +27,7 @@ class _AuthorsScreenState extends State<AuthorsScreen> {
               labelText: 'Enter Author Name',
               controller: authorSearchController,
             ),
-            AuthorList(
-              authorSearchController: authorSearchController,
-            ),
+            AuthorList(authorSearchController: authorSearchController),
           ],
         ),
       ),

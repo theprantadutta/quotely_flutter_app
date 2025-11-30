@@ -13,10 +13,7 @@ class WeirdFactWednesdayListScreen extends StatelessWidget {
       title: 'All Weird Fact Wednesday',
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 10,
-          ),
+          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
           child: WeirdFactWednesdayListComponent(),
         ),
       ),

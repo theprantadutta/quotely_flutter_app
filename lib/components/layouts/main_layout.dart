@@ -32,29 +32,20 @@ class MainLayout extends StatelessWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          backgroundColor:
-              kPrimaryColor.withValues(alpha: isDarkTheme ? 0.6 : 0.9),
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-          title: MainLayoutAppBar(
-            title: title,
+          backgroundColor: kPrimaryColor.withValues(
+            alpha: isDarkTheme ? 0.6 : 0.9,
           ),
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          title: MainLayoutAppBar(title: title),
           leading: IconButton(
             onPressed: () => context.pop(),
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              weight: 20,
-            ),
+            icon: const Icon(Icons.arrow_back, color: Colors.white, weight: 20),
           ),
           bottom: bottom,
         ),
         body: SingleChildScrollView(
-            child: Stack(
-          children: [
-            DarkGradientBackground(),
-            body,
-          ],
-        )),
+          child: Stack(children: [DarkGradientBackground(), body]),
+        ),
         floatingActionButton: kReleaseMode
             ? null // Don't show FloatingActionButton in release (production) mode
             : const FloatingThemeChangeButton(),
@@ -66,10 +57,7 @@ class MainLayout extends StatelessWidget {
 class MainLayoutAppBar extends StatelessWidget {
   final String title;
 
-  const MainLayoutAppBar({
-    super.key,
-    required this.title,
-  });
+  const MainLayoutAppBar({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

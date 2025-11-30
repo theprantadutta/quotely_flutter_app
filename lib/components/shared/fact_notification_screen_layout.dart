@@ -21,10 +21,7 @@ class FactNotificationScreenLayout extends StatelessWidget {
     return MainLayout(
       title: title,
       body: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 10,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Column(
           children: [
             factWidget,

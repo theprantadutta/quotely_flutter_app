@@ -43,15 +43,16 @@ class TagService {
         'pageSize': pageSize.toString(),
       };
 
-      final uri = Uri.parse('$kApiUrl/$kGetAllTags').replace(
-        queryParameters: queryParameters,
-      );
+      final uri = Uri.parse(
+        '$kApiUrl/$kGetAllTags',
+      ).replace(queryParameters: queryParameters);
 
       final response = await HttpService.get(uri.toString());
 
       if (response.statusCode == 200) {
-        final tagResponseDto =
-            TagResponseDto.fromJson(json.decode(response.data));
+        final tagResponseDto = TagResponseDto.fromJson(
+          json.decode(response.data),
+        );
 
         // Save the fresh tags to the local database for offline use
         if (tagResponseDto.tags.isNotEmpty) {
@@ -61,11 +62,13 @@ class TagService {
         return tagResponseDto;
       }
       throw Exception(
-          'API request for tags failed with status code: ${response.statusCode}');
+        'API request for tags failed with status code: ${response.statusCode}',
+      );
     } catch (e) {
       if (kDebugMode) {
         print(
-            'API call failed, falling back to local database for tags. Error: $e');
+          'API call failed, falling back to local database for tags. Error: $e',
+        );
       }
 
       // --- OFFLINE FALLBACK ---
@@ -81,8 +84,11 @@ class TagService {
       return TagResponseDto(
         tags: tagDtos,
         // Provide empty pagination data for the offline fallback
-        pagination:
-            PaginationDto(pageNumber: 0, pageSize: 0, totalItemCount: 0),
+        pagination: PaginationDto(
+          pageNumber: 0,
+          pageSize: 0,
+          totalItemCount: 0,
+        ),
       );
     }
   }

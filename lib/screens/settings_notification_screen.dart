@@ -120,19 +120,28 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
             // --- 1. The Standalone Master Switch ---
             _buildMasterSwitchContainer(
               child: SwitchListTile(
-                title: const Text('Enable All Notifications',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                title: const Text(
+                  'Enable All Notifications',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 subtitle: Text(
                   'This is the main switch for all alerts from Quotely.',
                   style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 value: _notifications[kNotificationEnabled]!,
                 onChanged: (value) => _onNotificationSwitched(
-                    kNotificationEnabled, kNotificationAllTopic, value),
+                  kNotificationEnabled,
+                  kNotificationAllTopic,
+                  value,
+                ),
                 contentPadding: const EdgeInsets.only(
-                    left: 16, right: 8, top: 8, bottom: 8),
+                  left: 16,
+                  right: 8,
+                  top: 8,
+                  bottom: 8,
+                ),
               ),
             ),
 
@@ -151,27 +160,30 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                       title: 'Quote of the Day',
                       value: _notifications[kNotificationQuoteOfTheDay]!,
                       onSwitchChanged: (value) => _onNotificationSwitched(
-                          kNotificationQuoteOfTheDay,
-                          kNotificationQuoteOfTheDayTopic,
-                          value),
+                        kNotificationQuoteOfTheDay,
+                        kNotificationQuoteOfTheDayTopic,
+                        value,
+                      ),
                     ),
                     const Divider(height: 1, indent: 20, endIndent: 20),
                     SwitchSettingsLayout(
                       title: 'Daily Inspiration',
                       value: _notifications[kNotificationDailyInspiration]!,
                       onSwitchChanged: (value) => _onNotificationSwitched(
-                          kNotificationDailyInspiration,
-                          kNotificationDailyInspirationTopic,
-                          value),
+                        kNotificationDailyInspiration,
+                        kNotificationDailyInspirationTopic,
+                        value,
+                      ),
                     ),
                     const Divider(height: 1, indent: 20, endIndent: 20),
                     SwitchSettingsLayout(
                       title: 'Motivation Monday',
                       value: _notifications[kNotificationMotivation]!,
                       onSwitchChanged: (value) => _onNotificationSwitched(
-                          kNotificationMotivation,
-                          kNotificationMotivationMondayTopic,
-                          value),
+                        kNotificationMotivation,
+                        kNotificationMotivationMondayTopic,
+                        value,
+                      ),
                     ),
                   ],
                 ),
@@ -193,27 +205,30 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                       title: 'Fact of the Day',
                       value: _notifications[kNotificationFactOfTheDay]!,
                       onSwitchChanged: (value) => _onNotificationSwitched(
-                          kNotificationFactOfTheDay,
-                          kNotificationFactOfTheDayTopic,
-                          value),
+                        kNotificationFactOfTheDay,
+                        kNotificationFactOfTheDayTopic,
+                        value,
+                      ),
                     ),
                     const Divider(height: 1, indent: 20, endIndent: 20),
                     SwitchSettingsLayout(
                       title: 'Daily Brain Food',
                       value: _notifications[kNotificationDailyBrainFood]!,
                       onSwitchChanged: (value) => _onNotificationSwitched(
-                          kNotificationDailyBrainFood,
-                          kNotificationDailyBrainFoodTopic,
-                          value),
+                        kNotificationDailyBrainFood,
+                        kNotificationDailyBrainFoodTopic,
+                        value,
+                      ),
                     ),
                     const Divider(height: 1, indent: 20, endIndent: 20),
                     SwitchSettingsLayout(
                       title: 'Weird Fact Wednesday',
                       value: _notifications[kNotificationWeirdFactWednesday]!,
                       onSwitchChanged: (value) => _onNotificationSwitched(
-                          kNotificationWeirdFactWednesday,
-                          kNotificationWeirdFactWednesdayTopic,
-                          value),
+                        kNotificationWeirdFactWednesday,
+                        kNotificationWeirdFactWednesdayTopic,
+                        value,
+                      ),
                     ),
                   ],
                 ),
@@ -292,10 +307,10 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
     return Text(
       title.toUpperCase(),
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            letterSpacing: 1.2,
-          ),
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+        letterSpacing: 1.2,
+      ),
     );
   }
 
@@ -304,14 +319,12 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
         border: Border.all(
-            color: theme.colorScheme.primaryContainer.withOpacity(0.3)),
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+        ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: child,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(16), child: child),
     );
   }
 

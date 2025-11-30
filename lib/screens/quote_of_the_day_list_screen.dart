@@ -13,10 +13,7 @@ class QuoteOfTheDayListScreen extends StatelessWidget {
       title: 'All Quote of the Day',
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 10,
-          ),
+          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
           child: QuoteOfTheDayListComponent(),
         ),
       ),

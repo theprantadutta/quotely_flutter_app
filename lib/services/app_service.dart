@@ -44,27 +44,32 @@ class AppService {
                 try {
                   final bool canLaunch = await canLaunchUrl(url);
                   if (canLaunch) {
-                    final bool launched = await launchUrl(url,
-                        mode: LaunchMode.externalApplication);
+                    final bool launched = await launchUrl(
+                      url,
+                      mode: LaunchMode.externalApplication,
+                    );
                     if (!launched) {
                       showErrorToast(
-                          context: context,
-                          title: 'Something Went Wrong',
-                          description: 'Failed to open $url');
+                        context: context,
+                        title: 'Something Went Wrong',
+                        description: 'Failed to open $url',
+                      );
                     }
                   } else {
                     showErrorToast(
-                        context: context,
-                        title: 'Something Went Wrong',
-                        description: 'Failed to open $url');
+                      context: context,
+                      title: 'Something Went Wrong',
+                      description: 'Failed to open $url',
+                    );
                   }
                 } catch (e) {
                   debugPrint('Failed to open the app');
                   debugPrint(e.toString());
                   showErrorToast(
-                      context: context,
-                      title: 'Something Went Wrong',
-                      description: 'Failed to open $url');
+                    context: context,
+                    title: 'Something Went Wrong',
+                    description: 'Failed to open $url',
+                  );
                 }
               },
             ),
@@ -108,8 +113,9 @@ class AppService {
         final kPrimaryColor = Theme.of(context).primaryColor;
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(20), // Rounded corners for modern look
+            borderRadius: BorderRadius.circular(
+              20,
+            ), // Rounded corners for modern look
           ),
           backgroundColor: Colors.white, // Set background color
           title: Column(

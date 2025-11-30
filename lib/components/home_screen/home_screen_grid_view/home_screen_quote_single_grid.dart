@@ -47,7 +47,8 @@ class _HomeScreenQuoteSingleGridState
   // }
 
   void _handleShare() {
-    final shareText = '''
+    final shareText =
+        '''
 "${widget.currentQuote.content}" - ${widget.currentQuote.author}
 
 Shared via Quotely
@@ -66,7 +67,9 @@ Shared via Quotely
 
     debugPrint("Making Quote with ID ${widget.currentQuote.id} as $newValue");
     final result = await DriftQuoteService.changeQuoteUpdateStatus(
-        widget.currentQuote, newValue);
+      widget.currentQuote,
+      newValue,
+    );
     ref
         .read(favoriteQuoteIdsProvider.notifier)
         .addOrUpdateViaStatus(widget.currentQuote.id, newValue);
@@ -80,8 +83,9 @@ Shared via Quotely
     super.build(context);
     final theme = Theme.of(context);
     final isDarkTheme = theme.brightness == Brightness.dark;
-    final isCurrentFavorite =
-        ref.watch(favoriteQuoteIdsProvider).contains(widget.currentQuote.id);
+    final isCurrentFavorite = ref
+        .watch(favoriteQuoteIdsProvider)
+        .contains(widget.currentQuote.id);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Stack(
@@ -106,7 +110,10 @@ Shared via Quotely
                   children: [
                     _buildTagsRow(context, isDarkTheme),
                     _buildActionsRow(
-                        context, isCurrentFavorite, widget.currentQuote),
+                      context,
+                      isCurrentFavorite,
+                      widget.currentQuote,
+                    ),
                   ],
                 ),
               ],
@@ -163,7 +170,10 @@ Shared via Quotely
   }
 
   Widget _buildActionsRow(
-      BuildContext context, bool isCurrentFavorite, QuoteDto quote) {
+    BuildContext context,
+    bool isCurrentFavorite,
+    QuoteDto quote,
+  ) {
     return Expanded(
       flex: 4,
       child: SingleChildScrollView(
@@ -177,10 +187,9 @@ Shared via Quotely
                 child: Icon(
                   Icons.flag_outlined,
                   size: 22,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -191,10 +200,7 @@ Shared via Quotely
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   transitionBuilder: (child, animation) {
-                    return ScaleTransition(
-                      scale: animation,
-                      child: child,
-                    );
+                    return ScaleTransition(scale: animation, child: child);
                   },
                   child: Icon(
                     isCurrentFavorite ? Icons.favorite : Icons.favorite_outline,
@@ -202,10 +208,9 @@ Shared via Quotely
                     size: 22,
                     color: isCurrentFavorite
                         ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.6),
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -217,10 +222,9 @@ Shared via Quotely
                 child: Icon(
                   Icons.share,
                   size: 22,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -282,9 +286,7 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Quote content
-                Expanded(
-                  child: HomeScreenGridContentSkeletor(),
-                ),
+                Expanded(child: HomeScreenGridContentSkeletor()),
 
                 // Tags and actions row
                 Row(
@@ -321,23 +323,25 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
       child: Wrap(
         spacing: 8,
         children: ['Motivation']
-            .map((tag) => Chip(
-                  label: Text(
-                    tag,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
+            .map(
+              (tag) => Chip(
+                label: Text(
+                  tag,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
-                  backgroundColor: theme.primaryColor.withValues(alpha: 0.2),
-                  side: BorderSide(
-                    color: theme.primaryColor.withValues(alpha: 0.05),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  visualDensity: VisualDensity.compact,
-                ))
+                ),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.2),
+                side: BorderSide(
+                  color: theme.primaryColor.withValues(alpha: 0.05),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
+              ),
+            )
             .toList(),
       ),
     );
@@ -355,10 +359,9 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
               child: Icon(
                 Icons.flag_outlined,
                 size: 20,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             Container(
@@ -366,18 +369,14 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 transitionBuilder: (child, animation) {
-                  return ScaleTransition(
-                    scale: animation,
-                    child: child,
-                  );
+                  return ScaleTransition(scale: animation, child: child);
                 },
                 child: Icon(
                   Icons.favorite_outline,
                   size: 20,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -386,10 +385,9 @@ class HomeScreenQuoteSingleGridSkeletor extends StatelessWidget {
               child: Icon(
                 Icons.share,
                 size: 20,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],

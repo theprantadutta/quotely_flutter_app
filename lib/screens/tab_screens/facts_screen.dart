@@ -66,12 +66,14 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     });
 
     try {
-      final newFacts = await ref.read(fetchAllFactsProvider(
-        factPageNumber,
-        factPageSize,
-        allSelectedCategory,
-        allSelectedProvider,
-      ).future);
+      final newFacts = await ref.read(
+        fetchAllFactsProvider(
+          factPageNumber,
+          factPageSize,
+          allSelectedCategory,
+          allSelectedProvider,
+        ).future,
+      );
       setState(() {
         hasMoreData = newFacts.aiFacts.length == 10;
         factPageNumber++;
@@ -93,10 +95,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 10,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: RefreshIndicator(
           onRefresh: () {
             factPageNumber = 1;
@@ -152,9 +151,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
                     controller: _scrollController,
                     itemCount: aiFacts.length,
                     itemBuilder: (context, index) {
-                      return SingleFact(
-                        aiFact: aiFacts[index],
-                      );
+                      return SingleFact(aiFact: aiFacts[index]);
                     },
                   ),
                 ),

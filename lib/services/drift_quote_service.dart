@@ -10,18 +10,22 @@ class DriftQuoteService {
 
   static Future<bool> isFavoriteQuote(String quoteId) async {
     final database = getIt.get<AppDatabase>();
-    final existingQuote = await (database.select(database.quotes)
-          ..where((x) => (x.id.equals(quoteId))))
-        .getSingleOrNull();
+    final existingQuote = await (database.select(
+      database.quotes,
+    )..where((x) => (x.id.equals(quoteId)))).getSingleOrNull();
     return existingQuote == null ? false : existingQuote.isFavorite;
   }
 
   static Future<bool> changeQuoteUpdateStatus(
-      QuoteDto quote, bool isFavorite) async {
+    QuoteDto quote,
+    bool isFavorite,
+  ) async {
     try {
       final database = getIt.get<AppDatabase>();
 
-      await database.into(database.quotes).insertOnConflictUpdate(
+      await database
+          .into(database.quotes)
+          .insertOnConflictUpdate(
             QuotesCompanion(
               id: Value(quote.id),
               author: Value(quote.author),
@@ -31,9 +35,7 @@ class DriftQuoteService {
               length: Value(quote.length),
               isFavorite: Value(isFavorite), // This is what we're updating
               dateAdded: Value(quote.dateAdded),
-              dateModified: Value(
-                DateTime.now(),
-              ), // Update modified time
+              dateModified: Value(DateTime.now()), // Update modified time
             ),
           );
 
@@ -53,8 +55,10 @@ class DriftQuoteService {
 
     // Add tag conditions only if tags exist
     if (tags.isNotEmpty) {
-      query.where((tbl) =>
-          tags.map((tag) => tbl.tags.like('%$tag%')).reduce((a, b) => a | b));
+      query.where(
+        (tbl) =>
+            tags.map((tag) => tbl.tags.like('%$tag%')).reduce((a, b) => a | b),
+      );
     }
 
     return query.watch();
@@ -86,10 +90,12 @@ class DriftQuoteService {
     final db = getIt.get<AppDatabase>();
 
     // Query that selects only IDs
-    final results = await db.customSelect(
-      'SELECT id FROM quotes WHERE is_favorite = 1',
-      readsFrom: {db.quotes},
-    ).get();
+    final results = await db
+        .customSelect(
+          'SELECT id FROM quotes WHERE is_favorite = 1',
+          readsFrom: {db.quotes},
+        )
+        .get();
 
     // Map results to List<String>
     return results.map((row) => row.read<String>('id')).toList();
@@ -123,7 +129,7 @@ class DriftQuoteService {
     });
   }
 
-// Helper function to get paginated quotes from local database
+  // Helper function to get paginated quotes from local database
   static Future<List<Quote>> getLocalQuotesWithPagination({
     required int pageNumber,
     required int pageSize,

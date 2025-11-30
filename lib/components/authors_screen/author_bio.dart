@@ -101,10 +101,7 @@ import 'package:flutter/material.dart';
 class AuthorBio extends StatelessWidget {
   final String bio;
 
-  const AuthorBio({
-    super.key,
-    required this.bio,
-  });
+  const AuthorBio({super.key, required this.bio});
 
   @override
   Widget build(BuildContext context) {

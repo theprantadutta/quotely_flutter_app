@@ -13,10 +13,7 @@ import 'report_fact_dialog.dart';
 class SingleFact extends ConsumerWidget {
   final AiFactDto aiFact;
 
-  const SingleFact({
-    super.key,
-    required this.aiFact,
-  });
+  const SingleFact({super.key, required this.aiFact});
 
   Future<void> toggleFavorite(WidgetRef ref) async {
     final existingFavoriteFactIds = ref.read(favoriteFactIdsProvider);
@@ -29,7 +26,8 @@ class SingleFact extends ConsumerWidget {
   }
 
   Future<void> shareFact() async {
-    final shareText = '''
+    final shareText =
+        '''
 "${aiFact.content}"
 
 Shared via Quotely
@@ -81,8 +79,10 @@ Shared via Quotely
               children: [
                 // Category badge
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -117,8 +117,9 @@ Shared via Quotely
                       onPressed: () => _showReportFactDialog(context, aiFact),
                       icon: Icon(
                         Icons.flag_outlined, // Report icon
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                       splashRadius: 20,
                     ),
@@ -128,8 +129,9 @@ Shared via Quotely
                       onPressed: shareFact,
                       icon: Icon(
                         Icons.share_rounded,
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                       splashRadius: 20,
                     ),
@@ -140,10 +142,7 @@ Shared via Quotely
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       transitionBuilder: (child, animation) {
-                        return ScaleTransition(
-                          scale: animation,
-                          child: child,
-                        );
+                        return ScaleTransition(scale: animation, child: child);
                       },
                       child: IconButton(
                         key: ValueKey(isFavorite),
@@ -154,8 +153,9 @@ Shared via Quotely
                               : Icons.favorite_outline_rounded,
                           color: isFavorite
                               ? primaryColor
-                              : theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6),
+                              : theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
                         ),
                         splashRadius: 20,
                       ),
@@ -201,9 +201,7 @@ Shared via Quotely
 }
 
 class SingleFactSkeletor extends StatelessWidget {
-  const SingleFactSkeletor({
-    super.key,
-  });
+  const SingleFactSkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -233,8 +231,10 @@ class SingleFactSkeletor extends StatelessWidget {
                 children: [
                   // Category badge
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -270,8 +270,9 @@ class SingleFactSkeletor extends StatelessWidget {
                         onPressed: () {},
                         icon: Icon(
                           Icons.share_rounded,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                         splashRadius: 20,
                       ),
@@ -283,8 +284,9 @@ class SingleFactSkeletor extends StatelessWidget {
                         onPressed: () {},
                         icon: Icon(
                           Icons.favorite_outline_rounded,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                         splashRadius: 20,
                       ),
@@ -293,8 +295,9 @@ class SingleFactSkeletor extends StatelessWidget {
                         onPressed: () {},
                         icon: Icon(
                           Icons.flag_outlined,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                         splashRadius: 20,
                       ),

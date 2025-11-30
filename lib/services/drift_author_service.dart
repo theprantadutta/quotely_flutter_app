@@ -48,8 +48,9 @@ class DriftAuthorService {
     final offset = (pageNumber - 1) * pageSize;
 
     var query = db.select(db.authors)
-      ..orderBy(
-          [(a) => OrderingTerm(expression: a.name)]) // Order alphabetically
+      ..orderBy([
+        (a) => OrderingTerm(expression: a.name),
+      ]) // Order alphabetically
       ..limit(pageSize, offset: offset);
 
     // Apply a search filter if a search term is provided
@@ -63,8 +64,8 @@ class DriftAuthorService {
   /// Gets a single author by their slug from the local database.
   static Future<Author?> getLocalAuthorBySlug(String authorSlug) async {
     final db = getIt.get<AppDatabase>();
-    return await (db.select(db.authors)
-          ..where((a) => a.slug.equals(authorSlug)))
-        .getSingleOrNull();
+    return await (db.select(
+      db.authors,
+    )..where((a) => a.slug.equals(authorSlug))).getSingleOrNull();
   }
 }

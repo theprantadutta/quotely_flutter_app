@@ -29,16 +29,14 @@ void main() async {
     settings: TalkerSettings(
       enabled: true,
       colors: {
-        TalkerLogType.debug.key: AnsiPen()..magenta(),
-        TalkerLogType.verbose.key: AnsiPen()..magenta(),
+        // TalkerLogType.debug.key: AnsiPen()..magenta(),
+        // TalkerLogType.verbose.key: AnsiPen()..magenta(),
       },
     ),
   );
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
   };
@@ -52,11 +50,7 @@ void main() async {
   initServiceLocator();
   runApp(
     ProviderScope(
-      observers: [
-        TalkerRiverpodObserver(
-          talker: talker!,
-        ),
-      ],
+      observers: [TalkerRiverpodObserver(talker: talker!)],
       child: QuotelyApp(),
     ),
   );
@@ -172,7 +166,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
     analytics.logEvent(
       name: 'biometric_toggle_changed',
       parameters: {
-        'is_biometric_enabled': isBiometricEnabled ? 'true' : 'false'
+        'is_biometric_enabled': isBiometricEnabled ? 'true' : 'false',
       },
     );
   }
@@ -249,15 +243,21 @@ class _QuotelyAppState extends State<QuotelyApp> {
     final List<DisplayMode> supported = await FlutterDisplayMode.supported;
     final DisplayMode active = await FlutterDisplayMode.active;
 
-    final List<DisplayMode> sameResolution = supported
-        .where((DisplayMode m) =>
-            m.width == active.width && m.height == active.height)
-        .toList()
-      ..sort((DisplayMode a, DisplayMode b) =>
-          b.refreshRate.compareTo(a.refreshRate));
+    final List<DisplayMode> sameResolution =
+        supported
+            .where(
+              (DisplayMode m) =>
+                  m.width == active.width && m.height == active.height,
+            )
+            .toList()
+          ..sort(
+            (DisplayMode a, DisplayMode b) =>
+                b.refreshRate.compareTo(a.refreshRate),
+          );
 
-    final DisplayMode mostOptimalMode =
-        sameResolution.isNotEmpty ? sameResolution.first : active;
+    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty
+        ? sameResolution.first
+        : active;
 
     await FlutterDisplayMode.setPreferredMode(mostOptimalMode);
   }
@@ -310,9 +310,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
         scheme: _flexScheme,
         useMaterial3: true,
         fontFamily: GoogleFonts.getFont(_fontFamily).fontFamily,
-      ).copyWith(
-        brightness: Brightness.dark,
-      ),
+      ).copyWith(brightness: Brightness.dark),
       themeMode: _themeMode,
       debugShowCheckedModeBanner: false,
     );

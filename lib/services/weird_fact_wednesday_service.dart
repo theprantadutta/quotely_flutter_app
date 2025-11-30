@@ -11,7 +11,8 @@ class WeirdFactWednesdayService {
     required int pageSize,
   }) async {
     final response = await HttpService.get(
-        '$kApiUrl/$kGetAllWeirdFactWednesday?pageNumber=$pageNumber&pageSize=$pageSize');
+      '$kApiUrl/$kGetAllWeirdFactWednesday?pageNumber=$pageNumber&pageSize=$pageSize',
+    );
     if (response.statusCode == 200) {
       return WeirdFactWednesdayResponseDto.fromJson(json.decode(response.data));
     }
@@ -19,8 +20,9 @@ class WeirdFactWednesdayService {
   }
 
   Future<WeirdFactWednesdayDto> getTodayWeirdFactWednesdayFromDatabase() async {
-    final response =
-        await HttpService.get('$kApiUrl/$kGetTodayWeirdFactWednesday');
+    final response = await HttpService.get(
+      '$kApiUrl/$kGetTodayWeirdFactWednesday',
+    );
     if (response.statusCode == 200) {
       return WeirdFactWednesdayDto.fromJson(json.decode(response.data));
     }

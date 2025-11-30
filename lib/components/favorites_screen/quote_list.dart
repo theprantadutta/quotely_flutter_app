@@ -53,10 +53,7 @@ class _QuoteListState extends State<QuoteList> {
             children: [
               const Text(
                 'All Favorite Quotes',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
               Row(
                 children: [
@@ -68,8 +65,8 @@ class _QuoteListState extends State<QuoteList> {
                       color: !isGridView
                           ? iconColor
                           : isDarkTheme
-                              ? Colors.grey.shade700
-                              : Colors.grey.shade400,
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade400,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -83,8 +80,8 @@ class _QuoteListState extends State<QuoteList> {
                       color: isGridView
                           ? iconColor
                           : isDarkTheme
-                              ? Colors.grey.shade700
-                              : Colors.grey.shade400,
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade400,
                     ),
                   ),
                 ],
@@ -113,9 +110,7 @@ class _QuoteListState extends State<QuoteList> {
                 );
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: Text('Something Went Wrong'),
-                  ),
+                  child: Center(child: Text('Something Went Wrong')),
                 );
               }
               final quotes = snapshot.data!;
@@ -127,10 +122,7 @@ class _QuoteListState extends State<QuoteList> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.hourglass_empty_outlined,
-                          size: 80,
-                        ),
+                        Icon(Icons.hourglass_empty_outlined, size: 80),
                         SizedBox(height: 10),
                         Text(
                           'No Favorites added yet.',
@@ -144,9 +136,7 @@ class _QuoteListState extends State<QuoteList> {
                         Text(
                           'When you like a quote, it\'s going to show up here, this section helps you to read your Favorite quotes over and over',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
+                          style: TextStyle(fontSize: 15),
                         ),
                       ],
                     ),

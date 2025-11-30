@@ -17,18 +17,11 @@ class SomethingWentWrong extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(
-          Icons.error_outline_rounded,
-          size: 70,
-          color: Colors.red[300],
-        ),
+        Icon(Icons.error_outline_rounded, size: 70, color: Colors.red[300]),
         const SizedBox(height: 10),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 10),
         const SizedBox(
@@ -36,19 +29,14 @@ class SomethingWentWrong extends StatelessWidget {
           child: Text(
             'This wasn\'t supposed to happen, check your internet connection, if the problem persists, curse us :)',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
           ),
         ),
         const SizedBox(height: 30),
         GestureDetector(
           onTap: onRetryPressed,
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: 5,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 5),
             width: 150,
             decoration: BoxDecoration(
               // color: kPrimaryColor,

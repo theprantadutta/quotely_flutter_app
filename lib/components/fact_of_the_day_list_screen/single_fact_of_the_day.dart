@@ -24,10 +24,8 @@ class SingleFactOfTheDay extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
-        border: Border.all(
-          color: kPrimaryColor.withOpacity(0.15),
-        ),
+        color: kPrimaryColor.withValues(alpha: 0.05),
+        border: Border.all(color: kPrimaryColor.withValues(alpha: 0.15)),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -56,7 +54,7 @@ class SingleFactOfTheDay extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: kPrimaryColor.withOpacity(0.1),
+                color: kPrimaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -77,9 +75,7 @@ class SingleFactOfTheDay extends StatelessWidget {
 }
 
 class SingleFactOfTheDaySkeletor extends StatelessWidget {
-  const SingleFactOfTheDaySkeletor({
-    super.key,
-  });
+  const SingleFactOfTheDaySkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +88,8 @@ class SingleFactOfTheDaySkeletor extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.05),
-        border: Border.all(
-          color: kPrimaryColor.withOpacity(0.15),
-        ),
+        color: kPrimaryColor.withValues(alpha: 0.05),
+        border: Border.all(color: kPrimaryColor.withValues(alpha: 0.15)),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -124,7 +118,7 @@ class SingleFactOfTheDaySkeletor extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: kPrimaryColor.withOpacity(0.1),
+                color: kPrimaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

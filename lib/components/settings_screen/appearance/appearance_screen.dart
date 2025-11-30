@@ -69,17 +69,19 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   ),
                   segments: const [
                     ButtonSegment(
-                        value: ThemeMode.light,
-                        label: Text('Light'),
-                        icon: Icon(Icons.light_mode_outlined)),
+                      value: ThemeMode.light,
+                      label: Text('Light'),
+                      icon: Icon(Icons.light_mode_outlined),
+                    ),
                     // ButtonSegment(
                     //     value: ThemeMode.system,
                     //     label: Text('System'),
                     //     icon: Icon(Icons.brightness_auto_outlined)),
                     ButtonSegment(
-                        value: ThemeMode.dark,
-                        label: Text('Dark'),
-                        icon: Icon(Icons.dark_mode_outlined)),
+                      value: ThemeMode.dark,
+                      label: Text('Dark'),
+                      icon: Icon(Icons.dark_mode_outlined),
+                    ),
                   ],
                   selected: {quotelyState.themeMode},
                   onSelectionChanged: (newSelection) {
@@ -105,7 +107,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   scrollDirection: Axis.horizontal,
                   // Add some padding to the start and end of the list
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 10.0),
+                    horizontal: 16.0,
+                    vertical: 10.0,
+                  ),
                   itemCount: FlexScheme.values.length,
                   itemBuilder: (context, index) {
                     final scheme = FlexScheme.values[index];
@@ -124,14 +128,18 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                             height: 50,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: FlexThemeData.light(scheme: scheme)
-                                  .primaryColor,
+                              color: FlexThemeData.light(
+                                scheme: scheme,
+                              ).primaryColor,
                               border: isSelected
                                   ? Border.all(
                                       color: theme.colorScheme.onSurface,
-                                      width: 3)
+                                      width: 3,
+                                    )
                                   : Border.all(
-                                      color: theme.dividerColor, width: 0.5),
+                                      color: theme.dividerColor,
+                                      width: 0.5,
+                                    ),
                             ),
                             child: isSelected
                                 ? const Icon(Icons.check, color: Colors.white)
@@ -155,10 +163,16 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               context,
               child: ListTile(
                 contentPadding: const EdgeInsets.only(
-                    left: 16, right: 10, top: 4, bottom: 4),
+                  left: 16,
+                  right: 10,
+                  top: 4,
+                  bottom: 4,
+                ),
                 leading: const Icon(Icons.font_download_outlined),
-                title: const Text('App Font',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                title: const Text(
+                  'App Font',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 // A dropdown button to select the font
                 trailing: DropdownButton<String>(
                   value: quotelyState.fontFamily,
@@ -192,16 +206,20 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             _buildSectionContainer(
               context,
               child: SwitchListTile(
-                title: const Text('Default to Grid View',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                title: const Text(
+                  'Default to Grid View',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 subtitle: const Text('Applies to Home & Favorites screens'),
                 value: quotelyState.isGridView,
                 onChanged: (_) => setState(() {
                   quotelyState.toggleGridViewEnabled();
                 }),
                 secondary: const Icon(Icons.grid_view_outlined),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
             ),
 
@@ -211,15 +229,13 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               icon: const Icon(Icons.refresh_rounded),
               label: const Text(
                 'Reset to Defaults',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: theme.colorScheme.error,
-                side:
-                    BorderSide(color: theme.colorScheme.error.withOpacity(0.5)),
+                side: BorderSide(
+                  color: theme.colorScheme.error.withValues(alpha: 0.5),
+                ),
                 padding: const EdgeInsets.symmetric(
                   vertical: 12,
                   horizontal: 16,
@@ -230,11 +246,13 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 final bool? shouldReset = await showDialog<bool>(
                   context: context,
                   builder: (BuildContext context) => AlertDialog(
-                    title: const Text('Reset All Settings?',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    title: const Text(
+                      'Reset All Settings?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     content: const Text(
                       'This will reset your theme, colors, font, and layout preferences to their original defaults. This action cannot be undone.',
                     ),
@@ -284,9 +302,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     return Text(
       title.toUpperCase(),
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-          ),
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+      ),
     );
   }
 

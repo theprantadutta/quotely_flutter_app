@@ -11,7 +11,8 @@ class MotivationMondayService {
     required int pageSize,
   }) async {
     final response = await HttpService.get(
-        '$kApiUrl/$kGetAllMotivationMonday?pageNumber=$pageNumber&pageSize=$pageSize');
+      '$kApiUrl/$kGetAllMotivationMonday?pageNumber=$pageNumber&pageSize=$pageSize',
+    );
     if (response.statusCode == 200) {
       return MotivationMondayResponseDto.fromJson(json.decode(response.data));
     }
@@ -19,8 +20,9 @@ class MotivationMondayService {
   }
 
   Future<MotivationMondayDto> getTodayMotivationMondayFromDatabase() async {
-    final response =
-        await HttpService.get('$kApiUrl/$kGetTodayMotivationMonday');
+    final response = await HttpService.get(
+      '$kApiUrl/$kGetTodayMotivationMonday',
+    );
     if (response.statusCode == 200) {
       return MotivationMondayDto.fromJson(json.decode(response.data));
     }

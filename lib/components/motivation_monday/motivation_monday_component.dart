@@ -21,13 +21,10 @@ class MotivationMondayComponent extends ConsumerWidget {
         );
       },
       error: (err, stack) {
-        return const Center(
-          child: Text('Something Went Wrong'),
-        );
+        return const Center(child: Text('Something Went Wrong'));
       },
-      loading: () => const Skeletonizer(
-        child: SingleQuoteOfTheComponentSkeletor(),
-      ),
+      loading: () =>
+          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
     );
   }
 }

@@ -83,7 +83,7 @@ class SwitchSettingsLayout extends StatelessWidget {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
       value: value,
       onChanged: onSwitchChanged,
-      activeColor: Theme.of(context).colorScheme.primary,
+      activeThumbColor: Theme.of(context).colorScheme.primary,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
     );
   }

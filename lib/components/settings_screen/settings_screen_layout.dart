@@ -23,9 +23,7 @@ class SettingsScreenLayout extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: MediaQuery.sizeOf(context).height * 0.12,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         margin: const EdgeInsets.symmetric(vertical: 3),
         decoration: BoxDecoration(
           // color: kPrimaryColor.withValues(alpha: 0.05),
@@ -36,12 +34,7 @@ class SettingsScreenLayout extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(
-              child: Center(
-                child: Icon(
-                  iconData,
-                  color: kPrimaryColor,
-                ),
-              ),
+              child: Center(child: Icon(iconData, color: kPrimaryColor)),
             ),
             const SizedBox(width: 5),
             Flexible(

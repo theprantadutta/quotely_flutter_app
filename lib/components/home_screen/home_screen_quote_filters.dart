@@ -50,15 +50,17 @@ class _HomeScreenQuoteFiltersState
     setState(() => isLoadingMore = true);
 
     try {
-      final fetchedTags =
-          await ref.read(FetchAllTagsProvider(pageNumber, pageSize).future);
+      final fetchedTags = await ref.read(
+        fetchAllTagsProvider(pageNumber, pageSize).future,
+      );
 
       setState(() {
         isLoadingMore = false;
 
         // Add only unique tags
-        final newTags =
-            fetchedTags.tags.where((tag) => !tags.contains(tag)).toList();
+        final newTags = fetchedTags.tags
+            .where((tag) => !tags.contains(tag))
+            .toList();
         if (newTags.isEmpty) {
           hasMoreData = false; // No new tags; stop further requests
         } else {
@@ -106,8 +108,9 @@ class _HomeScreenQuoteFiltersState
               itemBuilder: (context, index) {
                 if (index < tags.length) {
                   final currentTag = tags[index].name;
-                  final isSelected =
-                      widget.allSelectedTags.contains(currentTag);
+                  final isSelected = widget.allSelectedTags.contains(
+                    currentTag,
+                  );
                   return GestureDetector(
                     onTap: () => widget.onSelectedTagChange(currentTag),
                     child: AllFilterList(

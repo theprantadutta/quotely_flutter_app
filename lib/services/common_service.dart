@@ -7,9 +7,7 @@ class CommonService {
     return showDialog(
       context: context,
       builder: (context) {
-        return const Dialog(
-          child: NotImplemented(),
-        );
+        return const Dialog(child: NotImplemented());
       },
     );
   }

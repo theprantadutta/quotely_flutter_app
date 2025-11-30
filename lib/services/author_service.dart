@@ -58,48 +58,53 @@ class AuthorService {
       final response = await HttpService.get(url);
 
       if (response.statusCode == 200) {
-        final authorResponseDto =
-            AuthorResponseDto.fromJson(json.decode(response.data));
+        final authorResponseDto = AuthorResponseDto.fromJson(
+          json.decode(response.data),
+        );
 
         // Cache the fresh data for offline use
         if (authorResponseDto.authors.isNotEmpty) {
           await DriftAuthorService.saveAuthorsToDatabase(
-              authorResponseDto.authors);
+            authorResponseDto.authors,
+          );
         }
 
         return authorResponseDto;
       }
       throw Exception(
-          'Failed to get authors with status code: ${response.statusCode}');
+        'Failed to get authors with status code: ${response.statusCode}',
+      );
     } catch (e) {
       if (kDebugMode) {
         print(
-            'API call for authors failed, falling back to local database. Error: $e');
+          'API call for authors failed, falling back to local database. Error: $e',
+        );
       }
 
       // --- OFFLINE FALLBACK ---
       final localAuthors =
           await DriftAuthorService.getLocalAuthorsWithPagination(
-        pageNumber: pageNumber,
-        pageSize: pageSize,
-        searchTerm: search,
-      );
+            pageNumber: pageNumber,
+            pageSize: pageSize,
+            searchTerm: search,
+          );
 
       final authorDtos = AuthorDto.fromAuthorList(localAuthors);
 
       return AuthorResponseDto(
         authors: authorDtos,
-        pagination:
-            PaginationDto(pageNumber: 0, pageSize: 0, totalItemCount: 0),
+        pagination: PaginationDto(
+          pageNumber: 0,
+          pageSize: 0,
+          totalItemCount: 0,
+        ),
       );
     }
   }
 
   /// Fetches details for a single author. Tries the API first and falls
   /// back to the local database on failure.
-  Future<AuthorDto?> getAuthorDetails({
-    required String authorSlug,
-  }) async {
+  Future<AuthorDto?> getAuthorDetails({required String authorSlug}) async {
     try {
       // --- ONLINE PATH ---
       final url = '$kApiUrl/$kGetAuthorDetails?authorSlug=$authorSlug';
@@ -117,16 +122,19 @@ class AuthorService {
         return authorDto;
       }
       throw Exception(
-          'Failed to get author details with status code: ${response.statusCode}');
+        'Failed to get author details with status code: ${response.statusCode}',
+      );
     } catch (e) {
       if (kDebugMode) {
         print(
-            'API call for author details failed, falling back to local database. Error: $e');
+          'API call for author details failed, falling back to local database. Error: $e',
+        );
       }
 
       // --- OFFLINE FALLBACK ---
-      final localAuthor =
-          await DriftAuthorService.getLocalAuthorBySlug(authorSlug);
+      final localAuthor = await DriftAuthorService.getLocalAuthorBySlug(
+        authorSlug,
+      );
 
       if (localAuthor != null) {
         return AuthorDto.fromDrift(localAuthor);

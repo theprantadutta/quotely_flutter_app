@@ -68,10 +68,7 @@ abstract class BottomBar extends StatefulWidget {
     double? blur,
     int indexActive,
     Function(int index)? onChange,
-    required Widget Function(
-      TabItem item,
-      bool isSelected,
-    ) buildView,
+    required Widget Function(TabItem item, bool isSelected) buildView,
   });
 }
 

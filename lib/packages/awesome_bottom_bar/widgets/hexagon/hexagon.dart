@@ -43,8 +43,10 @@ class HexagonWidget extends StatelessWidget {
     var innerSize = _innerSize();
     var contentSize = _contentSize();
 
-    HexagonPathBuilder pathBuilder =
-        HexagonPathBuilder(inBounds: inBounds, borderRadius: cornerRadius);
+    HexagonPathBuilder pathBuilder = HexagonPathBuilder(
+      inBounds: inBounds,
+      borderRadius: cornerRadius,
+    );
 
     return Align(
       child: Container(
@@ -63,10 +65,7 @@ class HexagonWidget extends StatelessWidget {
               alignment: Alignment.center,
               maxHeight: contentSize?.height,
               maxWidth: contentSize?.width,
-              child: Align(
-                alignment: Alignment.center,
-                child: child,
-              ),
+              child: Align(alignment: Alignment.center, child: child),
             ),
           ),
         ),

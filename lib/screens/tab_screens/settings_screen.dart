@@ -30,9 +30,7 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -46,10 +44,7 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
         content: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 16.0,
-            horizontal: 8,
-          ),
+          padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -63,11 +58,7 @@ class SettingsScreen extends StatelessWidget {
               //   //   color: kPrimaryColor,
               //   // ),
               // ),
-              Image.asset(
-                'assets/play_store_icon.png',
-                height: 80,
-                width: 80,
-              ),
+              Image.asset('assets/play_store_icon.png', height: 80, width: 80),
               const SizedBox(height: 20),
               Text(
                 'Version: $version',
@@ -80,36 +71,29 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'Quotely is a Flutter app designed for quote enthusiasts.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 'Developed & Maintained By:',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: () async {
                   final url = Uri.parse('https://pranta.dev');
                   if (await canLaunchUrl(url)) {
-                    await launchUrl(
-                      url,
-                      mode: LaunchMode.externalApplication,
-                    );
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
                   }
                 },
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       gradient: kGetDefaultGradient(context),
@@ -146,10 +130,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 '© $currentYear Pranta Dutta. All rights reserved.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -215,10 +196,14 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-          title:
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20.0,
+            vertical: 24.0,
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           // The content needs to be scrollable and have a defined size.
           content: SizedBox(
             width: double.maxFinite,
@@ -229,8 +214,9 @@ class SettingsScreen extends StatelessWidget {
                 data: markdownContent,
                 styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
                   p: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-                  h1: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  h1: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -243,8 +229,10 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ],
-          actionsPadding:
-              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          actionsPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 8.0,
+          ),
         );
       },
     );
@@ -276,7 +264,9 @@ class SettingsScreen extends StatelessWidget {
                       title: 'Notifications',
                       description: 'Manage Notifications',
                       onTap: () => gotoAScreen(
-                          context, SettingsNotificationScreen.kRouteName),
+                        context,
+                        SettingsNotificationScreen.kRouteName,
+                      ),
                     ),
                     // Settings Download Everything
                     SettingsScreenLayout(
@@ -284,7 +274,9 @@ class SettingsScreen extends StatelessWidget {
                       title: 'Download Everything',
                       description: 'Download everything for better offline use',
                       onTap: () => gotoAScreen(
-                          context, SettingsDownloadEverythingScreen.kRouteName),
+                        context,
+                        SettingsDownloadEverythingScreen.kRouteName,
+                      ),
                     ),
 
                     /// Donation
@@ -307,7 +299,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
 
-// Privacy & Policy
+                    // Privacy & Policy
                     SettingsScreenLayout(
                       iconData: Icons.privacy_tip_outlined,
                       title: 'Privacy & Policy',

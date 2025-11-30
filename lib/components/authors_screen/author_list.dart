@@ -13,10 +13,7 @@ import '../../dtos/author_dto.dart';
 class AuthorList extends ConsumerStatefulWidget {
   final TextEditingController authorSearchController;
 
-  const AuthorList({
-    super.key,
-    required this.authorSearchController,
-  });
+  const AuthorList({super.key, required this.authorSearchController});
 
   @override
   ConsumerState<AuthorList> createState() => _AuthorListState();
@@ -43,10 +40,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
   void _onSearchChanged() {
     if (widget.authorSearchController.text.isEmpty) return;
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(
-      const Duration(milliseconds: 500),
-      _refreshAuthors,
-    );
+    _debounce = Timer(const Duration(milliseconds: 500), _refreshAuthors);
   }
 
   Future<void> _authorScrollListener() async {
@@ -152,10 +146,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.hourglass_empty_outlined,
-                          size: 80,
-                        ),
+                        Icon(Icons.hourglass_empty_outlined, size: 80),
                         SizedBox(height: 10),
                         Text(
                           'No Author Found',
@@ -178,17 +169,12 @@ class _AuthorListState extends ConsumerState<AuthorList> {
                       child: const SingleAuthorViewSkeletor(),
                     );
                   }
-                  return SingleAuthorView(
-                    index: index,
-                    author: authors[index],
-                  );
+                  return SingleAuthorView(index: index, author: authors[index]);
                 },
               );
             },
             error: (error, stackTrace) => Center(
-              child: SomethingWentWrong(
-                onRetryPressed: _refreshAuthors,
-              ),
+              child: SomethingWentWrong(onRetryPressed: _refreshAuthors),
             ),
             loading: () {
               if (authors.isEmpty || refetching) {
@@ -209,10 +195,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
                       child: const SingleAuthorViewSkeletor(),
                     );
                   }
-                  return SingleAuthorView(
-                    index: index,
-                    author: authors[index],
-                  );
+                  return SingleAuthorView(index: index, author: authors[index]);
                 },
               );
             },

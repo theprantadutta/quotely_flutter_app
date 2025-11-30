@@ -44,10 +44,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 10,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Column(
           children: [
             const TopNavigationBar(title: 'Favorites'),
@@ -81,10 +78,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           width: 200,
           height: 35, // Slightly increased height for better touch target
           decoration: BoxDecoration(
-            color: Theme.of(context)
-                .colorScheme
-                .surfaceContainer
-                .withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainer.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Stack(
@@ -114,8 +110,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           child: AnimatedDefaultTextStyle(
                             duration: const Duration(milliseconds: 200),
                             style: TextStyle(
-                              color:
-                                  showQuotes ? onPrimaryColor : onSurfaceColor,
+                              color: showQuotes
+                                  ? onPrimaryColor
+                                  : onSurfaceColor,
                               fontWeight: FontWeight.w600,
                             ),
                             child: const Text('Quotes'),
@@ -133,8 +130,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           child: AnimatedDefaultTextStyle(
                             duration: const Duration(milliseconds: 200),
                             style: TextStyle(
-                              color:
-                                  !showQuotes ? onPrimaryColor : onSurfaceColor,
+                              color: !showQuotes
+                                  ? onPrimaryColor
+                                  : onSurfaceColor,
                               fontWeight: FontWeight.w600,
                             ),
                             child: const Text('Facts'),
@@ -158,17 +156,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 class FavoritesScreenSkeletor extends StatelessWidget {
   final Widget widget;
 
-  const FavoritesScreenSkeletor({
-    super.key,
-    required this.widget,
-  });
+  const FavoritesScreenSkeletor({super.key, required this.widget});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(child: widget),
-      ],
-    );
+    return Column(children: [Expanded(child: widget)]);
   }
 }

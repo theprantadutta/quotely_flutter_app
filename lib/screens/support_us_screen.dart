@@ -35,16 +35,20 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     final Stream<List<PurchaseDetails>> purchaseUpdated =
         _inAppPurchase.purchaseStream;
     // Listen to the stream for purchase updates
-    _subscription = purchaseUpdated.listen((purchaseDetailsList) {
-      _listenToPurchaseUpdated(purchaseDetailsList);
-    }, onDone: () {
-      _subscription.cancel();
-    }, onError: (error) {
-      setState(() {
-        _statusMessage = 'An error occurred: $error';
-        _loading = false;
-      });
-    });
+    _subscription = purchaseUpdated.listen(
+      (purchaseDetailsList) {
+        _listenToPurchaseUpdated(purchaseDetailsList);
+      },
+      onDone: () {
+        _subscription.cancel();
+      },
+      onError: (error) {
+        setState(() {
+          _statusMessage = 'An error occurred: $error';
+          _loading = false;
+        });
+      },
+    );
 
     _initializeIAP();
   }
@@ -69,8 +73,8 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   }
 
   Future<void> _loadProducts() async {
-    final ProductDetailsResponse response =
-        await _inAppPurchase.queryProductDetails(_productIds);
+    final ProductDetailsResponse response = await _inAppPurchase
+        .queryProductDetails(_productIds);
     if (response.notFoundIDs.isNotEmpty) {
       _statusMessage = 'Products not found. Check your Play Console setup.';
     }
@@ -87,8 +91,9 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
       } else {
         if (purchaseDetails.status == PurchaseStatus.error) {
           // Handle error
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Purchase failed. Please try again.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Purchase failed. Please try again.')),
+          );
         } else if (purchaseDetails.status == PurchaseStatus.purchased ||
             purchaseDetails.status == PurchaseStatus.restored) {
           // Handle successful purchase
@@ -110,8 +115,9 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   }
 
   void _buyProduct(ProductDetails productDetails) {
-    final PurchaseParam purchaseParam =
-        PurchaseParam(productDetails: productDetails);
+    final PurchaseParam purchaseParam = PurchaseParam(
+      productDetails: productDetails,
+    );
     // This will open the Google Play purchase sheet
     _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
   }
@@ -121,8 +127,10 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
         'https://play.google.com/store/apps/details?id=com.pranta.quotely_flutter_app';
     const String shareMessage =
         'Check out Quotely! A beautiful app for daily quotes and inspiration:';
-    Share.share('$shareMessage $appShareLink',
-        subject: 'Check out the Quotely App!');
+    Share.share(
+      '$shareMessage $appShareLink',
+      subject: 'Check out the Quotely App!',
+    );
   }
 
   @override
@@ -130,33 +138,24 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     final theme = Theme.of(context);
 
     // Find our specific products from the loaded list
-    final ProductDetails? supportProduct =
-        _products.cast<ProductDetails?>().firstWhere(
-              (p) => p?.id == 'support_the_dev_1',
-              orElse: () => null,
-            );
-    final ProductDetails? coffeeProduct =
-        _products.cast<ProductDetails?>().firstWhere(
-              (p) => p?.id == 'buy_me_a_coffee_1',
-              orElse: () => null,
-            );
+    final ProductDetails? supportProduct = _products
+        .cast<ProductDetails?>()
+        .firstWhere((p) => p?.id == 'support_the_dev_1', orElse: () => null);
+    final ProductDetails? coffeeProduct = _products
+        .cast<ProductDetails?>()
+        .firstWhere((p) => p?.id == 'buy_me_a_coffee_1', orElse: () => null);
     final kPrimaryColor = Theme.of(context).primaryColor;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor:
-            kPrimaryColor.withValues(alpha: isDarkTheme ? 0.6 : 0.9),
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        title: MainLayoutAppBar(
-          title: 'Support Us',
+        backgroundColor: kPrimaryColor.withValues(
+          alpha: isDarkTheme ? 0.6 : 0.9,
         ),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        title: MainLayoutAppBar(title: 'Support Us'),
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            weight: 20,
-          ),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, weight: 20),
         ),
       ),
       body: Stack(
@@ -164,11 +163,15 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
           DarkGradientBackground(),
           _loading
               ? Center(
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(_statusMessage)
-                ]))
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(_statusMessage),
+                    ],
+                  ),
+                )
               : CustomScrollView(
                   slivers: [
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -182,24 +185,31 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                               shaderCallback: (bounds) => LinearGradient(
                                 colors: [
                                   theme.colorScheme.primary,
-                                  theme.colorScheme.secondary
+                                  theme.colorScheme.secondary,
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ).createShader(bounds),
-                              child: const Icon(Icons.volunteer_activism,
-                                  size: 80, color: Colors.white),
+                              child: const Icon(
+                                Icons.volunteer_activism,
+                                size: 80,
+                                color: Colors.white,
+                              ),
                             ),
                             const SizedBox(height: 20),
-                            Text('Support Our Journey',
-                                style: theme.textTheme.headlineMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                              'Support Our Journey',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 10),
                             Text(
                               'Quotely is a passion project. Your support helps us dedicate more time to new features and keep the app free for everyone.',
                               textAlign: TextAlign.center,
                               style: theme.textTheme.titleMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant),
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                             const SizedBox(height: 30),
                           ],
@@ -258,10 +268,10 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
       child: Text(
         title.toUpperCase(),
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              letterSpacing: 1.2,
-            ),
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
@@ -287,8 +297,8 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
           // Using InkResponse for splash and highlight effects
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          splashColor: iconColor.withOpacity(0.1),
-          highlightColor: iconColor.withOpacity(0.1),
+          splashColor: iconColor.withValues(alpha: 0.1),
+          highlightColor: iconColor.withValues(alpha: 0.1),
           // The child of InkResponse should be the actual content
           child: Padding(
             // Moved padding inside InkResponse's child
@@ -303,8 +313,9 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                     children: [
                       Text(
                         title,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(

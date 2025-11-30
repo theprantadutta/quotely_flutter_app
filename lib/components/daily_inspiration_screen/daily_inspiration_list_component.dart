@@ -41,10 +41,7 @@ class _DailyInspirationListComponentState
             pageNumber++;
           });
           final _ = await ref.refresh(
-            fetchAllDailyInspirationProvider(
-              pageNumber,
-              pageSize,
-            ).future,
+            fetchAllDailyInspirationProvider(pageNumber, pageSize).future,
           );
         }
       } catch (e) {
@@ -66,10 +63,7 @@ class _DailyInspirationListComponentState
     debugPrint('Refreshing Quotes...');
     try {
       final _ = await ref.refresh(
-        fetchAllDailyInspirationProvider(
-          pageNumber,
-          pageSize,
-        ).future,
+        fetchAllDailyInspirationProvider(pageNumber, pageSize).future,
       );
       setState(() {
         pageNumber = 1;
@@ -125,9 +119,8 @@ class _DailyInspirationListComponentState
               },
             );
           },
-          error: (error, stackTrace) => const Center(
-            child: Text('Something Went Wrong'),
-          ),
+          error: (error, stackTrace) =>
+              const Center(child: Text('Something Went Wrong')),
           loading: () {
             if (quotes.isEmpty) {
               return Skeletonizer(

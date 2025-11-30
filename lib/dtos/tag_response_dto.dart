@@ -9,10 +9,7 @@ class TagResponseDto {
   final List<TagDto> tags;
   final PaginationDto pagination;
 
-  TagResponseDto({
-    required this.tags,
-    required this.pagination,
-  });
+  TagResponseDto({required this.tags, required this.pagination});
 
   /// Connect the generated [_$TagResponseDtoFromJson] function to the `fromJson`
   /// factory.

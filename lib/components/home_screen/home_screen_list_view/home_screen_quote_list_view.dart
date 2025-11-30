@@ -68,7 +68,8 @@ class _HomeScreenQuoteListViewState
   // }
 
   Future<void> _handleShare(QuoteDto quote) async {
-    final shareText = '''
+    final shareText =
+        '''
 "${quote.content}" - ${quote.author}
 
 Shared via Quotely
@@ -116,8 +117,9 @@ Shared via Quotely
       itemCount: widget.quotes.length,
       itemBuilder: (context, index) {
         final quote = widget.quotes[index];
-        final isFavorite =
-            ref.watch(favoriteQuoteIdsProvider).contains(quote.id);
+        final isFavorite = ref
+            .watch(favoriteQuoteIdsProvider)
+            .contains(quote.id);
 
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -150,8 +152,10 @@ Shared via Quotely
               ),
 
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -227,17 +231,19 @@ Shared via Quotely
                                           .withValues(alpha: 0.7),
                                     ),
                                   ),
-                                  backgroundColor:
-                                      theme.primaryColor.withValues(alpha: 0.2),
+                                  backgroundColor: theme.primaryColor
+                                      .withValues(alpha: 0.2),
                                   side: BorderSide(
-                                    color: theme.primaryColor
-                                        .withValues(alpha: 0.05),
+                                    color: theme.primaryColor.withValues(
+                                      alpha: 0.05,
+                                    ),
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
                                   visualDensity: VisualDensity.compact,
                                 );
                               },
@@ -272,8 +278,9 @@ Shared via Quotely
                                   child: Container(
                                     padding: const EdgeInsets.all(8),
                                     child: AnimatedSwitcher(
-                                      duration:
-                                          const Duration(milliseconds: 200),
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
                                       transitionBuilder: (child, animation) {
                                         return ScaleTransition(
                                           scale: animation,
@@ -287,13 +294,13 @@ Shared via Quotely
                                         key: ValueKey(isFavorite),
                                         size: 20,
                                         color: isFavorite
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primary
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
                                             : Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.6),
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ),
@@ -337,9 +344,7 @@ Shared via Quotely
 }
 
 class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
-  const HomeScreenQuoteListViewSkeletor({
-    super.key,
-  });
+  const HomeScreenQuoteListViewSkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -432,29 +437,32 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
                             child: Wrap(
                               spacing: 8,
                               children: ['Motivation']
-                                  .map((tag) => Chip(
-                                        label: Text(
-                                          tag,
-                                          style: theme.textTheme.labelSmall
-                                              ?.copyWith(
-                                            color: theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.7),
-                                          ),
+                                  .map(
+                                    (tag) => Chip(
+                                      label: Text(
+                                        tag,
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              color: theme.colorScheme.onSurface
+                                                  .withValues(alpha: 0.7),
+                                            ),
+                                      ),
+                                      backgroundColor: theme.primaryColor
+                                          .withValues(alpha: 0.2),
+                                      side: BorderSide(
+                                        color: theme.primaryColor.withValues(
+                                          alpha: 0.05,
                                         ),
-                                        backgroundColor: theme.primaryColor
-                                            .withValues(alpha: 0.2),
-                                        side: BorderSide(
-                                          color: theme.primaryColor
-                                              .withValues(alpha: 0.05),
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8),
-                                        visualDensity: VisualDensity.compact,
-                                      ))
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  )
                                   .toList(),
                             ),
                           ),
@@ -466,15 +474,17 @@ class HomeScreenQuoteListViewSkeletor extends StatelessWidget {
                                 icon: const Icon(Icons.flag_outlined, size: 20),
                                 onPressed: () => {},
                                 splashRadius: 20,
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.share, size: 20),
                                 onPressed: () => {},
                                 splashRadius: 20,
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
                               ),
                               IconButton(
                                 icon: AnimatedSwitcher(

@@ -41,10 +41,7 @@ class _WeirdFactWednesdayListComponentState
             pageNumber++;
           });
           final _ = await ref.refresh(
-            fetchAllWeirdFactWednesdayProvider(
-              pageNumber,
-              pageSize,
-            ).future,
+            fetchAllWeirdFactWednesdayProvider(pageNumber, pageSize).future,
           );
         }
       } catch (e) {
@@ -66,10 +63,7 @@ class _WeirdFactWednesdayListComponentState
     debugPrint('Refreshing Facts...');
     try {
       final _ = await ref.refresh(
-        fetchAllWeirdFactWednesdayProvider(
-          pageNumber,
-          pageSize,
-        ).future,
+        fetchAllWeirdFactWednesdayProvider(pageNumber, pageSize).future,
       );
       setState(() {
         pageNumber = 1;
@@ -115,7 +109,8 @@ class _WeirdFactWednesdayListComponentState
               itemBuilder: (context, index) {
                 if (index == facts.length) {
                   return Skeletonizer(
-                      child: const SingleFactOfTheDayComponentSkeletor());
+                    child: const SingleFactOfTheDayComponentSkeletor(),
+                  );
                 }
                 final currentFact = facts[index];
                 return SingleFactOfTheDayComponent(
@@ -128,9 +123,8 @@ class _WeirdFactWednesdayListComponentState
           },
           error: (error, stackTrace) => Center(
             child: SomethingWentWrong(
-              onRetryPressed: () => ref.refresh(
-                fetchAllWeirdFactWednesdayProvider(1, 10),
-              ),
+              onRetryPressed: () =>
+                  ref.refresh(fetchAllWeirdFactWednesdayProvider(1, 10)),
             ),
           ),
           loading: () {
@@ -149,7 +143,8 @@ class _WeirdFactWednesdayListComponentState
               itemBuilder: (context, index) {
                 if (index == facts.length) {
                   return Skeletonizer(
-                      child: const SingleFactOfTheDayComponentSkeletor());
+                    child: const SingleFactOfTheDayComponentSkeletor(),
+                  );
                 }
                 final currentFact = facts[index];
                 return SingleFactOfTheDayComponent(

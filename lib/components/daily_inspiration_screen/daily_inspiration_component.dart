@@ -10,8 +10,9 @@ class DailyInspirationComponent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dailyInspirationProvider =
-        ref.watch(fetchTodayDailyInspirationProvider);
+    final dailyInspirationProvider = ref.watch(
+      fetchTodayDailyInspirationProvider,
+    );
 
     return dailyInspirationProvider.when(
       data: (data) {
@@ -21,12 +22,9 @@ class DailyInspirationComponent extends ConsumerWidget {
           quoteDate: data.quoteDate,
         );
       },
-      error: (err, stack) => const Center(
-        child: Text('Something Went Wrong'),
-      ),
-      loading: () => const Skeletonizer(
-        child: SingleQuoteOfTheComponentSkeletor(),
-      ),
+      error: (err, stack) => const Center(child: Text('Something Went Wrong')),
+      loading: () =>
+          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
     );
   }
 }

@@ -131,13 +131,11 @@ class _SettingsDownloadEverythingScreenState
         builder: (BuildContext context) => AlertDialog(
           title: const Text(
             'Sync Latest Content?',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           content: Text(
-              'You already have an offline copy from ${DateFormat('dd MMM, yyyy').format(_lastDownloadedDate!)}. Downloading again will fetch the latest updates.'),
+            'You already have an offline copy from ${DateFormat('dd MMM, yyyy').format(_lastDownloadedDate!)}. Downloading again will fetch the latest updates.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -167,12 +165,14 @@ class _SettingsDownloadEverythingScreenState
     final response = await HttpService.get(uri.toString());
     if (response.statusCode != 200) throw Exception('Failed to fetch quotes');
 
-    final quoteResponseDto =
-        QuoteResponseDto.fromJson(json.decode(response.data));
+    final quoteResponseDto = QuoteResponseDto.fromJson(
+      json.decode(response.data),
+    );
     final quotesToSave = quoteResponseDto.quotes;
 
     setState(
-        () => _currentStepMessage = 'Saving ${quotesToSave.length} quotes...');
+      () => _currentStepMessage = 'Saving ${quotesToSave.length} quotes...',
+    );
     await DriftQuoteService.saveNewQuotesToDatabase(quotesToSave);
     return quotesToSave.length;
   }
@@ -183,12 +183,14 @@ class _SettingsDownloadEverythingScreenState
     final response = await HttpService.get(uri.toString());
     if (response.statusCode != 200) throw Exception('Failed to fetch authors');
 
-    final authorResponseDto =
-        AuthorResponseDto.fromJson(json.decode(response.data));
+    final authorResponseDto = AuthorResponseDto.fromJson(
+      json.decode(response.data),
+    );
     final authorsToSave = authorResponseDto.authors;
 
-    setState(() =>
-        _currentStepMessage = 'Saving ${authorsToSave.length} authors...');
+    setState(
+      () => _currentStepMessage = 'Saving ${authorsToSave.length} authors...',
+    );
     await DriftAuthorService.saveAuthorsToDatabase(authorsToSave);
     return authorsToSave.length;
   }
@@ -199,12 +201,14 @@ class _SettingsDownloadEverythingScreenState
     final response = await HttpService.get(uri.toString());
     if (response.statusCode != 200) throw Exception('Failed to fetch facts');
 
-    final factResponseDto =
-        AiFactResponseDto.fromJson(json.decode(response.data));
+    final factResponseDto = AiFactResponseDto.fromJson(
+      json.decode(response.data),
+    );
     final factsToSave = factResponseDto.aiFacts;
 
     setState(
-        () => _currentStepMessage = 'Saving ${factsToSave.length} facts...');
+      () => _currentStepMessage = 'Saving ${factsToSave.length} facts...',
+    );
     await DriftFactService.saveNewFactsToDatabase(factsToSave);
     return factsToSave.length;
   }
@@ -280,18 +284,14 @@ class _SettingsDownloadEverythingScreenState
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-              hasData
-                  ? Icons.cloud_sync_outlined
-                  : Icons.cloud_download_outlined,
-              size: 60,
-              color: theme.colorScheme.primary),
+            hasData ? Icons.cloud_sync_outlined : Icons.cloud_download_outlined,
+            size: 60,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(height: 20),
           Text(
             hasData ? 'Offline Data Available' : 'Enable Offline Access',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           Text(
@@ -299,8 +299,9 @@ class _SettingsDownloadEverythingScreenState
                 ? 'Last updated on ${DateFormat('dd MMM, yyyy \'at\' hh:mm a').format(_lastDownloadedDate!)}.'
                 : 'Download the entire library to enjoy Quotely anywhere, even without an internet connection.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 30),
           ElevatedButton.icon(
@@ -309,13 +310,15 @@ class _SettingsDownloadEverythingScreenState
               foregroundColor: theme.colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30)),
+                borderRadius: BorderRadius.circular(30),
+              ),
             ),
             // The button now calls our new handler function
             onPressed: _onDownloadButtonPressed,
             icon: Icon(
-                hasData ? Icons.sync_rounded : Icons.download_for_offline,
-                size: 24),
+              hasData ? Icons.sync_rounded : Icons.download_for_offline,
+              size: 24,
+            ),
             label: Text(
               hasData ? 'Sync Latest Content' : 'Download Everything',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -343,14 +346,16 @@ class _SettingsDownloadEverythingScreenState
                   value: _progress,
                   strokeWidth: 8,
                   backgroundColor: theme.colorScheme.surfaceContainer,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    theme.colorScheme.primary,
+                  ),
                 ),
                 Center(
                   child: Text(
                     '${(_progress * 100).toStringAsFixed(0)}%',
-                    style: theme.textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -360,14 +365,16 @@ class _SettingsDownloadEverythingScreenState
           Text(
             _currentStepMessage,
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w600),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Downloaded $_totalItemsDownloaded items so far...',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -379,31 +386,38 @@ class _SettingsDownloadEverythingScreenState
       key: const ValueKey('completed'),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_outline,
-              size: 60, color: Colors.green.shade600),
+          Icon(
+            Icons.check_circle_outline,
+            size: 60,
+            color: Colors.green.shade600,
+          ),
           const SizedBox(height: 20),
-          Text('Download Complete',
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'Download Complete',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 10),
           Text(
             'Success! $_totalItemsDownloaded total items are now available for offline use.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 30),
           ElevatedButton(
             onPressed: () => setState(() => _state = DownloadState.initial),
             child: const Text('Awesome!', style: TextStyle(fontSize: 16)),
-          )
+          ),
         ],
       ),
     );
@@ -411,17 +425,15 @@ class _SettingsDownloadEverythingScreenState
 
   Widget _buildErrorState(ThemeData theme) {
     return Center(
-      child: SomethingWentWrong(
-        onRetryPressed: _startDownloadProcess,
-      ),
+      child: SomethingWentWrong(onRetryPressed: _startDownloadProcess),
     );
     // return Container(
     //   key: const ValueKey('error'),
     //   padding: const EdgeInsets.all(24),
     //   decoration: BoxDecoration(
-    //     color: theme.colorScheme.errorContainer.withOpacity(0.3),
+    //     color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
     //     borderRadius: BorderRadius.circular(20),
-    //     border: Border.all(color: theme.colorScheme.error.withOpacity(0.5)),
+    //     border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.5)),
     //   ),
     //   child: Column(
     //     mainAxisSize: MainAxisSize.min,

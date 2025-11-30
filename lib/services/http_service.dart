@@ -14,26 +14,27 @@ class HttpService {
     try {
       return await dio
           .get<T>(
-        url,
-        options: Options(
-          responseType: ResponseType.plain,
-          headers: {
-            'Content-Type': 'application/json', // Set the content type to JSON
-            'X-Api-Key': apiKey,
-          },
-        ),
-      )
+            url,
+            options: Options(
+              responseType: ResponseType.plain,
+              headers: {
+                'Content-Type':
+                    'application/json', // Set the content type to JSON
+                'X-Api-Key': apiKey,
+              },
+            ),
+          )
           .timeout(
-        const Duration(seconds: kTimeOutDurationInSeconds),
-        onTimeout: () {
-          // Time has run out, do what you wanted to do.
-          return Response(
-            requestOptions: RequestOptions(),
-            statusCode: 408,
-            statusMessage: 'Request Timeout Expired',
-          ); // Request Timeout response status code
-        },
-      );
+            const Duration(seconds: kTimeOutDurationInSeconds),
+            onTimeout: () {
+              // Time has run out, do what you wanted to do.
+              return Response(
+                requestOptions: RequestOptions(),
+                statusCode: 408,
+                statusMessage: 'Request Timeout Expired',
+              ); // Request Timeout response status code
+            },
+          );
     } on DioException catch (e) {
       debugPrint('#########################');
       debugPrint('Entering the Dio Exception');

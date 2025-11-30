@@ -45,11 +45,13 @@ class _AuthorDetailAuthorQuoteListState
     });
 
     try {
-      final newQuotes = await ref.read(fetchAllQuotesByAuthorProvider(
-        widget.author.slug,
-        quotePageNumber,
-        quotePageSize,
-      ).future);
+      final newQuotes = await ref.read(
+        fetchAllQuotesByAuthorProvider(
+          widget.author.slug,
+          quotePageNumber,
+          quotePageSize,
+        ).future,
+      );
       setState(() {
         hasMoreData = newQuotes.quotes.length == 10;
         quotePageNumber++;
@@ -93,10 +95,7 @@ class _AuthorDetailAuthorQuoteListState
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.hourglass_empty_outlined,
-                  size: 80,
-                ),
+                const Icon(Icons.hourglass_empty_outlined, size: 80),
                 const SizedBox(height: 10),
                 Text(
                   'No Quote Found by ${widget.author.name}',
@@ -131,8 +130,8 @@ class _AuthorDetailAuthorQuoteListState
                         color: !isGridView
                             ? iconColor
                             : isDarkTheme
-                                ? Colors.grey.shade700
-                                : Colors.grey.shade400,
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade400,
                       ),
                       const SizedBox(width: 10),
                       Icon(
@@ -141,8 +140,8 @@ class _AuthorDetailAuthorQuoteListState
                         color: isGridView
                             ? iconColor
                             : isDarkTheme
-                                ? Colors.grey.shade700
-                                : Colors.grey.shade400,
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade400,
                       ),
                     ],
                   ),
@@ -166,10 +165,7 @@ class _AuthorDetailAuthorQuoteListState
                 children: [
                   const Text(
                     'Quotes',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                   Row(
                     children: [
@@ -182,8 +178,8 @@ class _AuthorDetailAuthorQuoteListState
                           color: !isGridView
                               ? iconColor
                               : isDarkTheme
-                                  ? Colors.grey.shade700
-                                  : Colors.grey.shade400,
+                              ? Colors.grey.shade700
+                              : Colors.grey.shade400,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -197,8 +193,8 @@ class _AuthorDetailAuthorQuoteListState
                           color: isGridView
                               ? iconColor
                               : isDarkTheme
-                                  ? Colors.grey.shade700
-                                  : Colors.grey.shade400,
+                              ? Colors.grey.shade700
+                              : Colors.grey.shade400,
                         ),
                       ),
                     ],

@@ -20,16 +20,11 @@ class SingleQuoteOfTheDay extends StatelessWidget {
     final kPrimaryColor = Theme.of(context).primaryColor;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 3),
-      padding: const EdgeInsets.symmetric(
-        vertical: 10,
-        horizontal: 10,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       width: double.infinity,
       decoration: BoxDecoration(
         color: kPrimaryColor.withValues(alpha: 0.05),
-        border: Border.all(
-          color: kPrimaryColor.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: kPrimaryColor.withValues(alpha: 0.2)),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -37,10 +32,7 @@ class SingleQuoteOfTheDay extends StatelessWidget {
         children: [
           Text(
             'Quote Date: ${DateFormat('dd, MM, yyyy').format(quoteDate)}',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 5),
           Text(content),
@@ -49,10 +41,7 @@ class SingleQuoteOfTheDay extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: Text(
               '- $author',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -69,16 +58,11 @@ class SingleQuoteOfTheDaySkeletor extends StatelessWidget {
     final kPrimaryColor = Theme.of(context).primaryColor;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 3),
-      padding: const EdgeInsets.symmetric(
-        vertical: 10,
-        horizontal: 10,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       width: double.infinity,
       decoration: BoxDecoration(
         color: kPrimaryColor.withValues(alpha: 0.05),
-        border: Border.all(
-          color: kPrimaryColor.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: kPrimaryColor.withValues(alpha: 0.2)),
         borderRadius: BorderRadius.circular(15),
       ),
       child: const Column(
@@ -86,23 +70,18 @@ class SingleQuoteOfTheDaySkeletor extends StatelessWidget {
         children: [
           Text(
             'Quote Date: 2024-11-05',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           ),
           SizedBox(height: 5),
           Text(
-              'Heedfulness is the path to the Deathless. Heedlessness is the path to death. The heedful die not. The heedless are as if already dead.'),
+            'Heedfulness is the path to the Deathless. Heedlessness is the path to death. The heedful die not. The heedless are as if already dead.',
+          ),
           SizedBox(height: 5),
           Align(
             alignment: Alignment.centerRight,
             child: Text(
               '- The Buddha"',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
             ),
           ),
         ],

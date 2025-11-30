@@ -38,12 +38,12 @@ class AiFactDto {
   Map<String, dynamic> toJson() => _$AiFactDtoToJson(this);
 
   factory AiFactDto.fromDrift(Fact fact) => AiFactDto(
-        id: fact.id,
-        content: fact.content,
-        aiFactCategory: fact.aiFactCategory,
-        provider: fact.provider,
-        isFavorite: fact.isFavorite,
-        dateAdded: fact.dateAdded,
-        dateModified: fact.dateModified,
-      );
+    id: fact.id,
+    content: fact.content,
+    aiFactCategory: fact.aiFactCategory,
+    provider: fact.provider,
+    isFavorite: fact.isFavorite,
+    dateAdded: fact.dateAdded,
+    dateModified: fact.dateModified,
+  );
 }

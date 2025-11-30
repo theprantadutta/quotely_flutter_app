@@ -28,10 +28,7 @@ class SettingsMenuRowLayout extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                iconData,
-                color: kPrimaryColor,
-              ),
+              Icon(iconData, color: kPrimaryColor),
               const SizedBox(width: 10),
               Text(
                 title,
@@ -44,12 +41,9 @@ class SettingsMenuRowLayout extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: child ??
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: kPrimaryColor,
-                  size: 20,
-                ),
+            child:
+                child ??
+                Icon(Icons.arrow_forward_ios, color: kPrimaryColor, size: 20),
           ),
         ],
       ),

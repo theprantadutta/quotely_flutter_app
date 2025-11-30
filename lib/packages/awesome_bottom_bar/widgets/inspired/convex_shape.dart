@@ -121,11 +121,25 @@ class ConvexNotchedRectangle extends NotchedShape {
         )
         ..lineTo(p[2].dx + 4, host.top)
         ..conicTo(
-            p[2].dx + 4, 2 * p[2].dy * 5.2 / 4, p[3].dx - 36, p[3].dy * 4.6, 6)
+          p[2].dx + 4,
+          2 * p[2].dy * 5.2 / 4,
+          p[3].dx - 36,
+          p[3].dy * 4.6,
+          6,
+        )
         ..quadraticBezierTo(
-            p[3].dx - 38, p[3].dy * 4.6, p[3].dx - 32, p[3].dy * 4.6)
+          p[3].dx - 38,
+          p[3].dy * 4.6,
+          p[3].dx - 32,
+          p[3].dy * 4.6,
+        )
         ..conicTo(
-            p[4].dx - 6.5, 2 * p[2].dy * 5.2 / 4, p[5].dx - 22, p[5].dy, 6)
+          p[4].dx - 6.5,
+          2 * p[2].dy * 5.2 / 4,
+          p[5].dx - 22,
+          p[5].dy,
+          6,
+        )
         ..lineTo(host.right - rightCornerRadius, host.top)
         ..arcToPoint(
           Offset(host.right, host.top + rightCornerRadius),

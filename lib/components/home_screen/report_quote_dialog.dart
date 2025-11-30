@@ -6,10 +6,7 @@ import '../../dtos/quote_dto.dart'; // Make sure this path is correct
 class ReportQuoteDialog extends StatefulWidget {
   final QuoteDto quote; // Expects a QuoteDto
 
-  const ReportQuoteDialog({
-    super.key,
-    required this.quote,
-  });
+  const ReportQuoteDialog({super.key, required this.quote});
 
   @override
   State<ReportQuoteDialog> createState() => _ReportQuoteDialogState();
@@ -55,7 +52,8 @@ class _ReportQuoteDialogState extends State<ReportQuoteDialog> {
 
     final String subject =
         'Quote Report: ${reportedQuoteId.substring(0, reportedQuoteId.length > 8 ? 8 : reportedQuoteId.length)}... - $reportedQuoteAuthor';
-    final String body = '''
+    final String body =
+        '''
 --- Quote Report ---
 Quote ID: $reportedQuoteId
 Reported Quote: "$reportedQuoteContent"
@@ -79,13 +77,15 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
     //   },
     // );
 
-// Create mailto URL with proper encoding that preserves spaces as %20
-    final String encodedSubject =
-        Uri.encodeComponent(subject).replaceAll('+', '%20');
+    // Create mailto URL with proper encoding that preserves spaces as %20
+    final String encodedSubject = Uri.encodeComponent(
+      subject,
+    ).replaceAll('+', '%20');
     final String encodedBody = Uri.encodeComponent(body).replaceAll('+', '%20');
 
     final Uri emailLaunchUri = Uri.parse(
-        'mailto:prantadutta1997@gmail.com?subject=$encodedSubject&body=$encodedBody');
+      'mailto:prantadutta1997@gmail.com?subject=$encodedSubject&body=$encodedBody',
+    );
 
     try {
       if (await launchUrl(emailLaunchUri)) {
@@ -103,7 +103,8 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Could not open email client. Please send manually to prantadutta1997@gmail.com'),
+                'Could not open email client. Please send manually to prantadutta1997@gmail.com',
+              ),
               duration: Duration(seconds: 5),
             ),
           );
@@ -114,7 +115,8 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'An error occurred. Please ensure you have an email app configured.'),
+              'An error occurred. Please ensure you have an email app configured.',
+            ),
             duration: Duration(seconds: 5),
           ),
         );
@@ -151,10 +153,7 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(
-                    color: theme.dividerColor,
-                    width: 1,
-                  ),
+                  bottom: BorderSide(color: theme.dividerColor, width: 1),
                 ),
               ),
               child: Text(
@@ -208,7 +207,7 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
                     const SizedBox(height: 12),
 
                     DropdownButtonFormField<String>(
-                      value: _selectedReason,
+                      initialValue: _selectedReason,
                       hint: const Text('Select a reason'),
                       isExpanded: true,
                       decoration: InputDecoration(
@@ -316,10 +315,7 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(
-                    color: theme.dividerColor,
-                    width: 1,
-                  ),
+                  top: BorderSide(color: theme.dividerColor, width: 1),
                 ),
               ),
               child: Row(
@@ -350,8 +346,9 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.send_rounded),
-                      label:
-                          Text(_isSubmitting ? 'Sending...' : 'Submit Report'),
+                      label: Text(
+                        _isSubmitting ? 'Sending...' : 'Submit Report',
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,

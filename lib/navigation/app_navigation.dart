@@ -36,16 +36,21 @@ class AppNavigation {
 
   // Private navigators
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
-  static final _shellNavigatorHome =
-      GlobalKey<NavigatorState>(debugLabel: 'shellHome');
-  static final _shellNavigatorFavorites =
-      GlobalKey<NavigatorState>(debugLabel: 'shellFavorites');
-  static final _shellNavigatorAuthors =
-      GlobalKey<NavigatorState>(debugLabel: 'shellAuthors');
-  static final _shellNavigatorFacts =
-      GlobalKey<NavigatorState>(debugLabel: 'shellFacts');
-  static final _shellNavigatorSettings =
-      GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
+  static final _shellNavigatorHome = GlobalKey<NavigatorState>(
+    debugLabel: 'shellHome',
+  );
+  static final _shellNavigatorFavorites = GlobalKey<NavigatorState>(
+    debugLabel: 'shellFavorites',
+  );
+  static final _shellNavigatorAuthors = GlobalKey<NavigatorState>(
+    debugLabel: 'shellAuthors',
+  );
+  static final _shellNavigatorFacts = GlobalKey<NavigatorState>(
+    debugLabel: 'shellFacts',
+  );
+  static final _shellNavigatorSettings = GlobalKey<NavigatorState>(
+    debugLabel: 'shellSettings',
+  );
 
   // GoRouter configuration
   static final GoRouter router = GoRouter(
@@ -61,9 +66,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: OnboardingScreen.kRouteName,
         name: "OnBoarding",
-        builder: (context, state) => OnboardingScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => OnboardingScreen(key: state.pageKey),
       ),
 
       // /// OnBoardingThemeScreen
@@ -94,9 +97,7 @@ class AppNavigation {
           return null;
         },
         builder: (context, state, navigationShell) {
-          return BottomNavigationLayout(
-            navigationShell: navigationShell,
-          );
+          return BottomNavigationLayout(navigationShell: navigationShell);
         },
         branches: <StatefulShellBranch>[
           /// Branch Home
@@ -177,9 +178,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: QuoteOfTheDayScreen.kRouteName,
         name: "Quote of the Day",
-        builder: (context, state) => QuoteOfTheDayScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => QuoteOfTheDayScreen(key: state.pageKey),
       ),
 
       /// View all Quote of the Day Screen
@@ -187,9 +186,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: QuoteOfTheDayListScreen.kRouteName,
         name: "Quote of the Day List",
-        builder: (context, state) => QuoteOfTheDayListScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            QuoteOfTheDayListScreen(key: state.pageKey),
       ),
 
       /// View Fact of the Day Screen
@@ -197,9 +195,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: FactOfTheDayScreen.kRouteName,
         name: "Fact of the Day",
-        builder: (context, state) => FactOfTheDayScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => FactOfTheDayScreen(key: state.pageKey),
       ),
 
       /// View all Fact of the Day Screen
@@ -207,9 +203,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: FactOfTheDayListScreen.kRouteName,
         name: "Fact of the Day List",
-        builder: (context, state) => FactOfTheDayListScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => FactOfTheDayListScreen(key: state.pageKey),
       ),
 
       /// View Daily Inspiration Screen
@@ -217,9 +211,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyInspirationScreen.kRouteName,
         name: "Daily Inspiration",
-        builder: (context, state) => DailyInspirationScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => DailyInspirationScreen(key: state.pageKey),
       ),
 
       /// View all Daily Inspiration Screen
@@ -227,9 +219,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyInspirationListScreen.kRouteName,
         name: "Daily Inspiration List",
-        builder: (context, state) => DailyInspirationListScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            DailyInspirationListScreen(key: state.pageKey),
       ),
 
       /// View Daily Brain Food Screen
@@ -237,9 +228,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyBrainFoodScreen.kRouteName,
         name: "Daily Brain Food",
-        builder: (context, state) => DailyBrainFoodScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => DailyBrainFoodScreen(key: state.pageKey),
       ),
 
       /// View all Daily Brain Food Screen
@@ -247,9 +236,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyBrainFoodListScreen.kRouteName,
         name: "Daily Brain Food List",
-        builder: (context, state) => DailyBrainFoodListScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            DailyBrainFoodListScreen(key: state.pageKey),
       ),
 
       /// View Motivation Monday Screen
@@ -257,9 +245,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: MotivationMondayScreen.kRouteName,
         name: "Motivation Monday",
-        builder: (context, state) => MotivationMondayScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => MotivationMondayScreen(key: state.pageKey),
       ),
 
       /// View all Monday Motivation Screen
@@ -267,9 +253,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: MotivationMondayListScreen.kRouteName,
         name: "Monday Motivation List",
-        builder: (context, state) => MotivationMondayListScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            MotivationMondayListScreen(key: state.pageKey),
       ),
 
       /// View Weird Fact Wednesday Screen
@@ -277,9 +262,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: WeirdFactWednesdayScreen.kRouteName,
         name: "Weird Fact Wednesday",
-        builder: (context, state) => WeirdFactWednesdayScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            WeirdFactWednesdayScreen(key: state.pageKey),
       ),
 
       /// View all Weird Fact Wednesday Screen
@@ -287,9 +271,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: WeirdFactWednesdayListScreen.kRouteName,
         name: "Weird Fact Wednesday List",
-        builder: (context, state) => WeirdFactWednesdayListScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            WeirdFactWednesdayListScreen(key: state.pageKey),
       ),
 
       /// View Settings Appearance
@@ -297,9 +280,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: AppearanceScreen.kRouteName,
         name: "Appearance",
-        builder: (context, state) => AppearanceScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => AppearanceScreen(key: state.pageKey),
       ),
 
       /// View Settings Appearance
@@ -307,9 +288,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: SettingsNotificationScreen.kRouteName,
         name: "Settings Notification",
-        builder: (context, state) => SettingsNotificationScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            SettingsNotificationScreen(key: state.pageKey),
       ),
 
       /// View Settings Offline Support
@@ -317,9 +297,8 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: SettingsDownloadEverythingScreen.kRouteName,
         name: "Settings Download Everything",
-        builder: (context, state) => SettingsDownloadEverythingScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) =>
+            SettingsDownloadEverythingScreen(key: state.pageKey),
       ),
 
       /// Author Detail
@@ -331,10 +310,7 @@ class AppNavigation {
           // final authorDetailScreenArguments =
           //     state.extra as AuthorDetailScreenArguments;
           final authorSlug = state.pathParameters["authorSlug"]!;
-          return AuthorDetailScreen(
-            key: state.pageKey,
-            authorSlug: authorSlug,
-          );
+          return AuthorDetailScreen(key: state.pageKey, authorSlug: authorSlug);
         },
       ),
 
@@ -343,9 +319,7 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: SupportUsScreen.kRouteName,
         name: "Donation",
-        builder: (context, state) => SupportUsScreen(
-          key: state.pageKey,
-        ),
+        builder: (context, state) => SupportUsScreen(key: state.pageKey),
       ),
     ],
   );
@@ -360,10 +334,7 @@ class AppNavigation {
       restorationId: state.pageKey.value,
       transitionDuration: const Duration(milliseconds: 500),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
+        return FadeTransition(opacity: animation, child: child);
       },
     );
   }

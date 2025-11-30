@@ -116,8 +116,10 @@ class NotificationScreenLayout extends StatelessWidget {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text(description),
       trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 8.0,
+      ),
     );
   }
 }

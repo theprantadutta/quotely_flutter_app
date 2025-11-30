@@ -13,10 +13,7 @@ class DailyInspirationListScreen extends StatelessWidget {
       title: 'All Daily Inspiration',
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 10,
-          ),
+          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
           child: QuoteOfTheDayListComponent(),
         ),
       ),

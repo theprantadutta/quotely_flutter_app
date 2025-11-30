@@ -198,21 +198,25 @@ class DriftFactService {
   /// Checks if a specific fact is marked as a favorite in the local database.
   static Future<bool> isFavoriteFact(int factId) async {
     final database = getIt.get<AppDatabase>();
-    final existingFact = await (database.select(database.facts)
-          ..where((f) => f.id.equals(factId)))
-        .getSingleOrNull();
+    final existingFact = await (database.select(
+      database.facts,
+    )..where((f) => f.id.equals(factId))).getSingleOrNull();
     return existingFact?.isFavorite ?? false;
   }
 
   /// Toggles the favorite status of a fact.
   /// It will insert the fact if it doesn't exist, or update it if it does.
   static Future<bool> changeFactFavoriteStatus(
-      AiFactDto fact, bool isFavorite) async {
+    AiFactDto fact,
+    bool isFavorite,
+  ) async {
     try {
       final database = getIt.get<AppDatabase>();
 
       // Use insertOnConflictUpdate to either create a new record or update an existing one.
-      await database.into(database.facts).insertOnConflictUpdate(
+      await database
+          .into(database.facts)
+          .insertOnConflictUpdate(
             FactsCompanion(
               id: Value(fact.id),
               content: Value(fact.content),
@@ -220,8 +224,9 @@ class DriftFactService {
               provider: Value(fact.provider),
               isFavorite: Value(isFavorite), // This is the value we're toggling
               dateAdded: Value(fact.dateAdded),
-              dateModified:
-                  Value(DateTime.now()), // Update the modified timestamp
+              dateModified: Value(
+                DateTime.now(),
+              ), // Update the modified timestamp
             ),
           );
       return true;
@@ -268,10 +273,12 @@ class DriftFactService {
 
     // Using a custom query to select only the 'id' column for efficiency.
     // Note: Drift stores booleans as 0 and 1.
-    final results = await db.customSelect(
-      'SELECT id FROM facts WHERE is_favorite = 1',
-      readsFrom: {db.facts},
-    ).get();
+    final results = await db
+        .customSelect(
+          'SELECT id FROM facts WHERE is_favorite = 1',
+          readsFrom: {db.facts},
+        )
+        .get();
 
     // Map the raw data row to a List<int>
     return results.map((row) => row.read<int>('id')).toList();
@@ -289,18 +296,15 @@ class DriftFactService {
           content: Value(dto.content),
           aiFactCategory: Value(dto.aiFactCategory),
           provider: Value(dto.provider),
-          isFavorite:
-              const Value(false), // New facts are never favorites by default
+          isFavorite: const Value(
+            false,
+          ), // New facts are never favorites by default
           dateAdded: Value(dto.dateAdded),
           dateModified: Value(dto.dateModified),
         );
 
         // Insert the fact, or ignore it if a fact with the same ID already exists.
-        batch.insert(
-          db.facts,
-          factCompanion,
-          mode: InsertMode.insertOrIgnore,
-        );
+        batch.insert(db.facts, factCompanion, mode: InsertMode.insertOrIgnore);
       }
     });
   }

@@ -81,13 +81,17 @@ class _BottomBarInspiredFancyState extends State<BottomBarInspiredFancy>
     _animationList = List<Animation<Color?>>.empty(growable: true);
 
     for (int i = 0; i < widget.items.length; ++i) {
-      _animationControllerList.add(AnimationController(
+      _animationControllerList.add(
+        AnimationController(
           duration: widget.duration ?? const Duration(milliseconds: 400),
-          vsync: this));
+          vsync: this,
+        ),
+      );
       _animationList.add(
-          ColorTween(begin: widget.color, end: widget.colorSelected)
-              .chain(CurveTween(curve: widget.curve ?? Curves.ease))
-              .animate(_animationControllerList[i]));
+        ColorTween(begin: widget.color, end: widget.colorSelected)
+            .chain(CurveTween(curve: widget.curve ?? Curves.ease))
+            .animate(_animationControllerList[i]),
+      );
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,21 +115,24 @@ class _BottomBarInspiredFancyState extends State<BottomBarInspiredFancy>
     double padTop = 24,
     double padBottom = 24,
   }) {
-    EdgeInsets padding =
-        EdgeInsets.only(top: widget.top ?? padTop, bottom: padBottom);
+    EdgeInsets padding = EdgeInsets.only(
+      top: widget.top ?? padTop,
+      bottom: padBottom,
+    );
 
-    double widthFancy =
-        widget.styleIconFooter == StyleIconFooter.dot ? 4 : widget.iconSize;
+    double widthFancy = widget.styleIconFooter == StyleIconFooter.dot
+        ? 4
+        : widget.iconSize;
     bool active = index == _selectedIndex;
     BoxDecoration decorationFancy =
         widget.styleIconFooter == StyleIconFooter.dot
-            ? BoxDecoration(
-                color: active ? widget.colorSelected : Colors.transparent,
-                shape: BoxShape.circle,
-              )
-            : BoxDecoration(
-                color: active ? widget.colorSelected : Colors.transparent,
-              );
+        ? BoxDecoration(
+            color: active ? widget.colorSelected : Colors.transparent,
+            shape: BoxShape.circle,
+          )
+        : BoxDecoration(
+            color: active ? widget.colorSelected : Colors.transparent,
+          );
     Widget fancy = widget.animated
         ? AnimatedContainer(
             height: 4,
@@ -133,14 +140,11 @@ class _BottomBarInspiredFancyState extends State<BottomBarInspiredFancy>
             decoration: decorationFancy,
             duration: widget.duration ?? const Duration(milliseconds: 300),
             curve: widget.curve ?? Curves.easeIn,
-            margin:
-                active ? EdgeInsets.zero : EdgeInsets.only(top: padBottom - 12),
+            margin: active
+                ? EdgeInsets.zero
+                : EdgeInsets.only(top: padBottom - 12),
           )
-        : Container(
-            height: 4,
-            width: widthFancy,
-            decoration: decorationFancy,
-          );
+        : Container(height: 4, width: widthFancy, decoration: decorationFancy);
     return Stack(
       children: [
         if (widget.animated)
@@ -171,10 +175,7 @@ class _BottomBarInspiredFancyState extends State<BottomBarInspiredFancy>
               Positioned(
                 left: 0,
                 right: 0,
-                child: Align(
-                  alignment: Alignment.center,
-                  child: fancy,
-                ),
+                child: Align(alignment: Alignment.center, child: fancy),
               ),
             ],
           ),
@@ -205,13 +206,11 @@ class _BottomBarInspiredFancyState extends State<BottomBarInspiredFancy>
             SizedBox(height: widget.pad ?? 4),
             Text(
               item.title!,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall
+              style: Theme.of(context).textTheme.labelSmall
                   ?.merge(widget.titleStyle)
                   .copyWith(color: color),
               textAlign: TextAlign.center,
-            )
+            ),
           ],
         ],
       ),
@@ -233,18 +232,23 @@ class _BottomBarInspiredFancyState extends State<BottomBarInspiredFancy>
     }
 
     if (widget.items.length != _animationControllerList.length) {
-      _animationControllerList =
-          List<AnimationController>.empty(growable: true);
+      _animationControllerList = List<AnimationController>.empty(
+        growable: true,
+      );
       _animationList = List<Animation<Color?>>.empty(growable: true);
 
       for (int i = 0; i < widget.items.length; ++i) {
-        _animationControllerList.add(AnimationController(
+        _animationControllerList.add(
+          AnimationController(
             duration: widget.duration ?? const Duration(milliseconds: 400),
-            vsync: this));
+            vsync: this,
+          ),
+        );
         _animationList.add(
-            ColorTween(begin: widget.color, end: widget.colorSelected)
-                .chain(CurveTween(curve: widget.curve ?? Curves.ease))
-                .animate(_animationControllerList[i]));
+          ColorTween(begin: widget.color, end: widget.colorSelected)
+              .chain(CurveTween(curve: widget.curve ?? Curves.ease))
+              .animate(_animationControllerList[i]),
+        );
       }
     }
 

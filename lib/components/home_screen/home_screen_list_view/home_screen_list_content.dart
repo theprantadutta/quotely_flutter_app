@@ -32,10 +32,7 @@ class HomeScreenListContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
             quote.content,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
           ),
         ),
         Padding(
@@ -61,9 +58,7 @@ class HomeScreenListContent extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
               '- ${quote.author}',
-              style: TextStyle(
-                fontStyle: FontStyle.italic,
-              ),
+              style: TextStyle(fontStyle: FontStyle.italic),
               textAlign: TextAlign.right,
             ),
           ),
@@ -102,10 +97,7 @@ class HomeScreenListContentSkeletor extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: const Text(
             'You will never find the same person twice, not even in the same person',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
           ),
         ),
         Padding(
@@ -131,9 +123,7 @@ class HomeScreenListContentSkeletor extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
               '- Rumy',
-              style: TextStyle(
-                fontStyle: FontStyle.italic,
-              ),
+              style: TextStyle(fontStyle: FontStyle.italic),
               textAlign: TextAlign.right,
             ),
           ),

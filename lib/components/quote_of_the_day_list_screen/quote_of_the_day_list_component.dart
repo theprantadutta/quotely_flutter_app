@@ -39,10 +39,7 @@ class _QuoteOfTheDayListComponentState
             pageNumber++;
           });
           final _ = await ref.refresh(
-            fetchAllQuoteOfTheDayProvider(
-              pageNumber,
-              pageSize,
-            ).future,
+            fetchAllQuoteOfTheDayProvider(pageNumber, pageSize).future,
           );
         }
       } catch (e) {
@@ -64,10 +61,7 @@ class _QuoteOfTheDayListComponentState
     debugPrint('Refreshing Quotes...');
     try {
       final _ = await ref.refresh(
-        fetchAllQuoteOfTheDayProvider(
-          pageNumber,
-          pageSize,
-        ).future,
+        fetchAllQuoteOfTheDayProvider(pageNumber, pageSize).future,
       );
       setState(() {
         pageNumber = 1;
@@ -113,7 +107,8 @@ class _QuoteOfTheDayListComponentState
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
                   return Skeletonizer(
-                      child: const SingleQuoteOfTheDaySkeletor());
+                    child: const SingleQuoteOfTheDaySkeletor(),
+                  );
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(
@@ -125,9 +120,8 @@ class _QuoteOfTheDayListComponentState
               },
             );
           },
-          error: (error, stackTrace) => const Center(
-            child: Text('Something Went Wrong'),
-          ),
+          error: (error, stackTrace) =>
+              const Center(child: Text('Something Went Wrong')),
           loading: () {
             if (quotes.isEmpty) {
               return Skeletonizer(
@@ -144,7 +138,8 @@ class _QuoteOfTheDayListComponentState
               itemBuilder: (context, index) {
                 if (index == quotes.length) {
                   return Skeletonizer(
-                      child: const SingleQuoteOfTheDaySkeletor());
+                    child: const SingleQuoteOfTheDaySkeletor(),
+                  );
                 }
                 final currentQuote = quotes[index];
                 return SingleQuoteOfTheDay(

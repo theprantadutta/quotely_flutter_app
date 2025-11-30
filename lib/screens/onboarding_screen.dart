@@ -93,10 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onPressed: _finishOnboarding,
                   child: const Text(
                     'SKIP',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
 
@@ -121,15 +118,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onPressed: _isLastPage
                       ? _finishOnboarding
                       : () => _pageController.nextPage(
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeIn,
-                          ),
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeIn,
+                        ),
                   child: Text(
                     _isLastPage ? 'DONE' : 'NEXT',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
               ],
@@ -157,15 +151,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             subtitle,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],

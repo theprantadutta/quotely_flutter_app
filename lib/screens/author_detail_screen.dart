@@ -29,16 +29,14 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // final author = widget.authorDetailScreenArguments.author;
-    final authorProvider =
-        ref.watch(fetchAuthorDetailProvider(widget.authorSlug));
+    final authorProvider = ref.watch(
+      fetchAuthorDetailProvider(widget.authorSlug),
+    );
     return MainLayout(
       title: 'Author Detail',
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 10,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
           child: SingleChildScrollView(
             child: Column(
               children: [
@@ -62,12 +60,8 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
                   data: (author) {
                     if (author == null) _buildErrorWidget();
                     return isAuthorBioSelected
-                        ? AuthorDetailAuthorBio(
-                            author: author!,
-                          )
-                        : AuthorDetailAuthorQuotes(
-                            author: author!,
-                          );
+                        ? AuthorDetailAuthorBio(author: author!)
+                        : AuthorDetailAuthorQuotes(author: author!);
                   },
                   error: (err, stack) => _buildErrorWidget(),
                   loading: () => AuthorDetailAuthorBioSkeletor(),
@@ -84,9 +78,7 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * 0.8,
       child: const Center(
-        child: SomethingWentWrong(
-          title: 'Failed to get Author Detail',
-        ),
+        child: SomethingWentWrong(title: 'Failed to get Author Detail'),
       ),
     );
   }
@@ -117,9 +109,7 @@ class SingleAuthorDetailButton extends StatelessWidget {
             color: isSelected
                 ? kPrimaryColor.withValues(alpha: 0.8)
                 : kPrimaryColor.withValues(alpha: 0.2),
-            border: Border.all(
-              color: kPrimaryColor.withValues(alpha: 0.2),
-            ),
+            border: Border.all(color: kPrimaryColor.withValues(alpha: 0.2)),
             borderRadius: BorderRadius.circular(5),
           ),
           child: Center(

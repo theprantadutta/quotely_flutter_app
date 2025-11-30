@@ -49,12 +49,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     FlutterNativeSplash.remove();
     _fetchQuotes();
     addAllFavoriteIds();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async {
-        await _checkAndShowTermsDialog();
-        await PushNotifications.asyncQueue.start();
-      },
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkAndShowTermsDialog();
+      await PushNotifications.asyncQueue.start();
+    });
   }
 
   Future<void> _checkAndShowTermsDialog() async {
@@ -111,9 +109,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => openLegalScreen(
-                                    'Terms & Conditions',
-                                    'assets/legal/terms.md',
-                                  ),
+                                'Terms & Conditions',
+                                'assets/legal/terms.md',
+                              ),
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
@@ -124,9 +122,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => openLegalScreen(
-                                    'Privacy & Policy',
-                                    'assets/legal/privacy.md',
-                                  ),
+                                'Privacy & Policy',
+                                'assets/legal/privacy.md',
+                              ),
                           ),
                           const TextSpan(text: '.'),
                         ],
@@ -281,7 +279,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           children: [
             HomeScreenTopBar(
-              loading: isLoadingMore &&
+              loading:
+                  isLoadingMore &&
                   quotes.isNotEmpty, // Only show spinner on subsequent loads
               isGridView: isGridView,
               onViewChanged: () =>

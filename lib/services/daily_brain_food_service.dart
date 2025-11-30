@@ -11,7 +11,8 @@ class DailyBrainFoodService {
     required int pageSize,
   }) async {
     final response = await HttpService.get(
-        '$kApiUrl/$kGetAllDailyBrainFood?pageNumber=$pageNumber&pageSize=$pageSize');
+      '$kApiUrl/$kGetAllDailyBrainFood?pageNumber=$pageNumber&pageSize=$pageSize',
+    );
     if (response.statusCode == 200) {
       return DailyBrainFoodResponseDto.fromJson(json.decode(response.data));
     }

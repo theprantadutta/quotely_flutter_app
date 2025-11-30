@@ -11,10 +11,7 @@ class QuoteOfTheDay extends StatelessWidget {
     return const MainLayout(
       title: 'Appearance',
       body: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 8.0,
-          vertical: 10,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
         child: Column(
           children: [
             SettingsMenuRowLayout(

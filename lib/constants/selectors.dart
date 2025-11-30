@@ -8,14 +8,14 @@ import 'colors.dart';
 const kDefaultFlexTheme = FlexScheme.bahamaBlue;
 
 LinearGradient kGetDefaultGradient(BuildContext context) => LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      stops: const [0.1, 0.9],
-      colors: [
-        Theme.of(context).primaryColor.withValues(alpha: 0.1),
-        kHelperColor.withValues(alpha: 0.1),
-      ],
-    );
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  stops: const [0.1, 0.9],
+  colors: [
+    Theme.of(context).primaryColor.withValues(alpha: 0.1),
+    kHelperColor.withValues(alpha: 0.1),
+  ],
+);
 
 SystemUiOverlayStyle getDefaultSystemUiStyle(bool isDarkTheme) {
   return SystemUiOverlayStyle(

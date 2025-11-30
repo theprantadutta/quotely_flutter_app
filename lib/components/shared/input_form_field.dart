@@ -21,8 +21,10 @@ class InputFormField extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 5,
+            horizontal: 15,
+          ),
           hintText: labelText,
           hintStyle: TextStyle(
             fontSize: 14,
@@ -33,9 +35,7 @@ class InputFormField extends StatelessWidget {
           ),
           // Border when the TextField is enabled but not focused
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: kPrimaryColor.withValues(alpha: 0.3),
-            ),
+            borderSide: BorderSide(color: kPrimaryColor.withValues(alpha: 0.3)),
             borderRadius: BorderRadius.circular(10),
           ),
           // Border when the TextField is focused
@@ -55,17 +55,12 @@ class InputFormField extends StatelessWidget {
           ),
           // Border when the TextField is focused and there is an error
           focusedErrorBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
-              color: Colors.red,
-              width: 2,
-            ),
+            borderSide: const BorderSide(color: Colors.red, width: 2),
             borderRadius: BorderRadius.circular(10),
           ),
           // Default border
           border: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: kPrimaryColor.withValues(alpha: 0.3),
-            ),
+            borderSide: BorderSide(color: kPrimaryColor.withValues(alpha: 0.3)),
             borderRadius: BorderRadius.circular(10),
           ),
         ),

@@ -12,18 +12,11 @@ class NotImplemented extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.warning_rounded,
-            color: kPrimaryColor,
-            size: 60,
-          ),
+          Icon(Icons.warning_rounded, color: kPrimaryColor, size: 60),
           const SizedBox(height: 10),
           const Text(
             'Not implement yet!',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ],
       ),

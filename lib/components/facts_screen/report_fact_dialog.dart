@@ -6,10 +6,7 @@ import '../../dtos/ai_fact_dto.dart'; // For sending email
 class ReportFactDialog extends StatefulWidget {
   final AiFactDto fact;
 
-  const ReportFactDialog({
-    super.key,
-    required this.fact,
-  });
+  const ReportFactDialog({super.key, required this.fact});
 
   @override
   State<ReportFactDialog> createState() => _ReportFactDialogState();
@@ -52,7 +49,8 @@ class _ReportFactDialogState extends State<ReportFactDialog> {
     final String contactEmail = _contactEmailController.text.trim();
 
     final String subject = 'Fact Report: $reportedFactId...';
-    final String body = '''
+    final String body =
+        '''
 --- Fact Report ---
 Fact ID: $reportedFactId
 Reported Fact: "$reportedFactContent"
@@ -76,12 +74,14 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
     // );
 
     // Create mailto URL with proper encoding that preserves spaces as %20
-    final String encodedSubject =
-        Uri.encodeComponent(subject).replaceAll('+', '%20');
+    final String encodedSubject = Uri.encodeComponent(
+      subject,
+    ).replaceAll('+', '%20');
     final String encodedBody = Uri.encodeComponent(body).replaceAll('+', '%20');
 
     final Uri emailLaunchUri = Uri.parse(
-        'mailto:prantadutta1997@gmail.com?subject=$encodedSubject&body=$encodedBody');
+      'mailto:prantadutta1997@gmail.com?subject=$encodedSubject&body=$encodedBody',
+    );
 
     try {
       if (await launchUrl(emailLaunchUri)) {
@@ -99,7 +99,8 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Could not open email client. Please send manually to prantadutta1997@gmail.com'),
+                'Could not open email client. Please send manually to prantadutta1997@gmail.com',
+              ),
               duration: Duration(seconds: 5),
             ),
           );
@@ -110,7 +111,8 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'An error occurred. Please ensure you have an email app configured.'),
+              'An error occurred. Please ensure you have an email app configured.',
+            ),
             duration: Duration(seconds: 5),
           ),
         );
@@ -147,10 +149,7 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(
-                    color: theme.dividerColor,
-                    width: 1,
-                  ),
+                  bottom: BorderSide(color: theme.dividerColor, width: 1),
                 ),
               ),
               child: Text(
@@ -204,7 +203,7 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
                     const SizedBox(height: 12),
 
                     DropdownButtonFormField<String>(
-                      value: _selectedReason,
+                      initialValue: _selectedReason,
                       hint: const Text('Select a reason'),
                       isExpanded: true,
                       decoration: InputDecoration(
@@ -312,10 +311,7 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(
-                    color: theme.dividerColor,
-                    width: 1,
-                  ),
+                  top: BorderSide(color: theme.dividerColor, width: 1),
                 ),
               ),
               child: Row(
@@ -346,8 +342,9 @@ Contact Email (Optional): ${contactEmail.isNotEmpty ? contactEmail : 'N/A'}
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.send_rounded),
-                      label:
-                          Text(_isSubmitting ? 'Sending...' : 'Submit Report'),
+                      label: Text(
+                        _isSubmitting ? 'Sending...' : 'Submit Report',
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,

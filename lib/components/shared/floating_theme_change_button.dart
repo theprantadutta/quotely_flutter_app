@@ -24,15 +24,13 @@ class FloatingThemeChangeButton extends StatelessWidget {
         duration: const Duration(milliseconds: 500),
         child: Icon(
           isDarkTheme ? Icons.dark_mode : Icons.light_mode,
-          key: Key(isDarkTheme
-              .toString()), // Ensure Flutter animates between different keys
+          key: Key(
+            isDarkTheme.toString(),
+          ), // Ensure Flutter animates between different keys
           color: Colors.white,
         ),
         transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
       ),
     );
