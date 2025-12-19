@@ -6,6 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../components/home_screen/home_screen_quote_single_filter.dart';
 import '../../dtos/tag_dto.dart';
 import '../../riverpods/all_tag_data_provider.dart';
+import '../../util/pagination_seed.dart';
 
 class HomeScreenQuoteFilters extends ConsumerStatefulWidget {
   final List<String> allSelectedTags;
@@ -51,7 +52,7 @@ class _HomeScreenQuoteFiltersState
 
     try {
       final fetchedTags = await ref.read(
-        fetchAllTagsProvider(pageNumber, pageSize).future,
+        fetchAllTagsProvider(pageNumber, pageSize, PaginationSeed.current).future,
       );
 
       setState(() {

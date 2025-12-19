@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/components/authors_screen/single_author_view.dart';
 import 'package:quotely_flutter_app/components/shared/something_went_wrong.dart';
 import 'package:quotely_flutter_app/riverpods/all_author_data_provider.dart';
+import 'package:quotely_flutter_app/util/pagination_seed.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../dtos/author_dto.dart';
@@ -57,6 +58,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
               widget.authorSearchController.text,
               pageNumber,
               pageSize,
+              PaginationSeed.current,
             ).future,
           );
         }
@@ -88,6 +90,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
           widget.authorSearchController.text,
           pageNumber,
           pageSize,
+          PaginationSeed.current,
         ).future,
       );
       setState(() {
@@ -116,6 +119,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
         widget.authorSearchController.text,
         pageNumber,
         pageSize,
+        PaginationSeed.current,
       ),
     );
 

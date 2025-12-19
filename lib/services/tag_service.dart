@@ -1,29 +1,10 @@
-// import 'dart:convert';
-
-// import '../constants/urls.dart';
-// import '../dtos/tag_response_dto.dart';
-// import 'http_service.dart';
-
-// class TagService {
-//   Future<TagResponseDto> getAllTagsFromDatabase({
-//     required int pageNumber,
-//     required int pageSize,
-//   }) async {
-//     final response = await HttpService.get(
-//         '$kApiUrl/$kGetAllTags?pageNumber=$pageNumber&pageSize=$pageSize');
-//     if (response.statusCode == 200) {
-//       return TagResponseDto.fromJson(json.decode(response.data));
-//     }
-//     throw Exception('Failed to get tags home screen data');
-//   }
-// }
-
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:quotely_flutter_app/dtos/tag_dto.dart';
 import 'package:quotely_flutter_app/services/drift_tag_service.dart';
 import 'package:quotely_flutter_app/services/http_service.dart';
+import 'package:quotely_flutter_app/util/pagination_seed.dart';
 
 import '../constants/urls.dart';
 import '../dtos/pagination_dto.dart';
@@ -35,12 +16,17 @@ class TagService {
   static Future<TagResponseDto> getAllTags({
     required int pageNumber,
     required int pageSize,
+    int? seed,
   }) async {
     try {
+      // Use provided seed or get the current session seed
+      final effectiveSeed = seed ?? PaginationSeed.current;
+
       // --- ONLINE PATH ---
       final queryParameters = {
         'pageNumber': pageNumber.toString(),
         'pageSize': pageSize.toString(),
+        'seed': effectiveSeed.toString(),
       };
 
       final uri = Uri.parse(

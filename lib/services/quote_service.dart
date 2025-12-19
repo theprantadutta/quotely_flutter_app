@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:quotely_flutter_app/dtos/pagination_dto.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:quotely_flutter_app/services/drift_quote_service.dart';
+import 'package:quotely_flutter_app/util/pagination_seed.dart';
 
 import '../../dtos/quote_response_dto.dart';
 import '../constants/urls.dart';
@@ -13,12 +14,17 @@ class QuoteService {
     required int pageNumber,
     required int pageSize,
     required List<String> tags,
+    int? seed,
   }) async {
     try {
+      // Use provided seed or get the current session seed
+      final effectiveSeed = seed ?? PaginationSeed.current;
+
       // Try to get from API first
       final queryParameters = {
         'pageNumber': pageNumber.toString(),
         'pageSize': pageSize.toString(),
+        'seed': effectiveSeed.toString(),
         if (tags.isNotEmpty) 'tags': tags.join(','),
       };
 
@@ -62,12 +68,17 @@ class QuoteService {
     required String authorSlug,
     required int pageNumber,
     required int pageSize,
+    int? seed,
   }) async {
+    // Use provided seed or get the current session seed
+    final effectiveSeed = seed ?? PaginationSeed.current;
+
     // Initialize query parameters with page number and page size
     final queryParameters = {
       'authorSlug': authorSlug,
       'pageNumber': pageNumber.toString(),
       'pageSize': pageSize.toString(),
+      'seed': effectiveSeed.toString(),
     };
 
     final uri = Uri.parse(

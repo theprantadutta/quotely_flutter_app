@@ -8,6 +8,7 @@ import '../../components/shared/something_went_wrong.dart';
 import '../../components/shared/top_navigation_bar.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../riverpods/all_facts_data_provider.dart';
+import '../../util/pagination_seed.dart';
 
 class FactsScreen extends ConsumerStatefulWidget {
   static const kRouteName = '/facts';
@@ -72,6 +73,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
           factPageSize,
           allSelectedCategory,
           allSelectedProvider,
+          PaginationSeed.current,
         ).future,
       );
       setState(() {

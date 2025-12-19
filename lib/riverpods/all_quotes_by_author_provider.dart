@@ -10,10 +10,12 @@ Future<QuoteResponseDto> fetchAllQuotesByAuthor(
   String authorSlug,
   int pageNumber,
   int pageSize,
+  int? seed,
 ) async {
   return await QuoteService().getAllQuotesByAuthorFromDatabase(
     authorSlug: authorSlug,
     pageNumber: pageNumber,
     pageSize: pageSize,
+    seed: seed,
   );
 }

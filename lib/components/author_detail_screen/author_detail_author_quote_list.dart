@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/dtos/author_dto.dart';
 import 'package:quotely_flutter_app/main.dart';
 import 'package:quotely_flutter_app/riverpods/all_quotes_by_author_provider.dart';
+import 'package:quotely_flutter_app/util/pagination_seed.dart';
 
 import '../../dtos/quote_dto.dart';
 import '../home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
@@ -50,6 +51,7 @@ class _AuthorDetailAuthorQuoteListState
           widget.author.slug,
           quotePageNumber,
           quotePageSize,
+          PaginationSeed.current,
         ).future,
       );
       setState(() {

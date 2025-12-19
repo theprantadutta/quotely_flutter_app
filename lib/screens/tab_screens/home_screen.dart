@@ -17,6 +17,7 @@ import '../../constants/colors.dart';
 import '../../main.dart';
 import '../../riverpods/all_quote_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
+import '../../util/pagination_seed.dart';
 import '../../services/drift_fact_service.dart';
 import '../../services/drift_quote_service.dart';
 import '../../state_providers/favorite_fact_ids.dart';
@@ -232,6 +233,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           quotePageNumber,
           quotePageSize,
           allSelectedTags,
+          PaginationSeed.current,
         ).future,
       );
       setState(() {

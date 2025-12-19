@@ -10,9 +10,11 @@ Future<TagResponseDto> fetchAllTags(
   Ref ref,
   int pageNumber,
   int pageSize,
+  int? seed,
 ) async {
   return await TagService.getAllTags(
     pageNumber: pageNumber,
     pageSize: pageSize,
+    seed: seed,
   );
 }

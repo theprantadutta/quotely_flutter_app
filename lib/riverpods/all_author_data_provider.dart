@@ -10,10 +10,12 @@ Future<AuthorResponseDto> fetchAllAuthors(
   String search,
   int pageNumber,
   int pageSize,
+  int? seed,
 ) async {
   return await AuthorService().getAllAuthors(
     search: search,
     pageNumber: pageNumber,
     pageSize: pageSize,
+    seed: seed,
   );
 }

@@ -11,11 +11,13 @@ Future<AiFactResponseDto> fetchAllFacts(
   int pageSize,
   List<String> categories,
   List<String> providers,
+  int? seed,
 ) async {
   return await FactService.getAllAiFactsFromDatabase(
     pageNumber: pageNumber,
     pageSize: pageSize,
     aiProviders: providers,
     factCategories: categories,
+    seed: seed,
   );
 }

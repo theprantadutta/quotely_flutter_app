@@ -1,37 +1,3 @@
-// import 'dart:convert';
-
-// import '../constants/urls.dart';
-// import '../dtos/author_dto.dart';
-// import '../dtos/author_response_dto.dart';
-// import 'http_service.dart';
-
-// class AuthorService {
-//   Future<AuthorResponseDto> getAllAuthorsFromDatabase({
-//     required String search,
-//     required int pageNumber,
-//     required int pageSize,
-//   }) async {
-//     final response = await HttpService.get(
-//         '$kApiUrl/$kGetAllAuthors?search=$search&pageNumber=$pageNumber&pageSize=$pageSize');
-//     if (response.statusCode == 200) {
-//       return AuthorResponseDto.fromJson(json.decode(response.data));
-//     }
-//     throw Exception('Failed to get authors');
-//   }
-
-//   Future<AuthorDto?> getAuthorDetails({
-//     required String authorSlug,
-//   }) async {
-//     final response = await HttpService.get(
-//         '$kApiUrl/$kGetAuthorDetails?authorSlug=$authorSlug');
-//     if (response.statusCode == 200) {
-//       final data = json.decode(response.data);
-//       return data != null ? AuthorDto.fromJson(data) : null;
-//     }
-//     throw Exception('Failed to get authors');
-//   }
-// }
-
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -39,6 +5,7 @@ import 'package:quotely_flutter_app/dtos/author_dto.dart';
 import 'package:quotely_flutter_app/dtos/author_response_dto.dart';
 import 'package:quotely_flutter_app/dtos/pagination_dto.dart';
 import 'package:quotely_flutter_app/services/drift_author_service.dart';
+import 'package:quotely_flutter_app/util/pagination_seed.dart';
 
 import '../constants/urls.dart';
 import 'http_service.dart';
@@ -50,12 +17,25 @@ class AuthorService {
     required String search,
     required int pageNumber,
     required int pageSize,
+    int? seed,
   }) async {
     try {
+      // Use provided seed or get the current session seed
+      final effectiveSeed = seed ?? PaginationSeed.current;
+
       // --- ONLINE PATH ---
-      final url =
-          '$kApiUrl/$kGetAllAuthors?search=$search&pageNumber=$pageNumber&pageSize=$pageSize';
-      final response = await HttpService.get(url);
+      final queryParameters = {
+        'search': search,
+        'pageNumber': pageNumber.toString(),
+        'pageSize': pageSize.toString(),
+        'seed': effectiveSeed.toString(),
+      };
+
+      final uri = Uri.parse(
+        '$kApiUrl/$kGetAllAuthors',
+      ).replace(queryParameters: queryParameters);
+
+      final response = await HttpService.get(uri.toString());
 
       if (response.statusCode == 200) {
         final authorResponseDto = AuthorResponseDto.fromJson(
