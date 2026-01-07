@@ -166,6 +166,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
               }
               return ListView.builder(
                 controller: authorScrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: authors.length + (hasMoreData ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == authors.length) {
@@ -184,6 +185,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
               if (authors.isEmpty || refetching) {
                 return Skeletonizer(
                   child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: 10,
                     itemBuilder: (context, index) =>
                         const SingleAuthorViewSkeletor(),
@@ -192,6 +194,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
               }
               return ListView.builder(
                 controller: authorScrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: authors.length + 1,
                 itemBuilder: (context, index) {
                   if (index == authors.length) {
