@@ -80,8 +80,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     );
                   },
                   child: showQuotes
-                      ? QuoteList(key: const ValueKey('QuoteList'))
-                      : FactsList(key: const ValueKey('FactsList')),
+                      ? const QuoteList(key: ValueKey('QuoteList'))
+                      : const FactsList(key: ValueKey('FactsList')),
                 ),
               ),
             ),
@@ -178,57 +178,64 @@ class _NeumorphicSegmentedControl extends StatelessWidget {
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Animated indicator
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            left: showQuotes ? 4 : (MediaQuery.of(context).size.width - 32) / 2,
-            top: 4,
-            bottom: 4,
-            width: (MediaQuery.of(context).size.width - 32) / 2 - 4,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [colors.primary, colors.primaryDark],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final containerWidth = constraints.maxWidth;
+          final indicatorWidth = (containerWidth - 8) / 2; // 4px padding on each side
+
+          return Stack(
+            children: [
+              // Animated indicator
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                left: showQuotes ? 4 : containerWidth / 2,
+                top: 4,
+                bottom: 4,
+                width: indicatorWidth,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [colors.primary, colors.primaryDark],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors.primary.withValues(alpha: 0.4),
+                        offset: const Offset(0, 2),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.primary.withValues(alpha: 0.4),
-                    offset: const Offset(0, 2),
-                    blurRadius: 8,
+              ),
+
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: _SegmentButton(
+                      icon: Icons.format_quote_rounded,
+                      label: 'Quotes',
+                      isSelected: showQuotes,
+                      onTap: () => onToggle(true),
+                      colors: colors,
+                    ),
+                  ),
+                  Expanded(
+                    child: _SegmentButton(
+                      icon: Icons.lightbulb_outline_rounded,
+                      label: 'Facts',
+                      isSelected: !showQuotes,
+                      onTap: () => onToggle(false),
+                      colors: colors,
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          // Buttons
-          Row(
-            children: [
-              Expanded(
-                child: _SegmentButton(
-                  icon: Icons.format_quote_rounded,
-                  label: 'Quotes',
-                  isSelected: showQuotes,
-                  onTap: () => onToggle(true),
-                  colors: colors,
-                ),
-              ),
-              Expanded(
-                child: _SegmentButton(
-                  icon: Icons.lightbulb_outline_rounded,
-                  label: 'Facts',
-                  isSelected: !showQuotes,
-                  onTap: () => onToggle(false),
-                  colors: colors,
-                ),
-              ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
