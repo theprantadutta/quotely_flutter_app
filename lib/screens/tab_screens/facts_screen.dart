@@ -1,13 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../components/facts_screen/facts_screen_filter_list.dart';
 import '../../components/facts_screen/single_fact.dart';
 import '../../components/shared/something_went_wrong.dart';
-import '../../components/shared/top_navigation_bar.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../riverpods/all_facts_data_provider.dart';
+import '../../theme/colors/app_colors.dart';
+import '../../theme/gradients/app_gradients.dart';
 import '../../util/pagination_seed.dart';
 
 class FactsScreen extends ConsumerStatefulWidget {
@@ -95,10 +97,16 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppGradients.scaffoldBackground(context),
+      ),
+      child: SafeArea(
         child: RefreshIndicator(
+          color: colors.primary,
           onRefresh: () {
             factPageNumber = 1;
             aiFacts = [];
@@ -107,60 +115,206 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
           },
           child: Column(
             children: [
-              const TopNavigationBar(title: 'Facts'),
-              FactsScreenFilterList(
-                onSelectedCategoryChange: (category) async {
-                  setState(() {
-                    if (allSelectedCategory.contains(category)) {
-                      allSelectedCategory.remove(category);
-                    } else {
-                      allSelectedCategory.add(category);
-                    }
-                    factPageNumber = 1;
-                    aiFacts = [];
-                    hasMoreData = true;
-                  });
-                  ref.invalidate(fetchAllFactsProvider);
-                  await _fetchFacts();
-                },
-                allSelectedCategories: allSelectedCategory,
+              // Header
+              _buildHeader(colors),
+
+              // Category filters
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: FactsScreenFilterList(
+                  onSelectedCategoryChange: (category) async {
+                    setState(() {
+                      if (allSelectedCategory.contains(category)) {
+                        allSelectedCategory.remove(category);
+                      } else {
+                        allSelectedCategory.add(category);
+                      }
+                      factPageNumber = 1;
+                      aiFacts = [];
+                      hasMoreData = true;
+                    });
+                    ref.invalidate(fetchAllFactsProvider);
+                    await _fetchFacts();
+                  },
+                  allSelectedCategories: allSelectedCategory,
+                ),
               ),
-              if (hasError)
-                Expanded(
-                  child: Center(
-                    child: SomethingWentWrong(
-                      title: 'Failed to get Facts.',
-                      onRetryPressed: _fetchFacts,
-                    ),
-                  ),
-                ),
 
-              // Display skeleton loaders when there’s no error and no data
-              if (!hasError && aiFacts.isEmpty)
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
-                      return SingleFactSkeletor();
-                    },
-                  ),
-                ),
+              const SizedBox(height: 8),
 
-              // Display the main content if there are aiFacts available
-              if (!hasError && aiFacts.isNotEmpty)
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: aiFacts.length,
-                    itemBuilder: (context, index) {
-                      return SingleFact(aiFact: aiFacts[index]);
-                    },
-                  ),
-                ),
+              // Content
+              Expanded(
+                child: _buildContent(colors),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader(AppColorScheme colors) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: AppGradients.warmPrimary(context),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: 0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Icon(
+                Icons.lightbulb_rounded,
+                color: colors.onPrimary,
+                size: 22,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Facts',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
+                ),
+              ),
+              Text(
+                'Expand your knowledge',
+                style: GoogleFonts.lora(
+                  fontSize: 12,
+                  color: colors.textMuted,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+
+          // Loading indicator
+          if (isLoadingMore && aiFacts.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainer,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(colors.primary),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(AppColorScheme colors) {
+    // Error state
+    if (hasError && aiFacts.isEmpty) {
+      return Center(
+        child: SomethingWentWrong(
+          title: 'Failed to get Facts.',
+          onRetryPressed: () {
+            setState(() {
+              hasError = false;
+              hasMoreData = true;
+            });
+            _fetchFacts();
+          },
+        ),
+      );
+    }
+
+    // Loading state
+    if (aiFacts.isEmpty && isLoadingMore) {
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: SingleFactSkeletor(),
+          );
+        },
+      );
+    }
+
+    // Empty state
+    if (aiFacts.isEmpty && !isLoadingMore) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.lightbulb_outline_rounded,
+              size: 64,
+              color: colors.textMuted.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No facts found',
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try adjusting your filters',
+              style: GoogleFonts.lora(
+                fontSize: 14,
+                color: colors.textMuted.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Facts list
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: aiFacts.length + (isLoadingMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == aiFacts.length) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(colors.primary),
+                ),
+              ),
+            ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SingleFact(aiFact: aiFacts[index]),
+        );
+      },
     );
   }
 }
