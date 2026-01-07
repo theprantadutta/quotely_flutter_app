@@ -61,4 +61,7 @@ firebase.json
 *.env
 
 # Ignore Generated Files
-lib/generated/.claude/
+lib/generated/
+
+# Ignore Claude config
+.claude/
