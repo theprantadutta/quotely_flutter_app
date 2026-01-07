@@ -2,27 +2,32 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quotely_flutter_app/dtos/quote_dto.dart';
-import 'package:quotely_flutter_app/notifications/push_notification.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+// ignore: deprecated_member_use
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
-import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
-import '../../components/home_screen/home_screen_top_bar.dart';
+import '../../components/home_screen/quote_card_stack.dart';
 import '../../components/shared/something_went_wrong.dart';
-import '../../constants/colors.dart';
+import '../../dtos/quote_dto.dart';
 import '../../main.dart';
+import '../../notifications/push_notification.dart';
 import '../../riverpods/all_quote_data_provider.dart';
+import '../../screens/author_detail_screen.dart';
+import '../../screens/legal_content_screen.dart';
 import '../../service_locator/init_service_locators.dart';
-import '../../util/pagination_seed.dart';
 import '../../services/drift_fact_service.dart';
 import '../../services/drift_quote_service.dart';
 import '../../state_providers/favorite_fact_ids.dart';
 import '../../state_providers/favorite_quote_ids.dart';
-import '../legal_content_screen.dart';
+import '../../theme/colors/app_colors.dart';
+import '../../theme/gradients/app_gradients.dart';
+import '../../util/pagination_seed.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const kRouteName = '/home';
@@ -57,23 +62,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _checkAndShowTermsDialog() async {
-    const String termsKey =
-        'hasAcceptedTermsV2'; // Use a new key if the logic changes
+    const String termsKey = 'hasAcceptedTermsV2';
     final preferences = await SharedPreferences.getInstance();
 
     final bool hasAccepted = preferences.getBool(termsKey) ?? false;
-    if (hasAccepted) {
-      return;
-    }
+    if (hasAccepted) return;
 
-    if (!context.mounted) return;
+    if (!mounted) return;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
 
     bool isChecked = false;
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        // Use a StatefulBuilder so the dialog can manage the checkbox state.
         return StatefulBuilder(
           builder: (context, setDialogState) {
             void openLegalScreen(String title, String filePath) {
@@ -86,65 +90,122 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             }
 
             return AlertDialog(
-              title: const Text('Welcome to Quotely!'),
+              backgroundColor: colors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              title: Text(
+                'Welcome to Quotely!',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
+                ),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Before you begin, please review our policies. By continuing, you agree to our terms.',
+                      style: GoogleFonts.lora(
+                        fontSize: 14,
+                        color: colors.onSurfaceVariant,
+                        height: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    // This RichText widget makes the links tappable
                     RichText(
                       text: TextSpan(
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: GoogleFonts.lora(
+                          fontSize: 14,
+                          color: colors.onSurface,
+                        ),
                         children: [
                           const TextSpan(text: 'I have read and agree to the '),
                           TextSpan(
                             text: 'Terms & Conditions',
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: colors.primary,
                               decoration: TextDecoration.underline,
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => openLegalScreen(
-                                'Terms & Conditions',
-                                'assets/legal/terms.md',
-                              ),
+                                    'Terms & Conditions',
+                                    'assets/legal/terms.md',
+                                  ),
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
                             text: 'Privacy Policy',
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: colors.primary,
                               decoration: TextDecoration.underline,
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => openLegalScreen(
-                                'Privacy & Policy',
-                                'assets/legal/privacy.md',
-                              ),
+                                    'Privacy & Policy',
+                                    'assets/legal/privacy.md',
+                                  ),
                           ),
                           const TextSpan(text: '.'),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // The single checkbox for acceptance
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: isChecked,
-                          onChanged: (bool? value) {
-                            setDialogState(() {
-                              isChecked = value ?? false;
-                            });
-                          },
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setDialogState(() => isChecked = !isChecked);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        const Expanded(child: Text("I understand and accept.")),
-                      ],
+                        decoration: BoxDecoration(
+                          color: colors.surfaceContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: isChecked
+                                    ? colors.primary
+                                    : colors.surface,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isChecked
+                                      ? colors.primary
+                                      : colors.outline,
+                                  width: 2,
+                                ),
+                              ),
+                              child: isChecked
+                                  ? Icon(
+                                      Icons.check_rounded,
+                                      size: 16,
+                                      color: colors.onPrimary,
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'I understand and accept.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colors.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -153,57 +214,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 GestureDetector(
                   onTap: isChecked
                       ? () async {
+                          HapticFeedback.lightImpact();
                           await preferences.setBool(termsKey, true);
-                          Navigator.of(dialogContext).pop();
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
                         }
                       : () {
+                          HapticFeedback.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
                                 'Please accept the terms and conditions.',
+                                style: GoogleFonts.lora(),
                               ),
+                              backgroundColor: colors.error,
                             ),
                           );
                         },
                   child: Container(
                     width: double.infinity,
-                    height: 45,
+                    height: 48,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       gradient: isChecked
                           ? LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              stops: const [0.1, 0.9],
                               colors: [
-                                Theme.of(
-                                  context,
-                                ).primaryColor.withValues(alpha: 0.5),
-                                kHelperColor.withValues(alpha: 0.5),
+                                colors.primary,
+                                colors.primaryDark,
                               ],
                             )
                           : LinearGradient(
                               colors: [
-                                Colors.grey.shade400,
-                                Colors.grey.shade300,
+                                colors.outline,
+                                colors.outline,
                               ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
                             ),
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: isChecked
+                          ? [
+                              BoxShadow(
+                                color: colors.primary.withValues(alpha: 0.3),
+                                offset: const Offset(0, 4),
+                                blurRadius: 12,
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Text(
                       'Continue to App',
-                      style: TextStyle(
+                      style: GoogleFonts.lora(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         color: isChecked
-                            ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.bold,
+                            ? colors.onPrimary
+                            : colors.textMuted,
                       ),
                     ),
                   ),
                 ),
               ],
+              actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             );
           },
         );
@@ -214,7 +287,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _fetchQuotes() async {
     if (!hasMoreData || isLoadingMore) return;
 
-    // Analytics: Log pagination event
     if (quotePageNumber > 1) {
       analytics.logEvent(
         name: 'quotes_paginated',
@@ -224,7 +296,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     setState(() {
       isLoadingMore = true;
-      hasError = false; // Reset error state on new attempt
+      hasError = false;
     });
 
     try {
@@ -244,7 +316,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     } catch (e) {
       if (kDebugMode) print(e);
-      // Analytics: Log fetch failure
       analytics.logEvent(
         name: 'quote_fetch_failed',
         parameters: {'page_number': quotePageNumber, 'error': e.toString()},
@@ -252,86 +323,88 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (mounted) {
         setState(() {
           hasError = true;
-          isLoadingMore = false; // Ensure loading is stopped on error
+          isLoadingMore = false;
         });
       }
     }
   }
 
   Future<void> addAllFavoriteIds() async {
-    final allFavoriteQuoteIds =
-        await DriftQuoteService.getAllFavoriteQuoteIds();
+    final allFavoriteQuoteIds = await DriftQuoteService.getAllFavoriteQuoteIds();
     talker?.info('All Favorite QuoteIds: $allFavoriteQuoteIds');
     final allFavoriteFactIds = await DriftFactService.getAllFavoriteFactIds();
     talker?.info('All Favorite FactIds: $allFavoriteFactIds');
-    ref
-        .read(favoriteQuoteIdsProvider.notifier)
-        .addOrUpdateIdList(allFavoriteQuoteIds);
-    ref
-        .read(favoriteFactIdsProvider.notifier)
-        .addOrUpdateIdList(allFavoriteFactIds);
+    ref.read(favoriteQuoteIdsProvider.notifier).addOrUpdateIdList(allFavoriteQuoteIds);
+    ref.read(favoriteFactIdsProvider.notifier).addOrUpdateIdList(allFavoriteFactIds);
+  }
+
+  void _shareQuote(QuoteDto quote) {
+    analytics.logEvent(
+      name: 'quote_shared',
+      parameters: {'quote_id': quote.id},
+    );
+    // ignore: deprecated_member_use
+    Share.share(
+      '"${quote.content}" — ${quote.author}\n\nShared via Quotely',
+    );
+  }
+
+  void _goToAuthor(QuoteDto quote) {
+    analytics.logEvent(
+      name: 'author_viewed_from_card',
+      parameters: {'author': quote.author},
+    );
+    context.push(AuthorDetailScreen.kRouteName, extra: quote.author);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isGridView = QuotelyApp.of(context).isGridView;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppGradients.scaffoldBackground(context),
+      ),
+      child: SafeArea(
         child: Column(
           children: [
-            HomeScreenTopBar(
-              loading:
-                  isLoadingMore &&
-                  quotes.isNotEmpty, // Only show spinner on subsequent loads
-              isGridView: isGridView,
-              onViewChanged: () =>
-                  setState(QuotelyApp.of(context).toggleGridViewEnabled),
-            ),
-            // BUG FIX & REFINEMENT: The conditional logic below is now more structured
-            // to prevent multiple states from showing at once.
-            if (!hasError) ...[
-              HomeScreenQuoteFilters(
-                allSelectedTags: allSelectedTags,
-                onSelectedTagChange: (String currentTag) async {
-                  // Analytics: Log filter change event
-                  analytics.logEvent(
-                    name: 'quote_filter_changed',
-                    parameters: {
-                      'toggled_tag': currentTag,
-                      'all_selected_tags': allSelectedTags.join(','),
-                    },
-                  );
-                  setState(() {
-                    if (allSelectedTags.contains(currentTag)) {
-                      allSelectedTags.remove(currentTag);
-                    } else {
-                      allSelectedTags.add(currentTag);
-                    }
-                    quotePageNumber = 1;
-                    quotes = [];
-                    hasMoreData = true;
-                  });
-                  ref.invalidate(fetchAllQuotesProvider);
-                  await _fetchQuotes();
-                },
+            // Header
+            _buildHeader(colors),
+
+            // Tag filters
+            if (!hasError)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: HomeScreenQuoteFilters(
+                  allSelectedTags: allSelectedTags,
+                  onSelectedTagChange: (String currentTag) async {
+                    analytics.logEvent(
+                      name: 'quote_filter_changed',
+                      parameters: {
+                        'toggled_tag': currentTag,
+                        'all_selected_tags': allSelectedTags.join(','),
+                      },
+                    );
+                    setState(() {
+                      if (allSelectedTags.contains(currentTag)) {
+                        allSelectedTags.remove(currentTag);
+                      } else {
+                        allSelectedTags.add(currentTag);
+                      }
+                      quotePageNumber = 1;
+                      quotes = [];
+                      hasMoreData = true;
+                    });
+                    ref.invalidate(fetchAllQuotesProvider);
+                    await _fetchQuotes();
+                  },
+                ),
               ),
-            ],
+
+            // Main content - Stacked cards
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  // Analytics: Log pull-to-refresh event
-                  analytics.logEvent(name: 'quotes_refreshed');
-                  setState(() {
-                    quotePageNumber = 1;
-                    quotes = [];
-                    hasMoreData = true;
-                  });
-                  ref.invalidate(fetchAllQuotesProvider);
-                  await _fetchQuotes();
-                },
-                child: _buildContent(isGridView),
-              ),
+              child: _buildContent(colors),
             ),
           ],
         ),
@@ -339,8 +412,83 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildContent(bool isGridView) {
-    // Case 1: Initial load resulted in an error
+  Widget _buildHeader(AppColorScheme colors) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Row(
+        children: [
+          // Logo and title
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [colors.primary, colors.primaryDark],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: 0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Icon(
+                Icons.format_quote_rounded,
+                color: colors.onPrimary,
+                size: 24,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Quotely',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
+                ),
+              ),
+              Text(
+                'Swipe for wisdom',
+                style: GoogleFonts.lora(
+                  fontSize: 12,
+                  color: colors.textMuted,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+
+          // Loading indicator
+          if (isLoadingMore && quotes.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainer,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(colors.primary),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(AppColorScheme colors) {
+    // Error state
     if (hasError && quotes.isEmpty) {
       return Center(
         child: SomethingWentWrong(
@@ -356,17 +504,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // Case 2: Initial load is in progress (no data, no error yet)
+    // Initial loading state
     if (quotes.isEmpty && isLoadingMore) {
-      return isGridView
-          ? const HomeScreenQuoteGridViewSkeletor()
-          : const HomeScreenQuoteListViewSkeletor();
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: colors.surfaceContainer,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.shadowDark.withValues(alpha: 0.3),
+                    offset: const Offset(4, 4),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation(colors.primary),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Loading quotes...',
+              style: GoogleFonts.lora(
+                fontSize: 16,
+                color: colors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
-    // Case 3: No quotes found (e.g., for a specific filter)
+    // Empty state
     if (quotes.isEmpty && !isLoadingMore) {
       return SomethingWentWrong(
-        title: "No quotes found.",
+        title: 'No quotes found.',
         onRetryPressed: () {
           setState(() {
             hasError = false;
@@ -377,16 +562,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // Case 4: Content is available
-    return isGridView
-        ? HomeScreenQuoteGridView(
-            quotes: quotes,
-            quotePageNumber: quotePageNumber,
-            onLastItemScrolled: _fetchQuotes,
-          )
-        : HomeScreenQuoteListView(
-            quotes: quotes,
-            onLastItemScrolled: _fetchQuotes,
-          );
+    // Card stack
+    return QuoteCardStack(
+      quotes: quotes,
+      onNeedMoreQuotes: _fetchQuotes,
+      onShare: _shareQuote,
+      onAuthorTap: _goToAuthor,
+    );
   }
 }
