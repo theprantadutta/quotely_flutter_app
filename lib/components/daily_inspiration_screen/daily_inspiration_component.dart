@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quotely_flutter_app/riverpods/daily_inspiration_provider.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../components/quote_of_the_day_screen/single_quote_of_the_component.dart';
+import '../../riverpods/daily_inspiration_provider.dart';
+import '../shared/neumorphic_notification_quote_card.dart';
+import '../shared/something_went_wrong.dart';
 
 class DailyInspirationComponent extends ConsumerWidget {
   const DailyInspirationComponent({super.key});
@@ -16,15 +16,19 @@ class DailyInspirationComponent extends ConsumerWidget {
 
     return dailyInspirationProvider.when(
       data: (data) {
-        return SingleQuoteOfTheComponent(
+        return NeumorphicNotificationQuoteCard(
           author: data.author,
           content: data.content,
           quoteDate: data.quoteDate,
         );
       },
-      error: (err, stack) => const Center(child: Text('Something Went Wrong')),
-      loading: () =>
-          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
+      error: (err, stack) => SomethingWentWrong(
+        title: 'Failed to load inspiration',
+        onRetryPressed: () {
+          ref.invalidate(fetchTodayDailyInspirationProvider);
+        },
+      ),
+      loading: () => const NeumorphicNotificationQuoteCardSkeleton(),
     );
   }
 }

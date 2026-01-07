@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quotely_flutter_app/components/fact_of_the_day_list_screen/single_fact_of_the_day.dart';
-import 'package:quotely_flutter_app/components/shared/something_went_wrong.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../dtos/daily_brain_food_dto.dart';
 import '../../riverpods/all_daily_brain_food_provider.dart';
+import '../../theme/colors/app_colors.dart';
+import '../shared/neumorphic_notification_fact_card.dart';
+import '../shared/something_went_wrong.dart';
 
 class DailyBrainFoodListComponent extends ConsumerStatefulWidget {
   const DailyBrainFoodListComponent({super.key});
@@ -40,7 +40,7 @@ class _DailyBrainFoodListComponentState
             hasError = false;
             pageNumber++;
           });
-          final _ = await ref.refresh(
+          await ref.refresh(
             fetchAllDailyBrainFoodProvider(pageNumber, pageSize).future,
           );
         }
@@ -62,13 +62,15 @@ class _DailyBrainFoodListComponentState
   Future<void> _refreshFacts() async {
     debugPrint('Refreshing Facts...');
     try {
-      final _ = await ref.refresh(
-        fetchAllDailyBrainFoodProvider(pageNumber, pageSize).future,
-      );
       setState(() {
         pageNumber = 1;
+        facts = [];
+        hasMoreData = true;
         hasError = false;
       });
+      await ref.refresh(
+        fetchAllDailyBrainFoodProvider(pageNumber, pageSize).future,
+      );
     } catch (e) {
       if (kDebugMode) {
         print(e);
@@ -81,81 +83,80 @@ class _DailyBrainFoodListComponentState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
     final factProvider = ref.watch(
       fetchAllDailyBrainFoodProvider(pageNumber, pageSize),
     );
 
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.87,
-      width: MediaQuery.sizeOf(context).width,
-      // margin: EdgeInsets.symmetric(vertical: 5),
-      child: RefreshIndicator.adaptive(
-        onRefresh: _refreshFacts,
-        child: factProvider.when(
-          skipLoadingOnRefresh: false,
-          data: (data) {
-            final factsFromDb = data.dailyBrainFoodWithFacts;
-            if (factsFromDb.length < pageSize) {
-              hasMoreData = false;
+    return RefreshIndicator(
+      color: colors.primary,
+      onRefresh: _refreshFacts,
+      child: factProvider.when(
+        skipLoadingOnRefresh: false,
+        data: (data) {
+          final factsFromDb = data.dailyBrainFoodWithFacts;
+          if (factsFromDb.length < pageSize) {
+            hasMoreData = false;
+          }
+          for (var fact in factsFromDb) {
+            if (!facts.any((n) => n.factId == fact.factId)) {
+              facts.add(fact);
             }
-            for (var fact in factsFromDb) {
-              if (!facts.any((n) => n.factId == fact.factId)) {
-                facts.add(fact);
+          }
+          return ListView.builder(
+            controller: factScrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: facts.length + (hasMoreData ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == facts.length) {
+                return const NeumorphicFactListItemSkeleton();
               }
-            }
-            return ListView.builder(
-              controller: factScrollController,
-              itemCount: facts.length + (hasMoreData ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == facts.length) {
-                  return Skeletonizer(
-                    child: const SingleFactOfTheDaySkeletor(),
-                  );
-                }
-                final currentFact = facts[index];
-                return SingleFactOfTheDay(
-                  category: currentFact.aiFactCategory,
-                  content: currentFact.content,
-                  factDate: currentFact.factDate,
-                );
-              },
-            );
-          },
-          error: (error, stackTrace) => Center(
-            child: SomethingWentWrong(
-              onRetryPressed: () =>
-                  ref.refresh(fetchAllDailyBrainFoodProvider(1, 10)),
-            ),
-          ),
-          loading: () {
-            if (facts.isEmpty) {
-              return Skeletonizer(
-                child: ListView.builder(
-                  itemCount: 10,
-                  itemBuilder: (context, index) =>
-                      const SingleFactOfTheDaySkeletor(),
-                ),
+              final currentFact = facts[index];
+              return NeumorphicFactListItem(
+                index: index,
+                category: currentFact.aiFactCategory,
+                content: currentFact.content,
+                factDate: currentFact.factDate,
               );
-            }
-            return ListView.builder(
-              controller: factScrollController,
-              itemCount: facts.length + 1,
-              itemBuilder: (context, index) {
-                if (index == facts.length) {
-                  return Skeletonizer(
-                    child: const SingleFactOfTheDaySkeletor(),
-                  );
-                }
-                final currentFact = facts[index];
-                return SingleFactOfTheDay(
-                  category: currentFact.aiFactCategory,
-                  content: currentFact.content,
-                  factDate: currentFact.factDate,
-                );
-              },
-            );
-          },
+            },
+          );
+        },
+        error: (error, stackTrace) => Center(
+          child: SomethingWentWrong(
+            title: 'Failed to load brain food',
+            onRetryPressed: () {
+              ref.invalidate(fetchAllDailyBrainFoodProvider);
+            },
+          ),
         ),
+        loading: () {
+          if (facts.isEmpty) {
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 10,
+              itemBuilder: (context, index) =>
+                  const NeumorphicFactListItemSkeleton(),
+            );
+          }
+          return ListView.builder(
+            controller: factScrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: facts.length + 1,
+            itemBuilder: (context, index) {
+              if (index == facts.length) {
+                return const NeumorphicFactListItemSkeleton();
+              }
+              final currentFact = facts[index];
+              return NeumorphicFactListItem(
+                index: index,
+                category: currentFact.aiFactCategory,
+                content: currentFact.content,
+                factDate: currentFact.factDate,
+              );
+            },
+          );
+        },
       ),
     );
   }

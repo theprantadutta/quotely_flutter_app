@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../components/layouts/main_layout.dart';
 import '../components/motivation_monday/motivation_monday_list_component.dart';
+import '../components/shared/warm_notification_screen_layout.dart';
 
 class MotivationMondayListScreen extends StatelessWidget {
   static const kRouteName = '/motivation-monday-list';
@@ -9,14 +9,10 @@ class MotivationMondayListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(
-      title: 'All Monday Motivation',
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-          child: MotivationMondayListComponent(),
-        ),
-      ),
+    return const WarmNotificationListLayout(
+      title: 'All Monday Motivations',
+      icon: Icons.rocket_launch_rounded,
+      listWidget: MotivationMondayListComponent(),
     );
   }
 }

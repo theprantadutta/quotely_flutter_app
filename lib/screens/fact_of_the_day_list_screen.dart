@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quotely_flutter_app/components/layouts/main_layout.dart';
 
 import '../components/fact_of_the_day_list_screen/fact_of_the_day_list_component.dart';
+import '../components/shared/warm_notification_screen_layout.dart';
 
 class FactOfTheDayListScreen extends StatelessWidget {
   static const kRouteName = '/fact-of-the-list';
@@ -9,14 +9,10 @@ class FactOfTheDayListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(
-      title: 'All Fact of the Day',
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-          child: FactOfTheDayListComponent(),
-        ),
-      ),
+    return const WarmNotificationListLayout(
+      title: 'All Facts of the Day',
+      icon: Icons.lightbulb_rounded,
+      listWidget: FactOfTheDayListComponent(),
     );
   }
 }

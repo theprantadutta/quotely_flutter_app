@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../components/shared/fact_notification_screen_layout.dart';
+import '../components/shared/warm_notification_screen_layout.dart';
 import '../components/weird_fact_wednesday/weird_fact_wednesday_component.dart';
 import 'weird_fact_wednesday_list_screen.dart';
 
@@ -10,10 +10,13 @@ class WeirdFactWednesdayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FactNotificationScreenLayout(
+    return const WarmNotificationScreenLayout(
       title: 'Weird Fact Wednesday',
-      factWidget: WeirdFactWednesdayComponent(),
-      allFactRoute: WeirdFactWednesdayListScreen.kRouteName,
+      subtitle: 'Strange but true',
+      icon: Icons.science_rounded,
+      contentWidget: WeirdFactWednesdayComponent(),
+      allItemsRoute: WeirdFactWednesdayListScreen.kRouteName,
+      seeAllLabel: 'See All Weird Facts',
     );
   }
 }

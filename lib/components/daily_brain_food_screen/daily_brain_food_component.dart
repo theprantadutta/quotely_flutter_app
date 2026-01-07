@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../riverpods/daily_brain_food_provider.dart';
-import '../fact_of_the_day_screen/single_fact_of_the_day_component.dart';
+import '../shared/neumorphic_notification_fact_card.dart';
+import '../shared/something_went_wrong.dart';
 
 class DailyBrainFoodComponent extends ConsumerWidget {
   const DailyBrainFoodComponent({super.key});
@@ -14,15 +14,19 @@ class DailyBrainFoodComponent extends ConsumerWidget {
 
     return dailyBrainFoodProvider.when(
       data: (data) {
-        return SingleFactOfTheDayComponent(
+        return NeumorphicNotificationFactCard(
           factDate: data.factDate,
           content: data.content,
           category: data.aiFactCategory,
         );
       },
-      error: (err, stack) => const Center(child: Text('Something Went Wrong')),
-      loading: () =>
-          const Skeletonizer(child: SingleFactOfTheDayComponentSkeletor()),
+      error: (err, stack) => SomethingWentWrong(
+        title: 'Failed to load brain food',
+        onRetryPressed: () {
+          ref.invalidate(fetchTodayDailyBrainFoodProvider);
+        },
+      ),
+      loading: () => const NeumorphicNotificationFactCardSkeleton(),
     );
   }
 }

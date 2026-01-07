@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../components/quote_of_the_day_screen/single_quote_of_the_component.dart';
 import '../../riverpods/today_quote_of_the_day_provider.dart';
+import '../shared/neumorphic_notification_quote_card.dart';
+import '../shared/something_went_wrong.dart';
 
 class QuoteOfTheDayComponent extends ConsumerWidget {
   const QuoteOfTheDayComponent({super.key});
@@ -14,15 +14,19 @@ class QuoteOfTheDayComponent extends ConsumerWidget {
 
     return quoteOfTheDayProvider.when(
       data: (data) {
-        return SingleQuoteOfTheComponent(
+        return NeumorphicNotificationQuoteCard(
           quoteDate: data.quoteDate,
           author: data.author,
           content: data.content,
         );
       },
-      error: (err, stack) => const Center(child: Text('Something Went Wrong')),
-      loading: () =>
-          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
+      error: (err, stack) => SomethingWentWrong(
+        title: 'Failed to load quote',
+        onRetryPressed: () {
+          ref.invalidate(fetchTodayQuoteOfTheDayProvider);
+        },
+      ),
+      loading: () => const NeumorphicNotificationQuoteCardSkeleton(),
     );
   }
 }

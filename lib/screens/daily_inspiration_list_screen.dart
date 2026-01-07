@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../components/layouts/main_layout.dart';
-import '../components/quote_of_the_day_list_screen/quote_of_the_day_list_component.dart';
+import '../components/daily_inspiration_screen/daily_inspiration_list_component.dart';
+import '../components/shared/warm_notification_screen_layout.dart';
 
 class DailyInspirationListScreen extends StatelessWidget {
   static const kRouteName = '/daily-inspiration-list';
@@ -9,14 +9,10 @@ class DailyInspirationListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(
-      title: 'All Daily Inspiration',
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-          child: QuoteOfTheDayListComponent(),
-        ),
-      ),
+    return const WarmNotificationListLayout(
+      title: 'All Daily Inspirations',
+      icon: Icons.wb_sunny_rounded,
+      listWidget: DailyInspirationListComponent(),
     );
   }
 }

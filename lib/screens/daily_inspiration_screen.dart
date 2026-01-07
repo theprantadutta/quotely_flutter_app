@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quotely_flutter_app/components/daily_inspiration_screen/daily_inspiration_component.dart';
-import 'package:quotely_flutter_app/screens/daily_inspiration_list_screen.dart';
 
-import '../components/shared/quote_notification_screen_layout.dart';
+import '../components/daily_inspiration_screen/daily_inspiration_component.dart';
+import '../components/shared/warm_notification_screen_layout.dart';
+import '../screens/daily_inspiration_list_screen.dart';
 
 class DailyInspirationScreen extends StatelessWidget {
   static const kRouteName = '/daily-inspiration';
@@ -10,10 +10,13 @@ class DailyInspirationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return QuoteNotificationScreenLayout(
+    return const WarmNotificationScreenLayout(
       title: 'Daily Inspiration',
-      quoteWidget: const DailyInspirationComponent(),
-      allQuoteRoute: DailyInspirationListScreen.kRouteName,
+      subtitle: 'Start your day inspired',
+      icon: Icons.wb_sunny_rounded,
+      contentWidget: DailyInspirationComponent(),
+      allItemsRoute: DailyInspirationListScreen.kRouteName,
+      seeAllLabel: 'See All Inspirations',
     );
   }
 }

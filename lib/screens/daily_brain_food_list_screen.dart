@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../components/daily_brain_food_screen/daily_brain_food_list_component.dart';
-import '../components/layouts/main_layout.dart';
+import '../components/shared/warm_notification_screen_layout.dart';
 
 class DailyBrainFoodListScreen extends StatelessWidget {
   static const String kRouteName = '/daily-brain-food-list';
@@ -9,14 +9,10 @@ class DailyBrainFoodListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(
+    return const WarmNotificationListLayout(
       title: 'All Daily Brain Food',
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-          child: DailyBrainFoodListComponent(),
-        ),
-      ),
+      icon: Icons.psychology_rounded,
+      listWidget: DailyBrainFoodListComponent(),
     );
   }
 }
