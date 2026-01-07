@@ -65,7 +65,10 @@ class _AuthorsScreenState extends State<AuthorsScreen> {
 
             // Author list
             Expanded(
-              child: AuthorList(authorSearchController: authorSearchController),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: AuthorList(authorSearchController: authorSearchController),
+              ),
             ),
           ],
         ),

@@ -63,23 +63,26 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
             // Content
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0.05, 0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    ),
-                  );
-                },
-                child: showQuotes
-                    ? QuoteList(key: const ValueKey('QuoteList'))
-                    : FactsList(key: const ValueKey('FactsList')),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.05, 0),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: showQuotes
+                      ? QuoteList(key: const ValueKey('QuoteList'))
+                      : FactsList(key: const ValueKey('FactsList')),
+                ),
               ),
             ),
           ],
