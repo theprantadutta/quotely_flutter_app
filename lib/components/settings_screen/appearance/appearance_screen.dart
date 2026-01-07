@@ -1,26 +1,11 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quotely_flutter_app/main.dart';
 
+import '../../../theme/colors/app_colors.dart';
+import '../../../theme/typography/app_typography.dart';
 import '../../layouts/main_layout.dart';
-
-const List<String> kFontFamilies = [
-  'Fira Code',
-  'Roboto',
-  'Open Sans',
-  'Lato',
-  'Montserrat',
-  'Oswald',
-  'Source Sans 3',
-  'Slabo 27px', // The font name to use for "Slabo 27px/13px"
-  'Raleway',
-  'PT Sans',
-  'Merriweather',
-  'Poppins',
-  'Nunito',
-  'Ubuntu',
-];
 
 class AppearanceScreen extends StatefulWidget {
   static const kRouteName = '/appearance';
@@ -33,264 +18,319 @@ class AppearanceScreen extends StatefulWidget {
 class _AppearanceScreenState extends State<AppearanceScreen> {
   @override
   Widget build(BuildContext context) {
-    // Get the current state from the QuotelyApp widget
     final quotelyState = QuotelyApp.of(context);
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
 
     return MainLayout(
       title: 'Appearance',
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // --- Live Quote Preview ---
+            _buildQuotePreview(context, quotelyState.fontFamily),
+            const SizedBox(height: 32),
+
             // --- Section 1: Theme Mode ---
             _buildSectionHeader(context, "Theme Mode"),
-            const SizedBox(height: 8),
-            _buildSectionContainer(
-              context,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                // A modern segmented button for theme selection
-                child: SegmentedButton<ThemeMode>(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.resolveWith(
-                      (states) => states.contains(WidgetState.selected)
-                          ? theme.colorScheme.primaryContainer
-                          : theme.colorScheme.surfaceContainer,
-                    ),
-                    side: WidgetStateProperty.resolveWith(
-                      (states) => states.contains(WidgetState.selected)
-                          ? BorderSide.none
-                          : BorderSide(
-                              color: theme.colorScheme.primary,
-                              width: 1,
-                            ),
-                    ),
-                  ),
-                  segments: const [
-                    ButtonSegment(
-                      value: ThemeMode.light,
-                      label: Text('Light'),
-                      icon: Icon(Icons.light_mode_outlined),
-                    ),
-                    // ButtonSegment(
-                    //     value: ThemeMode.system,
-                    //     label: Text('System'),
-                    //     icon: Icon(Icons.brightness_auto_outlined)),
-                    ButtonSegment(
-                      value: ThemeMode.dark,
-                      label: Text('Dark'),
-                      icon: Icon(Icons.dark_mode_outlined),
-                    ),
-                  ],
-                  selected: {quotelyState.themeMode},
-                  onSelectionChanged: (newSelection) {
-                    quotelyState.changeTheme(newSelection.first);
-                  },
-                ),
-              ),
-            ),
+            const SizedBox(height: 12),
+            _buildThemeModeSelector(context, quotelyState, colors),
+            const SizedBox(height: 32),
 
-            const SizedBox(height: 24),
-
-            // --- Section 2: Color Palette ---
-            _buildSectionHeader(context, "Color Palette"),
-            const SizedBox(height: 8),
-            _buildSectionContainer(
-              context,
-              // --- UPDATED: Replaced Wrap with a SizedBox and horizontal ListView ---
-              child: SizedBox(
-                // Set a fixed height for the horizontal list
-                height: 70,
-                child: ListView.builder(
-                  // Set the scroll direction to horizontal
-                  scrollDirection: Axis.horizontal,
-                  // Add some padding to the start and end of the list
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 10.0,
-                  ),
-                  itemCount: FlexScheme.values.length,
-                  itemBuilder: (context, index) {
-                    final scheme = FlexScheme.values[index];
-                    final isSelected = quotelyState.flexScheme == scheme;
-
-                    // Add padding between the color swatches
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 12.0),
-                      child: GestureDetector(
-                        onTap: () => quotelyState.changeFlexScheme(scheme),
-                        child: Tooltip(
-                          // Added a tooltip to show the color name on long press
-                          message: scheme.name,
-                          child: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: FlexThemeData.light(
-                                scheme: scheme,
-                              ).primaryColor,
-                              border: isSelected
-                                  ? Border.all(
-                                      color: theme.colorScheme.onSurface,
-                                      width: 3,
-                                    )
-                                  : Border.all(
-                                      color: theme.dividerColor,
-                                      width: 0.5,
-                                    ),
-                            ),
-                            child: isSelected
-                                ? const Icon(Icons.check, color: Colors.white)
-                                : null,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // --- ADDED: New Section for Typography ---
-            const SizedBox(height: 24),
+            // --- Section 2: Typography ---
             _buildSectionHeader(context, "Typography"),
-            const SizedBox(height: 8),
-            _buildSectionContainer(
-              context,
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(
-                  left: 16,
-                  right: 10,
-                  top: 4,
-                  bottom: 4,
-                ),
-                leading: const Icon(Icons.font_download_outlined),
-                title: const Text(
-                  'App Font',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                // A dropdown button to select the font
-                trailing: DropdownButton<String>(
-                  value: quotelyState.fontFamily,
-                  underline:
-                      const SizedBox.shrink(), // Hides the default underline
-                  icon: const Icon(Icons.arrow_drop_down_rounded),
-                  items: kFontFamilies.map((String fontName) {
-                    return DropdownMenuItem<String>(
-                      value: fontName,
-                      // The text is styled with the font itself for a live preview!
-                      child: Text(
-                        fontName,
-                        style: GoogleFonts.getFont(fontName),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (String? newFont) {
-                    if (newFont != null) {
-                      quotelyState.changeFontFamily(newFont);
-                    }
-                  },
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            _buildFontSelector(context, quotelyState, colors),
+            const SizedBox(height: 32),
 
             // --- Section 3: Layout Preferences ---
             _buildSectionHeader(context, "Layout"),
-            const SizedBox(height: 8),
-            _buildSectionContainer(
-              context,
-              child: SwitchListTile(
-                title: const Text(
-                  'Default to Grid View',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: const Text('Applies to Home & Favorites screens'),
-                value: quotelyState.isGridView,
-                onChanged: (_) => setState(() {
-                  quotelyState.toggleGridViewEnabled();
-                }),
-                secondary: const Icon(Icons.grid_view_outlined),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-              ),
-            ),
-
-            // --- The Reset Settings button ---
+            const SizedBox(height: 12),
+            _buildLayoutToggle(context, quotelyState, colors),
             const SizedBox(height: 40),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text(
-                'Reset to Defaults',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: theme.colorScheme.error,
-                side: BorderSide(
-                  color: theme.colorScheme.error.withValues(alpha: 0.5),
+
+            // --- Reset Button ---
+            _buildResetButton(context, quotelyState, colors),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuotePreview(BuildContext context, String fontFamily) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors.surface,
+            colors.surfaceContainer,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadowDark.withValues(alpha: isDark ? 0.6 : 0.35),
+            offset: const Offset(6, 6),
+            blurRadius: 12,
+          ),
+          BoxShadow(
+            color: colors.shadowLight.withValues(alpha: isDark ? 0.1 : 0.8),
+            offset: const Offset(-6, -6),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.format_quote_rounded,
+            size: 32,
+            color: colors.primary.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '"The only way to do great work is to love what you do."',
+            style: GoogleFonts.getFont(
+              fontFamily,
+              fontSize: 18,
+              fontStyle: FontStyle.italic,
+              height: 1.6,
+              color: colors.onSurface,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '— Steve Jobs',
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: colors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeModeSelector(
+    BuildContext context,
+    dynamic quotelyState,
+    AppColorScheme colors,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _ThemeModeCard(
+            icon: Icons.light_mode_rounded,
+            label: 'Light',
+            isSelected: quotelyState.themeMode == ThemeMode.light,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              quotelyState.changeTheme(ThemeMode.light);
+            },
+            colors: colors,
+            isDark: isDark,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _ThemeModeCard(
+            icon: Icons.dark_mode_rounded,
+            label: 'Dark',
+            isSelected: quotelyState.themeMode == ThemeMode.dark,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              quotelyState.changeTheme(ThemeMode.dark);
+            },
+            colors: colors,
+            isDark: isDark,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFontSelector(
+    BuildContext context,
+    dynamic quotelyState,
+    AppColorScheme colors,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadowDark.withValues(alpha: isDark ? 0.4 : 0.2),
+            offset: const Offset(4, 4),
+            blurRadius: 8,
+          ),
+          BoxShadow(
+            color: colors.shadowLight.withValues(alpha: isDark ? 0.05 : 0.6),
+            offset: const Offset(-4, -4),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.text_fields_rounded,
+                    color: colors.primary,
+                    size: 22,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
+                const SizedBox(width: 16),
+                Text(
+                  'Font Family',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colors.onSurface,
+                  ),
                 ),
-              ),
-              onPressed: () async {
-                // Show a confirmation dialog to prevent accidental resets
-                final bool? shouldReset = await showDialog<bool>(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: const Text(
-                      'Reset All Settings?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    content: const Text(
-                      'This will reset your theme, colors, font, and layout preferences to their original defaults. This action cannot be undone.',
-                    ),
-                    actions: <Widget>[
-                      TextButton(
-                        child: const Text('Wait, Cancel'),
-                        onPressed: () => Navigator.of(context).pop(false),
-                      ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: theme.colorScheme.error,
-                        ),
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text(
-                          'I\'m Sure, Reset',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              itemCount: AppTypography.availableFonts.length,
+              itemBuilder: (context, index) {
+                final fontName = AppTypography.availableFonts[index];
+                final isSelected = quotelyState.fontFamily == fontName;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _FontCard(
+                    fontName: fontName,
+                    isSelected: isSelected,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      quotelyState.changeFontFamily(fontName);
+                    },
+                    colors: colors,
+                    isDark: isDark,
                   ),
                 );
-
-                // If the user confirmed, then call the global reset function
-                if (shouldReset == true) {
-                  quotelyState.resetAllSettings();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Settings have been reset!'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                }
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLayoutToggle(
+    BuildContext context,
+    dynamic quotelyState,
+    AppColorScheme colors,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        quotelyState.toggleGridViewEnabled();
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainer,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadowDark.withValues(alpha: isDark ? 0.4 : 0.2),
+              offset: const Offset(4, 4),
+              blurRadius: 8,
+            ),
+            BoxShadow(
+              color: colors.shadowLight.withValues(alpha: isDark ? 0.05 : 0.6),
+              offset: const Offset(-4, -4),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                quotelyState.isGridView
+                    ? Icons.grid_view_rounded
+                    : Icons.view_list_rounded,
+                color: colors.primary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Default to Grid View',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: colors.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Applies to Home & Favorites screens',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _NeumorphicSwitch(
+              value: quotelyState.isGridView,
+              onChanged: (_) {
+                quotelyState.toggleGridViewEnabled();
+                setState(() {});
+              },
+              colors: colors,
+              isDark: isDark,
             ),
           ],
         ),
@@ -298,24 +338,268 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Text(
-      title.toUpperCase(),
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+  Widget _buildResetButton(
+    BuildContext context,
+    dynamic quotelyState,
+    AppColorScheme colors,
+  ) {
+    return Center(
+      child: OutlinedButton.icon(
+        icon: const Icon(Icons.refresh_rounded),
+        label: const Text(
+          'Reset to Defaults',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colors.error,
+          side: BorderSide(
+            color: colors.error.withValues(alpha: 0.5),
+          ),
+          padding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 20,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: () => _showResetDialog(context, quotelyState, colors),
       ),
     );
   }
 
-  Widget _buildSectionContainer(BuildContext context, {required Widget child}) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
+  Future<void> _showResetDialog(
+    BuildContext context,
+    dynamic quotelyState,
+    AppColorScheme colors,
+  ) async {
+    final bool? shouldReset = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text(
+          'Reset All Settings?',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Text(
+          'This will reset your theme, font, and layout preferences to their original defaults.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: colors.error,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Reset',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
-      child: child,
+    );
+
+    if (shouldReset == true) {
+      quotelyState.resetAllSettings();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Settings have been reset!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
+
+    return Text(
+      title.toUpperCase(),
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.2,
+        color: colors.textMuted,
+      ),
+    );
+  }
+}
+
+class _ThemeModeCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final AppColorScheme colors;
+  final bool isDark;
+
+  const _ThemeModeCard({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    required this.colors,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.primary.withValues(alpha: 0.15)
+              : colors.surfaceContainer,
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected
+              ? Border.all(color: colors.primary, width: 2)
+              : null,
+          boxShadow: isSelected
+              ? []
+              : [
+                  BoxShadow(
+                    color: colors.shadowDark.withValues(alpha: isDark ? 0.4 : 0.2),
+                    offset: const Offset(4, 4),
+                    blurRadius: 8,
+                  ),
+                  BoxShadow(
+                    color: colors.shadowLight.withValues(alpha: isDark ? 0.05 : 0.6),
+                    offset: const Offset(-4, -4),
+                    blurRadius: 8,
+                  ),
+                ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected ? colors.primary : colors.onSurfaceVariant,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? colors.primary : colors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FontCard extends StatelessWidget {
+  final String fontName;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final AppColorScheme colors;
+  final bool isDark;
+
+  const _FontCard({
+    required this.fontName,
+    required this.isSelected,
+    required this.onTap,
+    required this.colors,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.primary.withValues(alpha: 0.15)
+              : colors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: isSelected
+              ? Border.all(color: colors.primary, width: 2)
+              : Border.all(color: colors.outline.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Aa',
+              style: GoogleFonts.getFont(
+                fontName,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? colors.primary : colors.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NeumorphicSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final AppColorScheme colors;
+  final bool isDark;
+
+  const _NeumorphicSwitch({
+    required this.value,
+    required this.onChanged,
+    required this.colors,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 52,
+        height: 28,
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: value ? colors.primary : colors.outline,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 200),
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: colors.surface,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: colors.shadowDark.withValues(alpha: 0.3),
+                  offset: const Offset(1, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

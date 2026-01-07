@@ -3,20 +3,18 @@ import 'dart:ui';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
-import 'constants/selectors.dart';
 import 'constants/shared_preference_keys.dart';
+import 'theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
@@ -70,17 +68,15 @@ class QuotelyApp extends StatefulWidget {
 
 class _QuotelyAppState extends State<QuotelyApp> {
   ThemeMode _themeMode = ThemeMode.light;
-  FlexScheme _flexScheme = kDefaultFlexTheme;
   ThemeMode get themeMode => _themeMode;
   bool _isBiometricEnabled = false;
   bool _isGridView = true;
   SharedPreferences? _sharedPreferences;
-  String _fontFamily = 'Fira Code';
+  String _fontFamily = 'Lora'; // Default to Lora for warm & cozy feel
   final analytics = getIt.get<FirebaseAnalytics>();
 
   /// This is needed for components that may have a different theme data
   bool get isDarkMode => _themeMode == ThemeMode.dark;
-  FlexScheme get flexScheme => _flexScheme;
   String get fontFamily => _fontFamily;
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get isGridView => _isGridView;
@@ -171,18 +167,6 @@ class _QuotelyAppState extends State<QuotelyApp> {
     );
   }
 
-  void changeFlexScheme(FlexScheme flexScheme) {
-    setState(() {
-      _flexScheme = flexScheme;
-      _sharedPreferences?.setString(kFlexSchemeKey, flexScheme.name);
-    });
-    // Added for Firebase Analytics
-    analytics.logEvent(
-      name: 'color_scheme_changed',
-      parameters: {'flex_scheme': flexScheme.name},
-    );
-  }
-
   void changeTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;
@@ -222,16 +206,6 @@ class _QuotelyAppState extends State<QuotelyApp> {
       setState(() => _themeMode = themeMode);
     }
 
-    // Color Scheme
-    final flexSchemeName = _sharedPreferences?.getString(kFlexSchemeKey);
-    if (flexSchemeName != null) {
-      final flexScheme = FlexScheme.values.firstWhere(
-        (e) => e.name == flexSchemeName,
-        orElse: () => kDefaultFlexTheme, // Use your default theme
-      );
-      setState(() => _flexScheme = flexScheme);
-    }
-
     // Biometric
     final isFingerPrintEnabled = _sharedPreferences?.getBool(kBiometricKey);
     if (isFingerPrintEnabled != null) {
@@ -267,19 +241,16 @@ class _QuotelyAppState extends State<QuotelyApp> {
     // 1. Update the state to reflect the default values immediately.
     setState(() {
       _themeMode = ThemeMode.light;
-      _flexScheme = kDefaultFlexTheme; // Your defined default theme
-      _fontFamily = 'Fira Code';
+      _fontFamily = 'Lora'; // Default to Lora for warm & cozy feel
       _isGridView = true;
-      _isBiometricEnabled = false; // Assuming false is the default
+      _isBiometricEnabled = false;
     });
 
     // 2. Log a single analytics event for this action.
     analytics.logEvent(name: 'settings_reset_to_default');
 
     // 3. Remove the saved preferences so the app uses defaults on next launch.
-    // We do this after updating the state for a snappy UI response.
     await _sharedPreferences?.remove(kThemeModeKey);
-    await _sharedPreferences?.remove(kFlexSchemeKey);
     await _sharedPreferences?.remove(kFontFamilyKey);
     await _sharedPreferences?.remove(kIsGridViewKey);
     await _sharedPreferences?.remove(kBiometricKey);
@@ -301,16 +272,8 @@ class _QuotelyAppState extends State<QuotelyApp> {
     return MaterialApp.router(
       title: 'Quotely',
       routerConfig: AppNavigation.router,
-      theme: FlexThemeData.light(
-        scheme: _flexScheme,
-        useMaterial3: true,
-        fontFamily: GoogleFonts.getFont(_fontFamily).fontFamily,
-      ),
-      darkTheme: FlexThemeData.dark(
-        scheme: _flexScheme,
-        useMaterial3: true,
-        fontFamily: GoogleFonts.getFont(_fontFamily).fontFamily,
-      ).copyWith(brightness: Brightness.dark),
+      theme: AppTheme.lightThemeWithFont(_fontFamily),
+      darkTheme: AppTheme.darkThemeWithFont(_fontFamily),
       themeMode: _themeMode,
       debugShowCheckedModeBanner: false,
     );
