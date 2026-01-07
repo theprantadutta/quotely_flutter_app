@@ -178,7 +178,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: QuoteOfTheDayScreen.kRouteName,
         name: "Quote of the Day",
-        builder: (context, state) => QuoteOfTheDayScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: QuoteOfTheDayScreen(key: state.pageKey),
+        ),
       ),
 
       /// View all Quote of the Day Screen
@@ -186,8 +189,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: QuoteOfTheDayListScreen.kRouteName,
         name: "Quote of the Day List",
-        builder: (context, state) =>
-            QuoteOfTheDayListScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: QuoteOfTheDayListScreen(key: state.pageKey),
+        ),
       ),
 
       /// View Fact of the Day Screen
@@ -195,7 +200,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: FactOfTheDayScreen.kRouteName,
         name: "Fact of the Day",
-        builder: (context, state) => FactOfTheDayScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: FactOfTheDayScreen(key: state.pageKey),
+        ),
       ),
 
       /// View all Fact of the Day Screen
@@ -203,7 +211,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: FactOfTheDayListScreen.kRouteName,
         name: "Fact of the Day List",
-        builder: (context, state) => FactOfTheDayListScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: FactOfTheDayListScreen(key: state.pageKey),
+        ),
       ),
 
       /// View Daily Inspiration Screen
@@ -211,7 +222,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyInspirationScreen.kRouteName,
         name: "Daily Inspiration",
-        builder: (context, state) => DailyInspirationScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: DailyInspirationScreen(key: state.pageKey),
+        ),
       ),
 
       /// View all Daily Inspiration Screen
@@ -219,8 +233,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyInspirationListScreen.kRouteName,
         name: "Daily Inspiration List",
-        builder: (context, state) =>
-            DailyInspirationListScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: DailyInspirationListScreen(key: state.pageKey),
+        ),
       ),
 
       /// View Daily Brain Food Screen
@@ -228,7 +244,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyBrainFoodScreen.kRouteName,
         name: "Daily Brain Food",
-        builder: (context, state) => DailyBrainFoodScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: DailyBrainFoodScreen(key: state.pageKey),
+        ),
       ),
 
       /// View all Daily Brain Food Screen
@@ -236,8 +255,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: DailyBrainFoodListScreen.kRouteName,
         name: "Daily Brain Food List",
-        builder: (context, state) =>
-            DailyBrainFoodListScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: DailyBrainFoodListScreen(key: state.pageKey),
+        ),
       ),
 
       /// View Motivation Monday Screen
@@ -245,7 +266,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: MotivationMondayScreen.kRouteName,
         name: "Motivation Monday",
-        builder: (context, state) => MotivationMondayScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: MotivationMondayScreen(key: state.pageKey),
+        ),
       ),
 
       /// View all Monday Motivation Screen
@@ -253,8 +277,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: MotivationMondayListScreen.kRouteName,
         name: "Monday Motivation List",
-        builder: (context, state) =>
-            MotivationMondayListScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: MotivationMondayListScreen(key: state.pageKey),
+        ),
       ),
 
       /// View Weird Fact Wednesday Screen
@@ -262,8 +288,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: WeirdFactWednesdayScreen.kRouteName,
         name: "Weird Fact Wednesday",
-        builder: (context, state) =>
-            WeirdFactWednesdayScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: WeirdFactWednesdayScreen(key: state.pageKey),
+        ),
       ),
 
       /// View all Weird Fact Wednesday Screen
@@ -271,8 +299,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: WeirdFactWednesdayListScreen.kRouteName,
         name: "Weird Fact Wednesday List",
-        builder: (context, state) =>
-            WeirdFactWednesdayListScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: WeirdFactWednesdayListScreen(key: state.pageKey),
+        ),
       ),
 
       /// View Settings Appearance
@@ -280,16 +310,21 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: AppearanceScreen.kRouteName,
         name: "Appearance",
-        builder: (context, state) => AppearanceScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: AppearanceScreen(key: state.pageKey),
+        ),
       ),
 
-      /// View Settings Appearance
+      /// View Settings Notification
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
         path: SettingsNotificationScreen.kRouteName,
         name: "Settings Notification",
-        builder: (context, state) =>
-            SettingsNotificationScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: SettingsNotificationScreen(key: state.pageKey),
+        ),
       ),
 
       /// View Settings Offline Support
@@ -297,8 +332,10 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: SettingsDownloadEverythingScreen.kRouteName,
         name: "Settings Download Everything",
-        builder: (context, state) =>
-            SettingsDownloadEverythingScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: SettingsDownloadEverythingScreen(key: state.pageKey),
+        ),
       ),
 
       /// Author Detail
@@ -306,11 +343,12 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: '${AuthorDetailScreen.kRouteName}/:authorSlug',
         name: "Author Detail",
-        builder: (context, state) {
-          // final authorDetailScreenArguments =
-          //     state.extra as AuthorDetailScreenArguments;
+        pageBuilder: (context, state) {
           final authorSlug = state.pathParameters["authorSlug"]!;
-          return AuthorDetailScreen(key: state.pageKey, authorSlug: authorSlug);
+          return slideTransitionPage(
+            state: state,
+            child: AuthorDetailScreen(key: state.pageKey, authorSlug: authorSlug),
+          );
         },
       ),
 
@@ -319,11 +357,15 @@ class AppNavigation {
         parentNavigatorKey: rootNavigatorKey,
         path: SupportUsScreen.kRouteName,
         name: "Donation",
-        builder: (context, state) => SupportUsScreen(key: state.pageKey),
+        pageBuilder: (context, state) => slideTransitionPage(
+          state: state,
+          child: SupportUsScreen(key: state.pageKey),
+        ),
       ),
     ],
   );
 
+  /// Warm page transition for tab screens (fade only)
   static CustomTransitionPage<void> reusableTransitionPage({
     required state,
     required Widget child,
@@ -332,9 +374,44 @@ class AppNavigation {
       key: state.pageKey,
       child: child,
       restorationId: state.pageKey.value,
-      transitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 300),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(opacity: animation, child: child);
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return FadeTransition(opacity: curvedAnimation, child: child);
+      },
+    );
+  }
+
+  /// Warm slide-in transition for detail/modal screens
+  static CustomTransitionPage<void> slideTransitionPage({
+    required GoRouterState state,
+    required Widget child,
+  }) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      restorationId: state.pageKey.value,
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 250),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.15, 0), // Subtle 15% slide from right
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        );
       },
     );
   }
