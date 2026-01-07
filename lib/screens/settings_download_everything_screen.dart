@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:quotely_flutter_app/dtos/author_response_dto.dart';
 import 'package:quotely_flutter_app/services/drift_author_service.dart';
@@ -10,14 +13,14 @@ import 'package:quotely_flutter_app/services/drift_tag_service.dart';
 import 'package:quotely_flutter_app/services/http_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../components/layouts/main_layout.dart';
 import '../components/shared/something_went_wrong.dart';
 import '../constants/urls.dart';
 import '../dtos/ai_fact_response_dto.dart';
 import '../dtos/quote_response_dto.dart';
 import '../dtos/tag_response_dto.dart';
+import '../theme/colors/app_colors.dart';
+import '../theme/gradients/app_gradients.dart';
 
-// The state enum remains the same
 enum DownloadState { initial, processing, completed, error }
 
 class SettingsDownloadEverythingScreen extends StatefulWidget {
@@ -32,8 +35,6 @@ class SettingsDownloadEverythingScreen extends StatefulWidget {
 class _SettingsDownloadEverythingScreenState
     extends State<SettingsDownloadEverythingScreen> {
   DownloadState _state = DownloadState.initial;
-
-  // --- NEW state variables for detailed progress ---
   bool _isProcessing = false;
   double _progress = 0.0;
   String _currentStepMessage = '';
@@ -61,7 +62,6 @@ class _SettingsDownloadEverythingScreenState
   }
 
   Future<void> _startDownloadProcess() async {
-    // This function remains the same, but we add one line on success.
     if (_isProcessing) return;
 
     setState(() {
@@ -100,14 +100,13 @@ class _SettingsDownloadEverythingScreenState
         _progress = 1.0;
       });
 
-      // --- NEW: Save the timestamp on success ---
       final preferences = await SharedPreferences.getInstance();
       final now = DateTime.now();
       await preferences.setString(_kLastDownloadedKey, now.toIso8601String());
 
       if (!mounted) return;
       setState(() {
-        _lastDownloadedDate = now; // Update the UI immediately
+        _lastDownloadedDate = now;
         _state = DownloadState.completed;
         _isProcessing = false;
       });
@@ -120,44 +119,69 @@ class _SettingsDownloadEverythingScreenState
     }
   }
 
-  // Your download helper functions (_downloadAndSaveQuotes, etc.) remain the same.
-
-  // --- NEW: Logic to handle the button press ---
   void _onDownloadButtonPressed() {
-    // If data has been downloaded before, show a confirmation dialog.
+    HapticFeedback.mediumImpact();
     if (_lastDownloadedDate != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text(
-            'Sync Latest Content?',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'You already have an offline copy from ${DateFormat('dd MMM, yyyy').format(_lastDownloadedDate!)}. Downloading again will fetch the latest updates.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _startDownloadProcess();
-              },
-              child: const Text('Download Again'),
-            ),
-          ],
-        ),
-      );
+      _showSyncDialog();
     } else {
-      // If it's the first time, start the download immediately.
       _startDownloadProcess();
     }
   }
 
-  // --- SEPARATE, DEDICATED FUNCTIONS FOR EACH DATA TYPE ---
+  void _showSyncDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        backgroundColor: colors.surfaceContainer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Sync Latest Content?',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: colors.onSurface,
+          ),
+        ),
+        content: Text(
+          'You already have an offline copy from ${DateFormat('dd MMM, yyyy').format(_lastDownloadedDate!)}. Downloading again will fetch the latest updates.',
+          style: GoogleFonts.lora(
+            fontSize: 14,
+            color: colors.textMuted,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.lora(color: colors.textMuted),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: colors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _startDownloadProcess();
+            },
+            child: Text(
+              'Download Again',
+              style: GoogleFonts.lora(color: colors.onPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<int> _downloadAndSaveQuotes() async {
     setState(() => _currentStepMessage = 'Downloading quotes...');
@@ -215,16 +239,11 @@ class _SettingsDownloadEverythingScreenState
 
   Future<int> _downloadAndSaveTags() async {
     setState(() => _currentStepMessage = 'Downloading tags...');
-    // The API endpoint is the same
     final uri = Uri.parse('$kApiUrl/$kGetAllTags?getAllRows=true');
     final response = await HttpService.get(uri.toString());
     if (response.statusCode != 200) throw Exception('Failed to fetch tags');
 
-    // --- FIX: Use the TagResponseDto to correctly parse the API's object response ---
-    // Instead of assuming a raw list, we parse it using the DTO you already have.
     final tagResponseDto = TagResponseDto.fromJson(json.decode(response.data));
-
-    // --- FIX: Get the list of tags from the DTO ---
     final tagsToSave = tagResponseDto.tags;
 
     setState(() => _currentStepMessage = 'Saving ${tagsToSave.length} tags...');
@@ -234,94 +253,98 @@ class _SettingsDownloadEverythingScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return MainLayout(
-      title: 'Download Everything',
-      body: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.9,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Center(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
-              transitionBuilder: (child, animation) =>
-                  FadeTransition(opacity: animation, child: child),
-              child: _buildContentForState(theme),
-            ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppGradients.scaffoldBackground(context),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(context, colors, isDark),
+
+              // Content
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 400),
+                      transitionBuilder: (child, animation) =>
+                          FadeTransition(opacity: animation, child: child),
+                      child: _buildContentForState(colors, isDark),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // Helper widget to build the UI based on the current download state
-  Widget _buildContentForState(ThemeData theme) {
-    switch (_state) {
-      case DownloadState.processing:
-        return _buildProgressState(theme);
-      case DownloadState.completed:
-        return _buildCompletedState(theme);
-      case DownloadState.error:
-        return _buildErrorState(theme);
-      case DownloadState.initial:
-        // default:
-        return _buildInitialState(theme);
-    }
-  }
-
-  // --- UPDATED: _buildInitialState is now smarter ---
-  Widget _buildInitialState(ThemeData theme) {
-    bool hasData = _lastDownloadedDate != null;
-
+  Widget _buildHeader(BuildContext context, AppColorScheme colors, bool isDark) {
     return Container(
-      key: const ValueKey('initial'),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      padding: const EdgeInsets.fromLTRB(8, 16, 20, 16),
+      child: Row(
         children: [
-          Icon(
-            hasData ? Icons.cloud_sync_outlined : Icons.cloud_download_outlined,
-            size: 60,
-            color: theme.colorScheme.primary,
+          _NeumorphicBackButton(
+            colors: colors,
+            isDark: isDark,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              context.pop();
+            },
           ),
-          const SizedBox(height: 20),
-          Text(
-            hasData ? 'Offline Data Available' : 'Enable Offline Access',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            hasData
-                ? 'Last updated on ${DateFormat('dd MMM, yyyy \'at\' hh:mm a').format(_lastDownloadedDate!)}.'
-                : 'Download the entire library to enjoy Quotely anywhere, even without an internet connection.',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          const SizedBox(width: 12),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: AppGradients.warmPrimary(context),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: 0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 8,
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 30),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: theme.colorScheme.onPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+            child: Center(
+              child: Icon(
+                Icons.cloud_download_rounded,
+                color: colors.onPrimary,
+                size: 22,
               ),
             ),
-            // The button now calls our new handler function
-            onPressed: _onDownloadButtonPressed,
-            icon: Icon(
-              hasData ? Icons.sync_rounded : Icons.download_for_offline,
-              size: 24,
-            ),
-            label: Text(
-              hasData ? 'Sync Latest Content' : 'Download Everything',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Offline Mode',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colors.onSurface,
+                  ),
+                ),
+                Text(
+                  'Download for offline access',
+                  style: GoogleFonts.lora(
+                    fontSize: 12,
+                    color: colors.textMuted,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -329,12 +352,102 @@ class _SettingsDownloadEverythingScreenState
     );
   }
 
-  Widget _buildProgressState(ThemeData theme) {
+  Widget _buildContentForState(AppColorScheme colors, bool isDark) {
+    switch (_state) {
+      case DownloadState.processing:
+        return _buildProgressState(colors, isDark);
+      case DownloadState.completed:
+        return _buildCompletedState(colors, isDark);
+      case DownloadState.error:
+        return _buildErrorState(colors);
+      case DownloadState.initial:
+        return _buildInitialState(colors, isDark);
+    }
+  }
+
+  Widget _buildInitialState(AppColorScheme colors, bool isDark) {
+    bool hasData = _lastDownloadedDate != null;
+
+    return Container(
+      key: const ValueKey('initial'),
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadowDark.withValues(alpha: isDark ? 0.5 : 0.25),
+            offset: const Offset(6, 6),
+            blurRadius: 12,
+          ),
+          BoxShadow(
+            color: colors.shadowLight.withValues(alpha: isDark ? 0.08 : 0.7),
+            offset: const Offset(-6, -6),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colors.primary.withValues(alpha: 0.15),
+                  colors.primaryDark.withValues(alpha: 0.08),
+                ],
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              hasData ? Icons.cloud_sync_rounded : Icons.cloud_download_rounded,
+              size: 40,
+              color: colors.primary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            hasData ? 'Offline Data Available' : 'Enable Offline Access',
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: colors.onSurface,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            hasData
+                ? 'Last updated on ${DateFormat('dd MMM, yyyy \'at\' hh:mm a').format(_lastDownloadedDate!)}.'
+                : 'Download the entire library to enjoy Quotely anywhere, even without an internet connection.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.lora(
+              fontSize: 14,
+              height: 1.5,
+              color: colors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 28),
+          _NeumorphicDownloadButton(
+            label: hasData ? 'Sync Latest Content' : 'Download Everything',
+            icon: hasData ? Icons.sync_rounded : Icons.download_for_offline,
+            colors: colors,
+            isDark: isDark,
+            onTap: _onDownloadButtonPressed,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressState(AppColorScheme colors, bool isDark) {
     return Container(
       key: const ValueKey('progress'),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
             width: 120,
@@ -345,35 +458,38 @@ class _SettingsDownloadEverythingScreenState
                 CircularProgressIndicator(
                   value: _progress,
                   strokeWidth: 8,
-                  backgroundColor: theme.colorScheme.surfaceContainer,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    theme.colorScheme.primary,
-                  ),
+                  backgroundColor: colors.surfaceContainer,
+                  valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
                 ),
                 Center(
                   child: Text(
                     '${(_progress * 100).toStringAsFixed(0)}%',
-                    style: theme.textTheme.headlineSmall?.copyWith(
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      color: colors.onSurface,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 32),
           Text(
             _currentStepMessage,
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleLarge?.copyWith(
+            style: GoogleFonts.lora(
+              fontSize: 16,
               fontWeight: FontWeight.w600,
+              color: colors.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Downloaded $_totalItemsDownloaded items so far...',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+            style: GoogleFonts.lora(
+              fontSize: 14,
+              color: colors.textMuted,
             ),
           ),
         ],
@@ -381,83 +497,209 @@ class _SettingsDownloadEverythingScreenState
     );
   }
 
-  Widget _buildCompletedState(ThemeData theme) {
+  Widget _buildCompletedState(AppColorScheme colors, bool isDark) {
     return Container(
       key: const ValueKey('completed'),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            Colors.green.withValues(alpha: 0.1),
+            Colors.green.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 60,
-            color: Colors.green.shade600,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Download Complete',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.check_circle_rounded,
+              size: 48,
+              color: Colors.green.shade600,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 24),
+          Text(
+            'Download Complete!',
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: colors.onSurface,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             'Success! $_totalItemsDownloaded total items are now available for offline use.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+            style: GoogleFonts.lora(
+              fontSize: 14,
+              height: 1.5,
+              color: colors.textMuted,
             ),
           ),
-          const SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: () => setState(() => _state = DownloadState.initial),
-            child: const Text('Awesome!', style: TextStyle(fontSize: 16)),
+          const SizedBox(height: 28),
+          _NeumorphicDownloadButton(
+            label: 'Awesome!',
+            icon: Icons.celebration_rounded,
+            colors: colors,
+            isDark: isDark,
+            onTap: () => setState(() => _state = DownloadState.initial),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState(ThemeData theme) {
+  Widget _buildErrorState(AppColorScheme colors) {
     return Center(
-      child: SomethingWentWrong(onRetryPressed: _startDownloadProcess),
+      child: SomethingWentWrong(
+        title: 'Download failed',
+        onRetryPressed: _startDownloadProcess,
+      ),
     );
-    // return Container(
-    //   key: const ValueKey('error'),
-    //   padding: const EdgeInsets.all(24),
-    //   decoration: BoxDecoration(
-    //     color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
-    //     borderRadius: BorderRadius.circular(20),
-    //     border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.5)),
-    //   ),
-    //   child: Column(
-    //     mainAxisSize: MainAxisSize.min,
-    //     children: [
-    //       Icon(Icons.error_outline, size: 60, color: theme.colorScheme.error),
-    //       const SizedBox(height: 20),
-    //       Text('Something Went Wrong',
-    //           style: theme.textTheme.headlineSmall
-    //               ?.copyWith(fontWeight: FontWeight.bold)),
-    //       const SizedBox(height: 15),
-    //       Text(
-    //         _errorMessage,
-    //         textAlign: TextAlign.center,
-    //         style: theme.textTheme.bodyMedium
-    //             ?.copyWith(color: theme.colorScheme.onErrorContainer),
-    //       ),
-    //       const SizedBox(height: 25),
-    //       ElevatedButton.icon(
-    //         onPressed: _startDownloadProcess,
-    //         icon: const Icon(Icons.refresh),
-    //         label: const Text('Try Again', style: TextStyle(fontSize: 16)),
-    //       )
-    //     ],
-    //   ),
-    // );
+  }
+}
+
+class _NeumorphicBackButton extends StatefulWidget {
+  final AppColorScheme colors;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _NeumorphicBackButton({
+    required this.colors,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  State<_NeumorphicBackButton> createState() => _NeumorphicBackButtonState();
+}
+
+class _NeumorphicBackButtonState extends State<_NeumorphicBackButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: widget.colors.surfaceContainer,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: _isPressed
+              ? []
+              : [
+                  BoxShadow(
+                    color: widget.colors.shadowDark
+                        .withValues(alpha: widget.isDark ? 0.5 : 0.25),
+                    offset: const Offset(3, 3),
+                    blurRadius: 6,
+                  ),
+                  BoxShadow(
+                    color: widget.colors.shadowLight
+                        .withValues(alpha: widget.isDark ? 0.08 : 0.7),
+                    offset: const Offset(-3, -3),
+                    blurRadius: 6,
+                  ),
+                ],
+        ),
+        child: Center(
+          child: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
+            color: widget.colors.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NeumorphicDownloadButton extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final AppColorScheme colors;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _NeumorphicDownloadButton({
+    required this.label,
+    required this.icon,
+    required this.colors,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  State<_NeumorphicDownloadButton> createState() =>
+      _NeumorphicDownloadButtonState();
+}
+
+class _NeumorphicDownloadButtonState extends State<_NeumorphicDownloadButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _isPressed
+                ? [widget.colors.primaryDark, widget.colors.primary]
+                : [widget.colors.primary, widget.colors.primaryDark],
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: _isPressed
+              ? []
+              : [
+                  BoxShadow(
+                    color: widget.colors.primary.withValues(alpha: 0.4),
+                    offset: const Offset(0, 4),
+                    blurRadius: 12,
+                  ),
+                ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              widget.icon,
+              size: 22,
+              color: widget.colors.onPrimary,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              widget.label,
+              style: GoogleFonts.lora(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: widget.colors.onPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
