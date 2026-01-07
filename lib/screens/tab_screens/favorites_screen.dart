@@ -1,10 +1,13 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:quotely_flutter_app/service_locator/init_service_locators.dart';
 
 import '../../components/favorites_screen/facts_list.dart';
 import '../../components/favorites_screen/quote_list.dart';
-import '../../components/shared/top_navigation_bar.dart';
+import '../../theme/colors/app_colors.dart';
+import '../../theme/gradients/app_gradients.dart';
 
 class FavoritesScreen extends StatefulWidget {
   static const kRouteName = '/favorites';
@@ -15,45 +18,64 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  // --- Analytics Instance ---
-  // Fetched using your service locator
   final _analytics = getIt.get<FirebaseAnalytics>();
-
   bool showQuotes = true;
-  // Note: Your AnimationController wasn't being used, so I've removed it
-  // and the 'with SingleTickerProviderStateMixin' for a cleaner implementation.
 
   void _toggleView(bool displayQuotes) {
-    // Prevent unnecessary state changes if the view is already active
     if (showQuotes == displayQuotes) return;
 
-    setState(() {
-      showQuotes = displayQuotes;
-    });
+    HapticFeedback.lightImpact();
+    setState(() => showQuotes = displayQuotes);
 
-    // --- Analytics Event ---
-    // Log an event when the user switches views.
-    final viewName = displayQuotes ? 'quotes' : 'facts';
     _analytics.logEvent(
       name: 'favorites_view_changed',
-      parameters: {'view_name': viewName},
+      parameters: {'view_name': displayQuotes ? 'quotes' : 'facts'},
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppGradients.scaffoldBackground(context),
+      ),
+      child: SafeArea(
         child: Column(
           children: [
-            const TopNavigationBar(title: 'Favorites'),
-            _buildTabBar(),
+            // Header
+            _buildHeader(colors),
+
+            // Segmented control
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _NeumorphicSegmentedControl(
+                showQuotes: showQuotes,
+                onToggle: _toggleView,
+                colors: colors,
+                isDark: isDark,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Content
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 transitionBuilder: (child, animation) {
-                  return FadeTransition(opacity: animation, child: child);
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.05, 0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+                  );
                 },
                 child: showQuotes
                     ? QuoteList(key: const ValueKey('QuoteList'))
@@ -66,93 +88,190 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildTabBar() {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
-    final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
-      child: Center(
-        child: Container(
-          width: 200,
-          height: 35, // Slightly increased height for better touch target
-          decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.surfaceContainer.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(24),
+  Widget _buildHeader(AppColorScheme colors) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: AppGradients.warmPrimary(context),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: 0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Icon(
+                Icons.favorite_rounded,
+                color: colors.onPrimary,
+                size: 22,
+              ),
+            ),
           ),
-          child: Stack(
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                left: showQuotes ? 0 : 100,
-                child: Container(
-                  width: 100,
-                  height: 35,
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
+              Text(
+                'Favorites',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _toggleView(true),
-                      // Use a transparent container to make the whole area tappable
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(
-                              color: showQuotes
-                                  ? onPrimaryColor
-                                  : onSurfaceColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            child: const Text('Quotes'),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _toggleView(false),
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(
-                              color: !showQuotes
-                                  ? onPrimaryColor
-                                  : onSurfaceColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            child: const Text('Facts'),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                'Your saved treasures',
+                style: GoogleFonts.lora(
+                  fontSize: 12,
+                  color: colors.textMuted,
+                ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NeumorphicSegmentedControl extends StatelessWidget {
+  final bool showQuotes;
+  final Function(bool) onToggle;
+  final AppColorScheme colors;
+  final bool isDark;
+
+  const _NeumorphicSegmentedControl({
+    required this.showQuotes,
+    required this.onToggle,
+    required this.colors,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadowDark.withValues(alpha: isDark ? 0.5 : 0.25),
+            offset: const Offset(4, 4),
+            blurRadius: 8,
+          ),
+          BoxShadow(
+            color: colors.shadowLight.withValues(alpha: isDark ? 0.08 : 0.7),
+            offset: const Offset(-4, -4),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Animated indicator
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            left: showQuotes ? 4 : (MediaQuery.of(context).size.width - 32) / 2,
+            top: 4,
+            bottom: 4,
+            width: (MediaQuery.of(context).size.width - 32) / 2 - 4,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [colors.primary, colors.primaryDark],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.4),
+                    offset: const Offset(0, 2),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Buttons
+          Row(
+            children: [
+              Expanded(
+                child: _SegmentButton(
+                  icon: Icons.format_quote_rounded,
+                  label: 'Quotes',
+                  isSelected: showQuotes,
+                  onTap: () => onToggle(true),
+                  colors: colors,
+                ),
+              ),
+              Expanded(
+                child: _SegmentButton(
+                  icon: Icons.lightbulb_outline_rounded,
+                  label: 'Facts',
+                  isSelected: !showQuotes,
+                  onTap: () => onToggle(false),
+                  colors: colors,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SegmentButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final AppColorScheme colors;
+
+  const _SegmentButton({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: GoogleFonts.lora(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? colors.onPrimary : colors.onSurfaceVariant,
+              ),
+              child: Text(label),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// The FavoritesScreenSkeletor seems fine, it's a simple layout
-// wrapper and doesn't require any analytics logging itself.
 class FavoritesScreenSkeletor extends StatelessWidget {
   final Widget widget;
 
