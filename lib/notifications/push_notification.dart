@@ -9,6 +9,7 @@ import 'package:quotely_flutter_app/services/notification_service.dart';
 
 import '../navigation/app_navigation.dart';
 
+@pragma('vm:entry-point')
 class PushNotifications {
   static final _firebaseMessaging = FirebaseMessaging.instance;
   static final _flutterLocalNotificationsPlugin =
@@ -226,6 +227,7 @@ class PushNotifications {
     _handleNotificationTap(message.data);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> _firebaseBackgroundMessage(RemoteMessage? message) async {
     if (message?.notification != null) {
       debugPrint("Background notification received");
