@@ -127,9 +127,11 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
         'https://play.google.com/store/apps/details?id=com.pranta.quotely_flutter_app';
     const String shareMessage =
         'Check out Quotely! A beautiful app for daily quotes and inspiration:';
-    Share.share(
-      '$shareMessage $appShareLink',
-      subject: 'Check out the Quotely App!',
+    SharePlus.instance.share(
+      ShareParams(
+        text: '$shareMessage $appShareLink',
+        subject: 'Check out the Quotely App!',
+      ),
     );
   }
 

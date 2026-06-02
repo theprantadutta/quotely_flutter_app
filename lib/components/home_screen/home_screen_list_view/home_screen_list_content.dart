@@ -21,7 +21,7 @@ class HomeScreenListContent extends StatelessWidget {
           //   height: imageHeight,
           //   width: imageWidth,
           // ),
-          child: Icon(
+          child: FaIcon(
             FontAwesomeIcons.quoteLeft,
             size: 20,
             color: kPrimaryColor,
@@ -44,7 +44,7 @@ class HomeScreenListContent extends StatelessWidget {
             //   height: imageHeight,
             //   width: imageWidth,
             // ),
-            child: Icon(
+            child: FaIcon(
               FontAwesomeIcons.quoteLeft,
               size: 20,
               color: kPrimaryColor,
@@ -86,7 +86,7 @@ class HomeScreenListContentSkeletor extends StatelessWidget {
           //   height: imageHeight,
           //   width: imageWidth,
           // ),
-          child: Icon(
+          child: FaIcon(
             FontAwesomeIcons.quoteLeft,
             size: 20,
             color: kPrimaryColor,
@@ -109,7 +109,7 @@ class HomeScreenListContentSkeletor extends StatelessWidget {
             //   height: imageHeight,
             //   width: imageWidth,
             // ),
-            child: Icon(
+            child: FaIcon(
               FontAwesomeIcons.quoteLeft,
               size: 20,
               color: kPrimaryColor,

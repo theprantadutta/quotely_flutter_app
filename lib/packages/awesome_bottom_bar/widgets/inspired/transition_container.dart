@@ -48,7 +48,7 @@ class TransitionContainer extends StatefulWidget {
   }) : builder = FlipBuilder(height, curve: curve, bottomChild: bottomChild);
 
   @override
-  _State createState() {
+  State<TransitionContainer> createState() {
     return _State();
   }
 }

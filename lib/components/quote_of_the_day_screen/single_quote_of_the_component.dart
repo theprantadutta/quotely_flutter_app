@@ -42,7 +42,7 @@ class SingleQuoteOfTheComponent extends StatelessWidget {
                 //   height: MediaQuery.sizeOf(context).height * 0.1,
                 //   width: MediaQuery.sizeOf(context).width * 0.2,
                 // ),
-                child: Icon(
+                child: FaIcon(
                   FontAwesomeIcons.quoteLeft,
                   size: 20,
                   color: kPrimaryColor,
@@ -100,7 +100,7 @@ class SingleQuoteOfTheComponentSkeletor extends StatelessWidget {
                 //   height: MediaQuery.sizeOf(context).height * 0.1,
                 //   width: MediaQuery.sizeOf(context).width * 0.2,
                 // ),
-                child: Icon(
+                child: FaIcon(
                   FontAwesomeIcons.quoteLeft,
                   size: 20,
                   color: kPrimaryColor,

@@ -61,7 +61,7 @@ class HomeScreenGridContent extends StatelessWidget {
     //   width: size,
     //   fit: BoxFit.contain,
     // );
-    return Icon(
+    return FaIcon(
       FontAwesomeIcons.quoteLeft,
       size: size * 0.3, // Maintain aspect ratio
       color: color,
@@ -148,7 +148,7 @@ class HomeScreenGridContentSkeletor extends StatelessWidget {
     //   width: size,
     //   fit: BoxFit.contain,
     // );
-    return Icon(
+    return FaIcon(
       FontAwesomeIcons.quoteLeft,
       size: size * 0.3, // Maintain aspect ratio
       color: color,

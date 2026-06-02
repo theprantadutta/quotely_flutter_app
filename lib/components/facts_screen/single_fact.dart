@@ -33,10 +33,12 @@ class SingleFact extends ConsumerWidget {
 Shared via Quotely
 ''';
 
-    await Share.share(
-      shareText,
-      subject: 'Amazing fact from Quotely',
-      sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
+    await SharePlus.instance.share(
+      ShareParams(
+        text: shareText,
+        subject: 'Amazing fact from Quotely',
+        sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
+      ),
     );
   }
 
@@ -186,7 +188,7 @@ Shared via Quotely
                 //   height: 20,
                 //   width: 20,
                 // ),
-                child: Icon(
+                child: FaIcon(
                   FontAwesomeIcons.quoteLeft,
                   size: 20,
                   color: primaryColor,
@@ -327,7 +329,7 @@ class SingleFactSkeletor extends StatelessWidget {
                   //   height: 20,
                   //   width: 20,
                   // ),
-                  child: Icon(
+                  child: FaIcon(
                     FontAwesomeIcons.quoteLeft,
                     size: 20,
                     color: primaryColor,

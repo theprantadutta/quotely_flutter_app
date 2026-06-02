@@ -54,10 +54,12 @@ class _HomeScreenQuoteSingleGridState
 Shared via Quotely
 ''';
 
-    Share.share(
-      shareText,
-      subject: 'Amazing quote by ${widget.currentQuote.author}',
-      sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
+    SharePlus.instance.share(
+      ShareParams(
+        text: shareText,
+        subject: 'Amazing quote by ${widget.currentQuote.author}',
+        sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
+      ),
     );
   }
 
@@ -134,7 +136,7 @@ Shared via Quotely
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.zero,
           itemCount: widget.currentQuote.tags.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          separatorBuilder: (_, _) => const SizedBox(width: 8),
           itemBuilder: (context, index) {
             final tag = widget.currentQuote.tags[index];
             return Chip(

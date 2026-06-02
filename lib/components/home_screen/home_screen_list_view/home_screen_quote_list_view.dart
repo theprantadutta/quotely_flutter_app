@@ -75,10 +75,12 @@ class _HomeScreenQuoteListViewState
 Shared via Quotely
 ''';
 
-    await Share.share(
-      shareText,
-      subject: 'Amazing quote by ${quote.author}',
-      sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
+    await SharePlus.instance.share(
+      ShareParams(
+        text: shareText,
+        subject: 'Amazing quote by ${quote.author}',
+        sharePositionOrigin: const Rect.fromLTRB(0, 0, 0, 0),
+      ),
     );
   }
 
@@ -219,7 +221,7 @@ Shared via Quotely
                               scrollDirection: Axis.horizontal,
                               padding: EdgeInsets.zero,
                               itemCount: quote.tags.length,
-                              separatorBuilder: (_, __) =>
+                              separatorBuilder: (_, _) =>
                                   const SizedBox(width: 8),
                               itemBuilder: (context, index) {
                                 final tag = quote.tags[index];

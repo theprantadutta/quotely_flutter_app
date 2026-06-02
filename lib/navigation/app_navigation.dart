@@ -325,7 +325,7 @@ class AppNavigation {
   );
 
   static CustomTransitionPage<void> reusableTransitionPage({
-    required state,
+    required GoRouterState state,
     required Widget child,
   }) {
     return CustomTransitionPage<void>(

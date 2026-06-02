@@ -84,7 +84,7 @@ class FlipBuilder extends TransitionContainerBuilder<double> {
         alignment: Alignment.bottomCenter,
         transform: Matrix4.identity()
           ..setEntry(3, 2, 0.001)
-          ..translate(0.0, (cos(animation.value) * (height / 6)), 0),
+          ..translateByDouble(0.0, (cos(animation.value) * (height / 6)), 0, 1),
         child: Center(child: bottomChild),
       ),
     );

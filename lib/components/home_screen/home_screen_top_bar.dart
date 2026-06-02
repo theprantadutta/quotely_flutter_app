@@ -43,7 +43,7 @@ class HomeScreenTopBar extends StatelessWidget {
                 //   'assets/quotely_icon.png',
                 //   height: MediaQuery.sizeOf(context).height * 0.03,
                 // ),
-                child: Icon(
+                child: FaIcon(
                   FontAwesomeIcons.quoteLeft,
                   size: 20,
                   color: kPrimaryColor,

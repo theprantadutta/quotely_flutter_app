@@ -66,7 +66,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return;
     }
 
-    if (!context.mounted) return;
+    if (!mounted) return;
 
     bool isChecked = false;
     await showDialog(
@@ -154,6 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: isChecked
                       ? () async {
                           await preferences.setBool(termsKey, true);
+                          if (!dialogContext.mounted) return;
                           Navigator.of(dialogContext).pop();
                         }
                       : () {

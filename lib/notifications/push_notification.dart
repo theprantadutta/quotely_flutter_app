@@ -124,7 +124,7 @@ class PushNotifications {
         InitializationSettings(android: androidSettings, iOS: iosSettings);
 
     await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
   }
@@ -202,10 +202,10 @@ class PushNotifications {
 
     final notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     await _flutterLocalNotificationsPlugin.show(
-      notificationId,
-      title,
-      body,
-      notificationDetails,
+      id: notificationId,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
       payload: payload,
     );
   }
