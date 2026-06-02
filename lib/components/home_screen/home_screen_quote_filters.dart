@@ -52,7 +52,11 @@ class _HomeScreenQuoteFiltersState
 
     try {
       final fetchedTags = await ref.read(
-        fetchAllTagsProvider(pageNumber, pageSize, PaginationSeed.current).future,
+        fetchAllTagsProvider(
+          pageNumber,
+          pageSize,
+          PaginationSeed.current,
+        ).future,
       );
 
       setState(() {
