@@ -14,6 +14,7 @@ import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../constants/colors.dart';
+import '../../constants/shared_preference_keys.dart';
 import '../../main.dart';
 import '../../riverpods/all_quote_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
@@ -57,14 +58,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _checkAndShowTermsDialog() async {
-    const String termsKey =
-        'hasAcceptedTermsV2'; // Use a new key if the logic changes
     final preferences = await SharedPreferences.getInstance();
 
-    final bool hasAccepted = preferences.getBool(termsKey) ?? false;
-    if (hasAccepted) {
-      return;
+    // Migrate from the legacy bool key to the versioned int key.
+    int acceptedVersion = preferences.getInt(kAcceptedLegalVersionKey) ?? 0;
+    if (acceptedVersion == 0 &&
+        (preferences.getBool(kLegacyAcceptedTermsKey) ?? false)) {
+      acceptedVersion = 2;
+      await preferences.setInt(kAcceptedLegalVersionKey, acceptedVersion);
+      await preferences.remove(kLegacyAcceptedTermsKey);
     }
+
+    // Already accepted the current version, nothing to show.
+    if (acceptedVersion >= kCurrentLegalVersion) return;
+
+    // Returning users see an "updated policies" message instead of a welcome.
+    final bool isPolicyUpdate = acceptedVersion > 0;
 
     if (!mounted) return;
 
@@ -86,14 +95,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             }
 
             return AlertDialog(
-              title: const Text('Welcome to Quotely!'),
+              title: Text(
+                isPolicyUpdate
+                    ? 'Our Policies Have Changed'
+                    : 'Welcome to Quotely!',
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Before you begin, please review our policies. By continuing, you agree to our terms.',
+                    Text(
+                      isPolicyUpdate
+                          ? 'We\'ve updated our policies since you last accepted them. Please review and accept to continue.'
+                          : 'Before you begin, please review our policies. By continuing, you agree to our terms.',
                     ),
                     const SizedBox(height: 16),
                     // This RichText widget makes the links tappable
@@ -153,7 +168,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 GestureDetector(
                   onTap: isChecked
                       ? () async {
-                          await preferences.setBool(termsKey, true);
+                          await preferences.setInt(
+                            kAcceptedLegalVersionKey,
+                            kCurrentLegalVersion,
+                          );
                           if (!dialogContext.mounted) return;
                           Navigator.of(dialogContext).pop();
                         }

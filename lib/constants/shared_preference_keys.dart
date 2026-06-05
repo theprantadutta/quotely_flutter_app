@@ -5,6 +5,19 @@ const kFlexSchemeKey = 'is_flex_scheme_key';
 const kBiometricKey = 'biometric_key';
 const kIsGridViewKey = 'is-grid-view';
 
+/// Bump this whenever terms.md or privacy.md changes in a way that requires
+/// users to re-accept. Users who accepted an older version will see the
+/// consent dialog again on next launch.
+/// History:
+///   2 = original terms (stored under the legacy 'hasAcceptedTermsV2' bool)
+///   3 = added AI-generated content disclosure to privacy policy (2026-06-05)
+const kCurrentLegalVersion = 3;
+const kAcceptedLegalVersionKey = 'accepted-legal-version';
+
+/// Legacy bool key from before legal versioning; migrated to
+/// [kAcceptedLegalVersionKey] and removed on first read.
+const kLegacyAcceptedTermsKey = 'hasAcceptedTermsV2';
+
 const kNotificationEnabled = 'notification-enabled';
 const kNotificationMotivation = 'notification-motivation';
 const kNotificationDailyInspiration = 'notification-daily-inspiration';

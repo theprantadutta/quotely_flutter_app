@@ -1,6 +1,6 @@
 # Privacy Policy for Quotely
 
-**Last Updated: June 10, 2025**
+**Last Updated: June 5, 2026**
 
 Your privacy is important to us. This Privacy Policy explains how we handle information in the Quotely app.
 
@@ -25,7 +25,17 @@ This information is aggregated and cannot be used to identify you personally.
 
 Any data you generate within the app, such as your list of favorite quotes or facts, is stored locally on your device and is not transmitted to our servers.
 
-### 5. Changes to This Policy
+### 5. AI-Generated Content
+
+Some of the content in Quotely — including quotes, author profiles, and fun facts — is generated using artificial intelligence services (such as OpenAI, Google Gemini, Mistral, Cohere, and OpenRouter). Please be aware that:
+
+- Quotes attributed to real historical figures may be AI-generated and may not be verbatim statements made by those individuals.
+- Some author profiles in the app are entirely fictional personas created by AI.
+- AI-generated facts and biographical information, while produced with care, may contain inaccuracies and should not be relied upon as authoritative sources.
+
+No personal data from your device is ever sent to these AI services — content generation happens entirely on our servers.
+
+### 6. Changes to This Policy
 
 We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy within the app.
 
