@@ -20,8 +20,13 @@ class ViewModeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Tooltip(
-      message: '${mode.label} — tap to switch, hold to pick',
+    // NOTE: no Tooltip here on purpose — Tooltip's default mobile trigger is
+    // long-press, which would race our onLongPress (its overlay then outlives
+    // the app-wide rebuild a mode change causes and crashes with "Looking up
+    // a deactivated widget's ancestor is unsafe").
+    return Semantics(
+      button: true,
+      label: '${mode.label} view — tap to switch, hold to pick',
       child: GestureDetector(
         onTap: onCycle,
         onLongPress: () => showViewModeBottomSheet(
@@ -63,8 +68,9 @@ class ViewRefreshButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Tooltip(
-      message: 'Refresh',
+    return Semantics(
+      button: true,
+      label: 'Refresh',
       child: GestureDetector(
         onTap: onRefresh,
         child: Container(
