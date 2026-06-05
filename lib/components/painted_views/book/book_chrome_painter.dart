@@ -2,60 +2,47 @@ import 'package:flutter/material.dart';
 
 import '../shared/painted_card_style.dart';
 
-/// Paints the book's base: one soft, theme-colored "open spread" card with a
-/// subtle center crease dividing the two pages. Modern and flat — no covers,
-/// stitches, or paper texture.
-class BookChromePainter extends CustomPainter {
+/// Paints one opaque book page: theme-native rounded card surface with a
+/// subtle "binding" hint along the left edge. Each page paints its own
+/// surface so stacked pages never show through one another.
+class BookPagePainter extends CustomPainter {
   final PaintedCardStyle style;
 
-  /// Breathing room between the canvas edge and the spread.
-  static const double coverBorder = 6;
-
-  BookChromePainter({required this.style});
+  BookPagePainter({required this.style});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final spread = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        coverBorder,
-        coverBorder,
-        size.width - coverBorder * 2,
-        size.height - coverBorder * 2,
-      ),
+    final page = RRect.fromRectAndRadius(
+      Offset.zero & size,
       const Radius.circular(24),
     );
 
-    style.paintSurface(canvas, spread, shadowBlur: 10);
+    // Opaque base first — pages stack during flips and must not bleed
+    canvas.drawRRect(page, Paint()..color = style.surface);
+    style.paintSurface(canvas, page, shadowBlur: 8);
 
-    // Center crease: a soft valley where the two pages meet
-    final creaseX = size.width / 2;
-    final creaseRect = Rect.fromLTWH(
-      creaseX - 14,
-      spread.top,
-      28,
-      spread.height,
-    );
+    // Binding hint: a soft darker band along the left edge
+    final binding = Rect.fromLTWH(0, 0, 18, size.height);
     canvas.save();
-    canvas.clipRRect(spread);
+    canvas.clipRRect(page);
     canvas.drawRect(
-      creaseRect,
+      binding,
       Paint()
         ..shader = LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Colors.transparent,
             Colors.black.withValues(
-              alpha: style.brightness == Brightness.dark ? 0.22 : 0.08,
+              alpha: style.brightness == Brightness.dark ? 0.20 : 0.06,
             ),
             Colors.transparent,
           ],
-        ).createShader(creaseRect),
+        ).createShader(binding),
     );
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(BookChromePainter oldDelegate) =>
+  bool shouldRepaint(BookPagePainter oldDelegate) =>
       oldDelegate.style != style;
 }

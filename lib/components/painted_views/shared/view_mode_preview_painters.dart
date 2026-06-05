@@ -39,32 +39,26 @@ class ViewModePreviewPainter extends CustomPainter {
 
     switch (mode) {
       case ContentViewMode.book:
-        final book = Rect.fromCenter(
+        final page = Rect.fromCenter(
           center: size.center(Offset.zero),
-          width: size.width * 0.84,
-          height: size.height * 0.74,
+          width: size.width * 0.58,
+          height: size.height * 0.78,
         );
         canvas.drawRRect(
-          RRect.fromRectAndRadius(book, const Radius.circular(6)),
+          RRect.fromRectAndRadius(page, const Radius.circular(7)),
           paperPaint,
         );
-        // Spine
-        canvas.drawLine(
-          Offset(book.center.dx, book.top + 4),
-          Offset(book.center.dx, book.bottom - 4),
-          Paint()
-            ..color = accent.withValues(alpha: 0.6)
-            ..strokeWidth = 1.5,
+        textBars(page, 3);
+        // Ribbon bookmark at top-right
+        canvas.drawRect(
+          Rect.fromLTWH(page.right - 12, page.top, 5, 12),
+          Paint()..color = accent,
         );
-        textBars(
-          Rect.fromLTWH(book.left, book.top, book.width / 2, book.height),
-          3,
-        );
-        // Curl corner on the right page
+        // Curl corner lifting at bottom-right
         final curl = Path()
-          ..moveTo(book.right, book.bottom - 18)
-          ..lineTo(book.right, book.bottom)
-          ..lineTo(book.right - 18, book.bottom)
+          ..moveTo(page.right, page.bottom - 18)
+          ..lineTo(page.right, page.bottom)
+          ..lineTo(page.right - 18, page.bottom)
           ..close();
         canvas.drawPath(curl, Paint()..color = accent.withValues(alpha: 0.5));
 

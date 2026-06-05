@@ -7,14 +7,15 @@ import '../shared/painted_card_style.dart';
 /// Paints the animated page fold during a flip. Pragmatic "mirror fold"
 /// rather than a true cylinder shader:
 ///
-/// With flip progress `t`, the crease line sits at `x_f = xR - t*pageW`,
-/// sweeping from the book's right edge to the spine. The lifted part of the
-/// turning page is mirrored about the crease: its back face occupies
-/// `[2*x_f - xR, x_f]`, drawn with a bowed outer edge (quadratic Bézier) and
-/// a 3-stop "cylinder highlight" gradient, plus cast + contact shadows.
+/// With flip progress `t`, the crease line sits at `x_f = xR - t*pageW`
+/// (pageW = the full page width), sweeping from the right edge to the left.
+/// The lifted part of the turning page is mirrored about the crease: its
+/// back face occupies `[2*x_f - xR, x_f]`, drawn with a bowed outer edge
+/// (quadratic Bézier) and a 3-stop "cylinder highlight" gradient, plus cast
+/// + contact shadows.
 ///
-/// The hosting widget clips the current spread's widgets to `x < x_f` and
-/// shows the next spread beneath, so this painter only adds the fold itself.
+/// The hosting widget clips the current page's widgets to `x < x_f` and
+/// shows the next page beneath, so this painter only adds the fold itself.
 class PageCurlPainter extends CustomPainter {
   /// Flip progress 0..1, driven by drag/settle animation.
   final Animation<double> progress;
@@ -40,7 +41,7 @@ class PageCurlPainter extends CustomPainter {
     final isDark = style.brightness == Brightness.dark;
 
     final xR = pagesRect.right;
-    final pageW = pagesRect.width / 2;
+    final pageW = pagesRect.width; // single full-width page
     final xF = xR - t * pageW; // crease line
     final xB = 2 * xF - xR; // mirrored outer edge
     final top = pagesRect.top;
@@ -126,8 +127,7 @@ class PageCurlClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     if (t <= 0.001) return Path()..addRect(Offset.zero & size);
-    final pageW = pagesRect.width / 2;
-    final xF = pagesRect.right - t * pageW;
+    final xF = pagesRect.right - t * pagesRect.width;
     return Path()..addRect(Rect.fromLTRB(0, 0, xF, size.height));
   }
 
