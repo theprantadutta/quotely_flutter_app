@@ -20,7 +20,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.example.quotely_flutter_app"
     compileSdk = 36
-    ndkVersion = "29.0.13113456"
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         // Flag to enable support for the new language APIs
