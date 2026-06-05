@@ -1,13 +1,20 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../components/facts_screen/facts_screen_filter_list.dart';
-import '../../components/facts_screen/single_fact.dart';
+import '../../components/painted_views/shared/content_view_mode.dart';
+import '../../components/painted_views/shared/painted_content.dart';
+import '../../components/painted_views/shared/painted_content_mappers.dart';
+import '../../components/painted_views/shared/painted_view_host.dart';
+import '../../components/painted_views/shared/view_mode_button.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../components/shared/top_navigation_bar.dart';
 import '../../dtos/ai_fact_dto.dart';
+import '../../main.dart';
 import '../../riverpods/all_facts_data_provider.dart';
+import '../../service_locator/init_service_locators.dart';
 import '../../util/pagination_seed.dart';
 
 class FactsScreen extends ConsumerStatefulWidget {
@@ -26,33 +33,22 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   bool hasError = false;
   bool isLoadingMore = false;
   List<AiFactDto> aiFacts = [];
-  late ScrollController _scrollController;
 
   List<String> allSelectedCategory = [];
   List<String> allSelectedProvider = [];
 
+  final analytics = getIt.get<FirebaseAnalytics>();
+
+  late final PaintedContentActions _paintedActions;
+
   @override
   void initState() {
     super.initState();
+    _paintedActions = buildFactPaintedActions(
+      onLastItemReached: _fetchFacts,
+      onRefresh: _onRefresh,
+    );
     _fetchFacts();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
-        hasMoreData &&
-        !isLoadingMore) {
-      _fetchFacts();
-    }
   }
 
   Future<void> _fetchFacts() async {
@@ -60,6 +56,14 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     if (!hasMoreData || isLoadingMore) return;
 
     if (!mounted) return;
+
+    // Analytics parity with the quotes screen
+    if (factPageNumber > 1) {
+      analytics.logEvent(
+        name: 'facts_paginated',
+        parameters: {'page_number': factPageNumber},
+      );
+    }
 
     setState(() {
       isLoadingMore = true;
@@ -93,74 +97,104 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    analytics.logEvent(name: 'facts_refreshed');
+    setState(() {
+      factPageNumber = 1;
+      aiFacts = [];
+      hasMoreData = true;
+    });
+    ref.invalidate(fetchAllFactsProvider);
+    await _fetchFacts();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final viewMode = QuotelyApp.of(context).contentViewMode;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-        child: RefreshIndicator(
-          onRefresh: () {
-            factPageNumber = 1;
-            aiFacts = [];
-            ref.invalidate(fetchAllFactsProvider);
-            return _fetchFacts();
-          },
-          child: Column(
-            children: [
-              const TopNavigationBar(title: 'Facts'),
-              FactsScreenFilterList(
-                onSelectedCategoryChange: (category) async {
-                  setState(() {
-                    if (allSelectedCategory.contains(category)) {
-                      allSelectedCategory.remove(category);
-                    } else {
-                      allSelectedCategory.add(category);
-                    }
-                    factPageNumber = 1;
-                    aiFacts = [];
-                    hasMoreData = true;
-                  });
-                  ref.invalidate(fetchAllFactsProvider);
-                  await _fetchFacts();
-                },
-                allSelectedCategories: allSelectedCategory,
+        child: Column(
+          children: [
+            TopNavigationBar(
+              title: 'Facts',
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!viewMode.supportsPullToRefresh) ...[
+                    ViewRefreshButton(onRefresh: _onRefresh),
+                    const SizedBox(width: 8),
+                  ],
+                  ViewModeButton(
+                    mode: viewMode,
+                    onCycle: () =>
+                        QuotelyApp.of(context).cycleContentViewMode(),
+                    onSelect: (mode) =>
+                        QuotelyApp.of(context).changeContentViewMode(mode),
+                  ),
+                ],
               ),
-              if (hasError)
-                Expanded(
-                  child: Center(
-                    child: SomethingWentWrong(
-                      title: 'Failed to get Facts.',
-                      onRetryPressed: _fetchFacts,
-                    ),
-                  ),
-                ),
-
-              // Display skeleton loaders when there’s no error and no data
-              if (!hasError && aiFacts.isEmpty)
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
-                      return SingleFactSkeletor();
-                    },
-                  ),
-                ),
-
-              // Display the main content if there are aiFacts available
-              if (!hasError && aiFacts.isNotEmpty)
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: aiFacts.length,
-                    itemBuilder: (context, index) {
-                      return SingleFact(aiFact: aiFacts[index]);
-                    },
-                  ),
-                ),
-            ],
-          ),
+            ),
+            FactsScreenFilterList(
+              onSelectedCategoryChange: (category) async {
+                setState(() {
+                  if (allSelectedCategory.contains(category)) {
+                    allSelectedCategory.remove(category);
+                  } else {
+                    allSelectedCategory.add(category);
+                  }
+                  factPageNumber = 1;
+                  aiFacts = [];
+                  hasMoreData = true;
+                });
+                ref.invalidate(fetchAllFactsProvider);
+                await _fetchFacts();
+              },
+              allSelectedCategories: allSelectedCategory,
+            ),
+            Expanded(
+              child: viewMode.supportsPullToRefresh
+                  ? RefreshIndicator(
+                      onRefresh: _onRefresh,
+                      child: _buildContent(viewMode),
+                    )
+                  : _buildContent(viewMode),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildContent(ContentViewMode viewMode) {
+    if (hasError && aiFacts.isEmpty) {
+      return Center(
+        child: SomethingWentWrong(
+          title: 'Failed to get Facts.',
+          onRetryPressed: _fetchFacts,
+        ),
+      );
+    }
+
+    if (aiFacts.isEmpty && !isLoadingMore) {
+      return SomethingWentWrong(
+        title: 'No facts found.',
+        onRetryPressed: () {
+          setState(() {
+            hasError = false;
+            hasMoreData = true;
+          });
+          _fetchFacts();
+        },
+      );
+    }
+
+    return PaintedViewHost(
+      mode: viewMode,
+      items: [for (final fact in aiFacts) paintedFromFact(fact)],
+      actions: _paintedActions,
+      isLoadingMore: isLoadingMore,
+      hasMoreData: hasMoreData,
     );
   }
 }

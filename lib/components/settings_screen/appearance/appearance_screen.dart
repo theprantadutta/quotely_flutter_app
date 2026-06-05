@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:quotely_flutter_app/main.dart';
 
 import '../../layouts/main_layout.dart';
+import '../../painted_views/shared/content_view_mode.dart';
 
 const List<String> kFontFamilies = [
   'Fira Code',
@@ -205,21 +206,55 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             const SizedBox(height: 8),
             _buildSectionContainer(
               context,
-              child: SwitchListTile(
-                title: const Text(
-                  'Default to Grid View',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: const Text('Applies to Home & Favorites screens'),
-                value: quotelyState.isGridView,
-                onChanged: (_) => setState(() {
-                  quotelyState.toggleGridViewEnabled();
-                }),
-                secondary: const Icon(Icons.grid_view_outlined),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+              child: Column(
+                children: [
+                  ListTile(
+                    title: const Text(
+                      'Home & Facts View Style',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: SegmentedButton<ContentViewMode>(
+                        segments: [
+                          for (final mode in ContentViewMode.values)
+                            ButtonSegment(
+                              value: mode,
+                              icon: Icon(mode.icon, size: 18),
+                              tooltip: mode.label,
+                            ),
+                        ],
+                        selected: {quotelyState.contentViewMode},
+                        onSelectionChanged: (selection) => setState(() {
+                          quotelyState.changeContentViewMode(selection.first);
+                        }),
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text(
+                      'Default to Grid View',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: const Text(
+                      'Applies to Favorites & Author screens',
+                    ),
+                    value: quotelyState.isGridView,
+                    onChanged: (_) => setState(() {
+                      quotelyState.toggleGridViewEnabled();
+                    }),
+                    secondary: const Icon(Icons.grid_view_outlined),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                  ),
+                ],
               ),
             ),
 

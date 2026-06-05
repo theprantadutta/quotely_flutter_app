@@ -5,6 +5,10 @@ const kFlexSchemeKey = 'is_flex_scheme_key';
 const kBiometricKey = 'biometric_key';
 const kIsGridViewKey = 'is-grid-view';
 
+/// Custom-painted view mode for the Home & Facts screens (ContentViewMode
+/// name). kIsGridViewKey above still drives the Favorites & Author screens.
+const kContentViewModeKey = 'content-view-mode';
+
 /// Bump this whenever terms.md or privacy.md changes in a way that requires
 /// users to re-accept. Users who accepted an older version will see the
 /// consent dialog again on next launch.

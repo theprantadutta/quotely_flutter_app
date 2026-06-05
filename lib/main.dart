@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
+import 'components/painted_views/shared/content_view_mode.dart';
 import 'constants/selectors.dart';
 import 'constants/shared_preference_keys.dart';
 import 'firebase_options.dart';
@@ -75,6 +76,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
   ThemeMode get themeMode => _themeMode;
   bool _isBiometricEnabled = false;
   bool _isGridView = true;
+  ContentViewMode _contentViewMode = ContentViewMode.book;
   SharedPreferences? _sharedPreferences;
   String _fontFamily = 'Fira Code';
   final analytics = getIt.get<FirebaseAnalytics>();
@@ -85,6 +87,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
   String get fontFamily => _fontFamily;
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get isGridView => _isGridView;
+  ContentViewMode get contentViewMode => _contentViewMode;
 
   Future<void> checkForAppUpdate() async {
     // In-app updates go through the Play Store, so they're Android-only.
@@ -144,6 +147,20 @@ class _QuotelyAppState extends State<QuotelyApp> {
     );
   }
 
+  /// Changes the custom-painted view mode used by the Home & Facts screens.
+  void changeContentViewMode(ContentViewMode mode) {
+    setState(() {
+      _contentViewMode = mode;
+      _sharedPreferences?.setString(kContentViewModeKey, mode.name);
+    });
+    analytics.logEvent(
+      name: 'view_mode_changed',
+      parameters: {'view_mode': mode.name},
+    );
+  }
+
+  void cycleContentViewMode() => changeContentViewMode(_contentViewMode.next);
+
   void changeBiometricEnabledEnabled(bool isBiometricEnabled) {
     setState(() {
       _isBiometricEnabled = isBiometricEnabled;
@@ -196,6 +213,25 @@ class _QuotelyAppState extends State<QuotelyApp> {
     final isGridView = _sharedPreferences?.getBool(kIsGridViewKey);
     if (isGridView != null) {
       setState(() => _isGridView = isGridView);
+    }
+
+    // Painted view mode (Home & Facts). One-time migration from the old
+    // grid toggle: grid users land on coverflow (its visual successor),
+    // everyone else starts in book mode.
+    final viewModeName = _sharedPreferences?.getString(kContentViewModeKey);
+    if (viewModeName != null) {
+      setState(
+        () => _contentViewMode = ContentViewMode.values.firstWhere(
+          (e) => e.name == viewModeName,
+          orElse: () => ContentViewMode.book,
+        ),
+      );
+    } else {
+      final migrated = (isGridView ?? false)
+          ? ContentViewMode.coverflow
+          : ContentViewMode.book;
+      setState(() => _contentViewMode = migrated);
+      await _sharedPreferences?.setString(kContentViewModeKey, migrated.name);
     }
 
     // Theme Mode (Light/System/Dark)
@@ -261,6 +297,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
       _flexScheme = kDefaultFlexTheme; // Your defined default theme
       _fontFamily = 'Fira Code';
       _isGridView = true;
+      _contentViewMode = ContentViewMode.book;
       _isBiometricEnabled = false; // Assuming false is the default
     });
 
@@ -273,6 +310,7 @@ class _QuotelyAppState extends State<QuotelyApp> {
     await _sharedPreferences?.remove(kFlexSchemeKey);
     await _sharedPreferences?.remove(kFontFamilyKey);
     await _sharedPreferences?.remove(kIsGridViewKey);
+    await _sharedPreferences?.remove(kContentViewModeKey);
     await _sharedPreferences?.remove(kBiometricKey);
   }
 

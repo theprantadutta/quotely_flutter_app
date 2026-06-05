@@ -8,10 +8,12 @@ import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:quotely_flutter_app/notifications/push_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../components/home_screen/home_screen_grid_view/home_screen_quote_grid_view.dart';
-import '../../components/home_screen/home_screen_list_view/home_screen_quote_list_view.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
+import '../../components/painted_views/shared/content_view_mode.dart';
+import '../../components/painted_views/shared/painted_content.dart';
+import '../../components/painted_views/shared/painted_content_mappers.dart';
+import '../../components/painted_views/shared/painted_view_host.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../constants/colors.dart';
 import '../../constants/shared_preference_keys.dart';
@@ -45,10 +47,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final analytics = getIt.get<FirebaseAnalytics>();
 
+  late final PaintedContentActions _paintedActions;
+
   @override
   void initState() {
     super.initState();
     FlutterNativeSplash.remove();
+    _paintedActions = buildQuotePaintedActions(
+      onLastItemReached: _fetchQuotes,
+      onRefresh: _onRefresh,
+    );
     _fetchQuotes();
     addAllFavoriteIds();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -291,9 +299,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .addOrUpdateIdList(allFavoriteFactIds);
   }
 
+  Future<void> _onRefresh() async {
+    // Analytics: Log refresh event
+    analytics.logEvent(name: 'quotes_refreshed');
+    setState(() {
+      quotePageNumber = 1;
+      quotes = [];
+      hasMoreData = true;
+    });
+    ref.invalidate(fetchAllQuotesProvider);
+    await _fetchQuotes();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isGridView = QuotelyApp.of(context).isGridView;
+    final viewMode = QuotelyApp.of(context).contentViewMode;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
@@ -303,9 +323,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               loading:
                   isLoadingMore &&
                   quotes.isNotEmpty, // Only show spinner on subsequent loads
-              isGridView: isGridView,
-              onViewChanged: () =>
-                  setState(QuotelyApp.of(context).toggleGridViewEnabled),
+              mode: viewMode,
+              onCycleMode: () => QuotelyApp.of(context).cycleContentViewMode(),
+              onSelectMode: (mode) =>
+                  QuotelyApp.of(context).changeContentViewMode(mode),
+              onRefresh: _onRefresh,
             ),
             // BUG FIX & REFINEMENT: The conditional logic below is now more structured
             // to prevent multiple states from showing at once.
@@ -337,20 +359,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  // Analytics: Log pull-to-refresh event
-                  analytics.logEvent(name: 'quotes_refreshed');
-                  setState(() {
-                    quotePageNumber = 1;
-                    quotes = [];
-                    hasMoreData = true;
-                  });
-                  ref.invalidate(fetchAllQuotesProvider);
-                  await _fetchQuotes();
-                },
-                child: _buildContent(isGridView),
-              ),
+              // Only the scroll mode has a scrollable that can host a
+              // RefreshIndicator; other modes refresh via the top-bar button.
+              child: viewMode.supportsPullToRefresh
+                  ? RefreshIndicator(
+                      onRefresh: _onRefresh,
+                      child: _buildContent(viewMode),
+                    )
+                  : _buildContent(viewMode),
             ),
           ],
         ),
@@ -358,7 +374,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildContent(bool isGridView) {
+  Widget _buildContent(ContentViewMode viewMode) {
     // Case 1: Initial load resulted in an error
     if (hasError && quotes.isEmpty) {
       return Center(
@@ -375,14 +391,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // Case 2: Initial load is in progress (no data, no error yet)
-    if (quotes.isEmpty && isLoadingMore) {
-      return isGridView
-          ? const HomeScreenQuoteGridViewSkeletor()
-          : const HomeScreenQuoteListViewSkeletor();
-    }
-
-    // Case 3: No quotes found (e.g., for a specific filter)
+    // Case 2: No quotes found (e.g., for a specific filter)
     if (quotes.isEmpty && !isLoadingMore) {
       return SomethingWentWrong(
         title: "No quotes found.",
@@ -396,16 +405,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // Case 4: Content is available
-    return isGridView
-        ? HomeScreenQuoteGridView(
-            quotes: quotes,
-            quotePageNumber: quotePageNumber,
-            onLastItemScrolled: _fetchQuotes,
-          )
-        : HomeScreenQuoteListView(
-            quotes: quotes,
-            onLastItemScrolled: _fetchQuotes,
-          );
+    // Case 3: Content (the painted views render their own skeletons while
+    // the initial page loads)
+    return PaintedViewHost(
+      mode: viewMode,
+      items: [for (final quote in quotes) paintedFromQuote(quote)],
+      actions: _paintedActions,
+      isLoadingMore: isLoadingMore,
+      hasMoreData: hasMoreData,
+    );
   }
 }

@@ -1,3 +1,6 @@
+// NOTE: No longer used by the Home/Facts screens (replaced by the painted
+// view system in lib/components/painted_views/). Still used by the
+// Favorites and Author Detail screens - candidate for a future migration.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

@@ -6,23 +6,27 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../database/database.dart';
 import '../../service_locator/init_service_locators.dart';
+import '../painted_views/shared/content_view_mode.dart';
+import '../painted_views/shared/view_mode_button.dart';
 
 class HomeScreenTopBar extends StatelessWidget {
-  final bool isGridView;
-  final VoidCallback onViewChanged;
   final bool loading;
+  final ContentViewMode mode;
+  final VoidCallback onCycleMode;
+  final ValueChanged<ContentViewMode> onSelectMode;
+  final Future<void> Function() onRefresh;
 
   const HomeScreenTopBar({
     super.key,
-    required this.isGridView,
-    required this.onViewChanged,
     required this.loading,
+    required this.mode,
+    required this.onCycleMode,
+    required this.onSelectMode,
+    required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = Theme.of(context).iconTheme.color;
     final kPrimaryColor = Theme.of(context).primaryColor;
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * 0.06,
@@ -39,10 +43,6 @@ class HomeScreenTopBar extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => DriftDbViewer(db)),
                   );
                 },
-                // child: Image.asset(
-                //   'assets/quotely_icon.png',
-                //   height: MediaQuery.sizeOf(context).height * 0.03,
-                // ),
                 child: FaIcon(
                   FontAwesomeIcons.quoteLeft,
                   size: 20,
@@ -64,33 +64,16 @@ class HomeScreenTopBar extends StatelessWidget {
           ),
           Row(
             children: [
-              GestureDetector(
-                onTap: () {
-                  if (isGridView) onViewChanged();
-                },
-                child: Icon(
-                  Icons.view_agenda_outlined,
-                  color: !isGridView
-                      ? iconColor
-                      : isDarkTheme
-                      ? Colors.grey.shade700
-                      : Colors.grey.shade400,
-                ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: () {
-                  if (!isGridView) onViewChanged();
-                },
-                child: Icon(
-                  Icons.crop_square,
-                  size: 28,
-                  color: isGridView
-                      ? iconColor
-                      : isDarkTheme
-                      ? Colors.grey.shade700
-                      : Colors.grey.shade400,
-                ),
+              // Pull-to-refresh only exists in scroll mode; the other modes
+              // get an explicit refresh button.
+              if (!mode.supportsPullToRefresh) ...[
+                ViewRefreshButton(onRefresh: onRefresh),
+                const SizedBox(width: 8),
+              ],
+              ViewModeButton(
+                mode: mode,
+                onCycle: onCycleMode,
+                onSelect: onSelectMode,
               ),
             ],
           ),

@@ -1,3 +1,6 @@
+// NOTE: No longer used by the Home/Facts screens (replaced by the painted
+// view system in lib/components/painted_views/). Still used by the
+// Favorites and Author Detail screens - candidate for a future migration.
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:quotely_flutter_app/components/home_screen/home_screen_grid_view/home_screen_quote_single_grid.dart';

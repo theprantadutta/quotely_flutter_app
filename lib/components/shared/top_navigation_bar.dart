@@ -3,42 +3,40 @@ import 'package:flutter/material.dart';
 class TopNavigationBar extends StatelessWidget {
   final String title;
 
-  const TopNavigationBar({super.key, required this.title});
+  /// Optional action(s) on the right edge. The title stays visually centered
+  /// via a balancing spacer on the left. Null = original centered rendering.
+  final Widget? trailing;
+
+  const TopNavigationBar({super.key, required this.title, this.trailing});
 
   @override
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
+    final titleText = Text(
+      title,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.2,
+        color: kPrimaryColor,
+      ),
+    );
+
     return Container(
       height: MediaQuery.sizeOf(context).height * 0.06,
       margin: const EdgeInsets.symmetric(horizontal: 15),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // GestureDetector(
-          //   onTap: () => BottomNavigationLayout.of(context).gotoPreviousPage(),
-          //   child: Icon(
-          //     Icons.arrow_back,
-          //     color: kPrimaryColor,
-          //   ),
-          // ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
-              color: kPrimaryColor,
+      child: trailing == null
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [titleText],
+            )
+          : Stack(
+              alignment: Alignment.center,
+              children: [
+                Center(child: titleText),
+                Align(alignment: Alignment.centerRight, child: trailing!),
+              ],
             ),
-          ),
-          // GestureDetector(
-          //   onTap: () => BottomNavigationLayout.of(context).gotoNextPage(),
-          //   child: Icon(
-          //     Icons.arrow_forward,
-          //     color: kPrimaryColor,
-          //   ),
-          // ),
-        ],
-      ),
     );
   }
 }
