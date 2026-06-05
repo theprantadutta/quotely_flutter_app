@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:async_queue/async_queue.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -165,6 +166,22 @@ class PushNotifications {
   // FCM Token Handling
   static Future<String?> getFCMToken({int maxRetries = 3}) async {
     try {
+      // On iOS, the FCM token requires an APNs token, which arrives
+      // asynchronously after launch (and usually never on simulators).
+      // Wait for it instead of letting getToken() throw.
+      if (Platform.isIOS) {
+        final apnsToken = await _firebaseMessaging.getAPNSToken();
+        if (apnsToken == null) {
+          if (maxRetries > 0) {
+            await Future.delayed(const Duration(seconds: 10));
+            return getFCMToken(maxRetries: maxRetries - 1);
+          }
+          debugPrint(
+            'APNs token unavailable (simulator?), skipping FCM token.',
+          );
+          return null;
+        }
+      }
       final token = await _firebaseMessaging.getToken();
       if (kDebugMode && token != null) {
         debugPrint("Firebase FCM Token: $token");
