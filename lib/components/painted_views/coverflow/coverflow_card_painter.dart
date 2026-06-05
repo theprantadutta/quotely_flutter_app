@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../shared/paper_texture.dart';
+import '../shared/painted_card_style.dart';
 
-/// Paints one coverflow card's chrome: rounded paper face, edge highlight,
-/// and a mirrored reflection fading out beneath it (classic coverflow look).
-/// The reflection lives inside the same canvas, so it inherits the parent's
-/// 3D rotation automatically.
+/// Paints one coverflow card's chrome: theme-native gradient card face and a
+/// mirrored reflection fading out beneath it (classic coverflow look). The
+/// reflection lives inside the same canvas, so it inherits the parent's 3D
+/// rotation automatically.
 class CoverflowCardPainter extends CustomPainter {
-  final Brightness brightness;
-  final Color tint;
+  final PaintedCardStyle style;
 
   /// Fraction of total height occupied by the card face (rest = gap +
   /// reflection).
   static const double cardFraction = 0.74;
   static const double gapFraction = 0.02;
 
-  CoverflowCardPainter({required this.brightness, required this.tint});
+  CoverflowCardPainter({required this.style});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -23,35 +22,9 @@ class CoverflowCardPainter extends CustomPainter {
     final cardRect = Rect.fromLTWH(0, 0, size.width, cardHeight);
     final rrect = RRect.fromRectAndRadius(cardRect, const Radius.circular(20));
 
-    // Card shadow
-    canvas.drawShadow(
-      Path()..addRRect(rrect),
-      Colors.black.withValues(alpha: 0.7),
-      8,
-      false,
-    );
+    style.paintSurface(canvas, rrect, shadowBlur: 8);
 
-    // Card face: cached paper texture
-    canvas.save();
-    canvas.clipRRect(rrect);
-    canvas.drawPicture(
-      PaperTextureCache.of(
-        size: cardRect.size,
-        brightness: brightness,
-        tint: tint,
-      ),
-    );
-    // Top edge highlight
-    canvas.drawLine(
-      Offset(12, 1),
-      Offset(size.width - 12, 1),
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.25)
-        ..strokeWidth = 1.5,
-    );
-    canvas.restore();
-
-    // Reflection: mirrored paper fading out via dstIn gradient, bounded
+    // Reflection: mirrored card face fading out via dstIn gradient, bounded
     // saveLayer keeps the cost confined to the small reflection rect.
     final gap = size.height * gapFraction;
     final reflectionTop = cardHeight + gap;
@@ -71,17 +44,10 @@ class CoverflowCardPainter extends CustomPainter {
     // edge lands exactly at the reflection's top edge.
     canvas.translate(0, 2 * cardHeight + gap);
     canvas.scale(1, -1);
-    canvas.clipRRect(rrect);
-    canvas.drawPicture(
-      PaperTextureCache.of(
-        size: cardRect.size,
-        brightness: brightness,
-        tint: tint,
-      ),
-    );
+    style.paintSurface(canvas, rrect, shadowBlur: 0);
     canvas.restore();
 
-    // Fade the mirrored image: keep only the top ~70% with decreasing alpha
+    // Fade the mirrored image out quickly
     canvas.drawRect(
       reflectionRect,
       Paint()
@@ -90,7 +56,7 @@ class CoverflowCardPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.white.withValues(alpha: 0.30),
+            Colors.white.withValues(alpha: 0.28),
             Colors.transparent,
           ],
           stops: const [0.0, 0.85],
@@ -101,5 +67,5 @@ class CoverflowCardPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CoverflowCardPainter oldDelegate) =>
-      oldDelegate.brightness != brightness || oldDelegate.tint != tint;
+      oldDelegate.style != style;
 }

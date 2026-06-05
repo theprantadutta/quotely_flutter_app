@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../shared/painted_card_style.dart';
+
 /// Paints the animated page fold during a flip. Pragmatic "mirror fold"
 /// rather than a true cylinder shader:
 ///
@@ -17,16 +19,14 @@ class PageCurlPainter extends CustomPainter {
   /// Flip progress 0..1, driven by drag/settle animation.
   final Animation<double> progress;
 
-  final Brightness brightness;
-  final Color tint;
+  final PaintedCardStyle style;
 
-  /// Book page bounds inside the canvas (excludes cover border).
+  /// Book page bounds inside the canvas (excludes the outer inset).
   final Rect pagesRect;
 
   PageCurlPainter({
     required this.progress,
-    required this.brightness,
-    required this.tint,
+    required this.style,
     required this.pagesRect,
   }) : super(repaint: progress);
 
@@ -35,12 +35,9 @@ class PageCurlPainter extends CustomPainter {
     final t = progress.value;
     if (t <= 0.001 || t >= 0.999) return;
 
-    final isDark = brightness == Brightness.dark;
-    final paper = Color.lerp(
-      isDark ? const Color(0xFF2B2722) : const Color(0xFFF6F0E1),
-      tint,
-      0.06,
-    )!;
+    // The turning page's back face uses the same surface family as the card
+    final base = style.surface;
+    final isDark = style.brightness == Brightness.dark;
 
     final xR = pagesRect.right;
     final pageW = pagesRect.width / 2;
@@ -79,9 +76,9 @@ class PageCurlPainter extends CustomPainter {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Color.lerp(paper, Colors.black, 0.10)!,
-            Color.lerp(paper, Colors.white, isDark ? 0.06 : 0.10)!,
-            Color.lerp(paper, Colors.black, 0.14)!,
+            Color.lerp(base, Colors.black, isDark ? 0.18 : 0.08)!,
+            Color.lerp(base, Colors.white, isDark ? 0.06 : 0.35)!,
+            Color.lerp(base, Colors.black, isDark ? 0.24 : 0.12)!,
           ],
           stops: const [0.0, 0.5, 1.0],
         ).createShader(Rect.fromLTRB(xB - bow, top, xF, bottom)),
@@ -92,7 +89,7 @@ class PageCurlPainter extends CustomPainter {
       Offset(xF, top),
       Offset(xF, bottom),
       Paint()
-        ..color = Colors.black.withValues(alpha: 0.18)
+        ..color = Colors.black.withValues(alpha: 0.15)
         ..strokeWidth = 1,
     );
 
@@ -105,7 +102,7 @@ class PageCurlPainter extends CustomPainter {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Colors.black.withValues(alpha: 0.22 * sin(pi * t)),
+            Colors.black.withValues(alpha: 0.18 * sin(pi * t)),
             Colors.transparent,
           ],
         ).createShader(contactRect),
@@ -114,9 +111,7 @@ class PageCurlPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(PageCurlPainter oldDelegate) =>
-      oldDelegate.brightness != brightness ||
-      oldDelegate.tint != tint ||
-      oldDelegate.pagesRect != pagesRect;
+      oldDelegate.style != style || oldDelegate.pagesRect != pagesRect;
 }
 
 /// Clips the current spread's widget content to everything left of the

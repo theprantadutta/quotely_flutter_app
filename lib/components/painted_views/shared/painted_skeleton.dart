@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'paper_texture.dart';
+import 'painted_card_style.dart';
 
 enum PaintedSkeletonMode { scroll, card, page }
 
 /// Initial-load placeholder for painted views: grey text bars pulsing on the
-/// mode's paper chrome (skeletonizer can't shimmer canvas pixels, so the
-/// placeholder is painted natively with a shared opacity pulse).
+/// theme-native card chrome (skeletonizer can't shimmer canvas pixels, so
+/// the placeholder is painted natively with a shared opacity pulse).
 class PaintedSkeletonPane extends StatefulWidget {
   final PaintedSkeletonMode mode;
 
@@ -31,7 +31,7 @@ class _PaintedSkeletonPaneState extends State<PaintedSkeletonPane>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final style = PaintedCardStyle.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         switch (widget.mode) {
@@ -44,10 +44,7 @@ class _PaintedSkeletonPaneState extends State<PaintedSkeletonPane>
                   horizontal: 16,
                   vertical: 8,
                 ),
-                child: SizedBox(
-                  height: 150,
-                  child: _skeletonCard(theme),
-                ),
+                child: SizedBox(height: 150, child: _skeletonCard(style)),
               ),
             );
           case PaintedSkeletonMode.card:
@@ -56,7 +53,7 @@ class _PaintedSkeletonPaneState extends State<PaintedSkeletonPane>
               child: SizedBox(
                 width: constraints.maxWidth * 0.82,
                 height: constraints.maxHeight * 0.72,
-                child: _skeletonCard(theme),
+                child: _skeletonCard(style),
               ),
             );
         }
@@ -64,27 +61,17 @@ class _PaintedSkeletonPaneState extends State<PaintedSkeletonPane>
     );
   }
 
-  Widget _skeletonCard(ThemeData theme) {
-    return CustomPaint(
-      painter: _SkeletonPainter(
-        brightness: theme.brightness,
-        tint: theme.primaryColor,
-        pulse: _pulse,
-      ),
-    );
+  Widget _skeletonCard(PaintedCardStyle style) {
+    return CustomPaint(painter: _SkeletonPainter(style: style, pulse: _pulse));
   }
 }
 
 class _SkeletonPainter extends CustomPainter {
-  final Brightness brightness;
-  final Color tint;
+  final PaintedCardStyle style;
   final Animation<double> pulse;
 
-  _SkeletonPainter({
-    required this.brightness,
-    required this.tint,
-    required this.pulse,
-  }) : super(repaint: pulse);
+  _SkeletonPainter({required this.style, required this.pulse})
+    : super(repaint: pulse);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -92,21 +79,18 @@ class _SkeletonPainter extends CustomPainter {
       Offset.zero & size,
       const Radius.circular(18),
     );
-    canvas.save();
-    canvas.clipRRect(rrect);
-    canvas.drawPicture(
-      PaperTextureCache.of(size: size, brightness: brightness, tint: tint),
-    );
+    style.paintSurface(canvas, rrect, shadowBlur: 4);
 
     // Pulsing text bars
     final alpha = 0.45 + 0.30 * pulse.value;
-    final barColor = (brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black)
-        .withValues(alpha: 0.10 * alpha + 0.04);
+    final barColor =
+        (style.brightness == Brightness.dark ? Colors.white : Colors.black)
+            .withValues(alpha: 0.10 * alpha + 0.04);
     final barPaint = Paint()..color = barColor;
     final widths = [1.0, 0.95, 0.98, 0.90, 0.60];
     final startY = size.height * 0.24;
+    canvas.save();
+    canvas.clipRRect(rrect);
     for (var i = 0; i < widths.length; i++) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
@@ -126,5 +110,5 @@ class _SkeletonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SkeletonPainter oldDelegate) =>
-      oldDelegate.brightness != brightness || oldDelegate.tint != tint;
+      oldDelegate.style != style;
 }

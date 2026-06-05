@@ -14,8 +14,7 @@ Future<void> showViewModeBottomSheet({
     showDragHandle: true,
     builder: (sheetContext) {
       final theme = Theme.of(sheetContext);
-      final isDark = theme.brightness == Brightness.dark;
-      final paper = isDark ? const Color(0xFF3A352E) : const Color(0xFFF6F0E1);
+      final paper = theme.colorScheme.surfaceContainerHighest;
 
       return SafeArea(
         child: Padding(

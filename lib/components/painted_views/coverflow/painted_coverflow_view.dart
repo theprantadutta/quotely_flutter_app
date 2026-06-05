@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../shared/painted_action_buttons.dart';
+import '../shared/painted_card_style.dart';
 import '../shared/painted_content.dart';
 import '../shared/painted_skeleton.dart';
 import '../shared/painted_text_layout.dart';
@@ -137,9 +138,9 @@ class _CoverflowCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final ink = isDark ? const Color(0xFFE8DEC8) : const Color(0xFF3A2E1E);
-    final accent = isDark ? theme.colorScheme.secondary : theme.primaryColor;
+    final cardStyle = PaintedCardStyle.of(context);
+    final ink = cardStyle.ink;
+    final accent = cardStyle.accent;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 18),
@@ -173,10 +174,7 @@ class _CoverflowCard extends ConsumerWidget {
           );
 
           return CustomPaint(
-            painter: CoverflowCardPainter(
-              brightness: theme.brightness,
-              tint: theme.primaryColor,
-            ),
+            painter: CoverflowCardPainter(style: cardStyle),
             child: SizedBox(
               height: constraints.maxHeight,
               child: Padding(

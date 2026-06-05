@@ -30,7 +30,12 @@ class RibbonBookmark extends ConsumerWidget {
           curve: Curves.easeOutBack,
           builder: (context, v, _) => CustomPaint(
             size: Size(26, 52 + 16 * v),
-            painter: _RibbonPainter(activation: v),
+            painter: _RibbonPainter(
+              activation: v,
+              idleColor: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.30),
+            ),
           ),
         ),
       ),
@@ -39,10 +44,11 @@ class RibbonBookmark extends ConsumerWidget {
 }
 
 class _RibbonPainter extends CustomPainter {
-  /// 0 = not favorited (short, desaturated), 1 = favorited (long, crimson).
+  /// 0 = not favorited (short, muted), 1 = favorited (long, red accent).
   final double activation;
+  final Color idleColor;
 
-  _RibbonPainter({required this.activation});
+  _RibbonPainter({required this.activation, required this.idleColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -57,14 +63,11 @@ class _RibbonPainter extends CustomPainter {
       ..lineTo(0, h)
       ..close();
 
-    final crimson = Color.lerp(
-      const Color(0xFF8A7A6A),
-      const Color(0xFFB3232A),
-      activation,
-    )!;
+    // Matches the red-accent hearts used for favorites everywhere else
+    final crimson = Color.lerp(idleColor, Colors.redAccent, activation)!;
     final crimsonDark = Color.lerp(
-      const Color(0xFF6A5C4E),
-      const Color(0xFF7E1418),
+      idleColor,
+      Colors.redAccent.shade700,
       activation,
     )!;
 
@@ -90,5 +93,6 @@ class _RibbonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RibbonPainter oldDelegate) =>
-      oldDelegate.activation != activation;
+      oldDelegate.activation != activation ||
+      oldDelegate.idleColor != idleColor;
 }

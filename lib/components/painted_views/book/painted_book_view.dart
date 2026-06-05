@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../shared/painted_action_buttons.dart';
+import '../shared/painted_card_style.dart';
 import '../shared/painted_content.dart';
 import '../shared/painted_skeleton.dart';
 import '../shared/painted_text_layout.dart';
@@ -186,12 +187,11 @@ class _PaintedBookViewState extends ConsumerState<PaintedBookView>
               child: RepaintBoundary(
                 child: Stack(
                   children: [
-                    // Book chrome (cover, paper, spine, page edges)
+                    // Book chrome (spread surface + center crease)
                     Positioned.fill(
                       child: CustomPaint(
                         painter: BookChromePainter(
-                          brightness: theme.brightness,
-                          tint: theme.primaryColor,
+                          style: PaintedCardStyle.of(context),
                         ),
                       ),
                     ),
@@ -237,8 +237,7 @@ class _PaintedBookViewState extends ConsumerState<PaintedBookView>
                         child: CustomPaint(
                           painter: PageCurlPainter(
                             progress: _flip,
-                            brightness: theme.brightness,
-                            tint: theme.primaryColor,
+                            style: PaintedCardStyle.of(context),
                             pagesRect: pagesRect,
                           ),
                         ),
@@ -254,7 +253,9 @@ class _PaintedBookViewState extends ConsumerState<PaintedBookView>
                           '${_index + 1} / ${widget.items.length}${widget.hasMoreData ? '+' : ''}',
                           style: TextStyle(
                             fontSize: 11,
-                            color: Colors.white.withValues(alpha: 0.7),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.45,
+                            ),
                           ),
                         ),
                       ),
@@ -287,9 +288,9 @@ class _BookSpread extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final ink = isDark ? const Color(0xFFE8DEC8) : const Color(0xFF3A2E1E);
-    final accent = isDark ? theme.colorScheme.secondary : theme.primaryColor;
+    final cardStyle = PaintedCardStyle.of(context);
+    final ink = cardStyle.ink;
+    final accent = cardStyle.accent;
 
     final spread = LayoutBuilder(
       builder: (context, constraints) {

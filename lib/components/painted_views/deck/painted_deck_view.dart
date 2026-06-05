@@ -5,6 +5,7 @@ import 'package:flutter/physics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../shared/painted_action_buttons.dart';
+import '../shared/painted_card_style.dart';
 import '../shared/painted_content.dart';
 import '../shared/painted_skeleton.dart';
 import '../shared/painted_text_layout.dart';
@@ -348,9 +349,9 @@ class _DeckCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final ink = isDark ? const Color(0xFFE8DEC8) : const Color(0xFF3A2E1E);
-    final accent = isDark ? theme.colorScheme.secondary : theme.primaryColor;
+    final cardStyle = PaintedCardStyle.of(context);
+    final ink = cardStyle.ink;
+    final accent = cardStyle.accent;
 
     final bodyBox = Size(size.width - 56, size.height - 150);
     final fontSize = fitFontSize(
@@ -375,11 +376,7 @@ class _DeckCard extends ConsumerWidget {
     );
 
     return CustomPaint(
-      painter: DeckCardPainter(
-        brightness: theme.brightness,
-        tint: theme.primaryColor,
-        depth: depth,
-      ),
+      painter: DeckCardPainter(style: cardStyle, depth: depth),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(28, 26, 28, 10),
         child: depth > 0

@@ -90,26 +90,35 @@ class ViewModePreviewPainter extends CustomPainter {
         }
 
       case ContentViewMode.scroll:
-        final body = Rect.fromCenter(
-          center: size.center(Offset.zero),
-          width: size.width * 0.56,
-          height: size.height * 0.62,
+        // Timeline rail with two stacked cards
+        final railX = size.width * 0.18;
+        canvas.drawLine(
+          Offset(railX, size.height * 0.12),
+          Offset(railX, size.height * 0.88),
+          Paint()
+            ..color = accent.withValues(alpha: 0.5)
+            ..strokeWidth = 2,
         );
-        canvas.drawRect(body, paperPaint);
-        textBars(body, 4);
-        // Rolls top and bottom
-        for (final y in [body.top - 6, body.bottom + 6]) {
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(
-              Rect.fromCenter(
-                center: Offset(body.center.dx, y),
-                width: body.width * 1.25,
-                height: 12,
-              ),
-              const Radius.circular(6),
-            ),
-            Paint()..color = accent.withValues(alpha: 0.65),
+        for (final (i, cy) in [size.height * 0.32, size.height * 0.68].indexed) {
+          canvas.drawCircle(
+            Offset(railX, cy),
+            4,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = accent,
           );
+          final card = Rect.fromLTWH(
+            railX + 12,
+            cy - size.height * 0.15,
+            size.width * 0.58,
+            size.height * 0.30,
+          );
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(card, const Radius.circular(6)),
+            paperPaint,
+          );
+          if (i == 0) textBars(card, 2);
         }
 
       case ContentViewMode.coverflow:

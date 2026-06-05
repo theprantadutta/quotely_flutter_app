@@ -22,7 +22,7 @@ extension ContentViewModeX on ContentViewMode {
   String get description => switch (this) {
     ContentViewMode.book => 'Flip through pages like a real book',
     ContentViewMode.deck => 'Swipe cards off a stacked deck',
-    ContentViewMode.scroll => 'Unroll an ancient parchment',
+    ContentViewMode.scroll => 'A flowing reading thread',
     ContentViewMode.coverflow => 'Spin a 3D carousel',
   };
 
