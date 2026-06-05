@@ -127,10 +127,13 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
                   ],
                   ViewModeButton(
                     mode: viewMode,
+                    // Screen setState required: QuotelyApp.of() is not an
+                    // inherited dependency, so it won't rebuild us by itself.
                     onCycle: () =>
-                        QuotelyApp.of(context).cycleContentViewMode(),
-                    onSelect: (mode) =>
-                        QuotelyApp.of(context).changeContentViewMode(mode),
+                        setState(QuotelyApp.of(context).cycleContentViewMode),
+                    onSelect: (mode) => setState(
+                      () => QuotelyApp.of(context).changeContentViewMode(mode),
+                    ),
                   ),
                 ],
               ),

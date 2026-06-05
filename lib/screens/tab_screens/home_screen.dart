@@ -324,9 +324,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   isLoadingMore &&
                   quotes.isNotEmpty, // Only show spinner on subsequent loads
               mode: viewMode,
-              onCycleMode: () => QuotelyApp.of(context).cycleContentViewMode(),
-              onSelectMode: (mode) =>
-                  QuotelyApp.of(context).changeContentViewMode(mode),
+              // The screen's own setState is required: QuotelyApp.of() is an
+              // ancestor-state lookup, not an inherited dependency, so the
+              // app-level setState alone doesn't rebuild this screen.
+              onCycleMode: () =>
+                  setState(QuotelyApp.of(context).cycleContentViewMode),
+              onSelectMode: (mode) => setState(
+                () => QuotelyApp.of(context).changeContentViewMode(mode),
+              ),
               onRefresh: _onRefresh,
             ),
             // BUG FIX & REFINEMENT: The conditional logic below is now more structured
