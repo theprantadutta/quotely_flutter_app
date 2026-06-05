@@ -42,7 +42,7 @@ class HomeScreenGridContent extends StatelessWidget {
         spacing: 10,
         children: [
           _buildLogo(imageSize, primaryColor),
-          _buildQuoteText(context, quoteColor),
+          Flexible(child: _buildQuoteText(context, quoteColor)),
           GestureDetector(
             onTap: () => context.push(
               '${AuthorDetailScreen.kRouteName}/${quote.authorSlug}',
@@ -134,7 +134,7 @@ class HomeScreenGridContentSkeletor extends StatelessWidget {
         spacing: 10,
         children: [
           _buildLogo(imageSize, primaryColor),
-          _buildQuoteText(context),
+          Flexible(child: _buildQuoteText(context)),
           _buildAuthorText(authorColor),
         ],
       ),
