@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -86,6 +87,9 @@ class _QuotelyAppState extends State<QuotelyApp> {
   bool get isGridView => _isGridView;
 
   Future<void> checkForAppUpdate() async {
+    // In-app updates go through the Play Store, so they're Android-only.
+    if (!Platform.isAndroid) return;
+
     debugPrint('Running checkForAppUpdate...');
 
     // A check to ensure the widget is still mounted before showing dialogs.
@@ -223,6 +227,10 @@ class _QuotelyAppState extends State<QuotelyApp> {
   }
 
   Future<void> setOptimalDisplayMode() async {
+    // flutter_displaymode only has an Android implementation; iOS manages
+    // refresh rate (ProMotion) automatically.
+    if (!Platform.isAndroid) return;
+
     final List<DisplayMode> supported = await FlutterDisplayMode.supported;
     final DisplayMode active = await FlutterDisplayMode.active;
 
