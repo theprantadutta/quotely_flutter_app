@@ -67,7 +67,7 @@ class _PaintedBookViewState extends ConsumerState<PaintedBookView>
   bool get _hasNext => _index < widget.items.length - 1 || widget.hasMoreData;
 
   void _onDragStart(DragStartDetails details, double bookWidth) {
-    if (_flip.isAnimating) return;
+    if (!mounted || _flip.isAnimating) return;
     _dragStartX = details.localPosition.dx;
     // Backward flips start in the left 40% of the book and need history
     _draggingBackward = details.localPosition.dx < bookWidth * 0.4 && _index > 0;
@@ -142,7 +142,11 @@ class _PaintedBookViewState extends ConsumerState<PaintedBookView>
           ),
           curve: target == 1 ? Curves.easeOutCubic : Curves.easeOut,
         )
-        .whenComplete(() => onComplete?.call());
+        .whenComplete(() {
+          // The settle can outlive this view (mode switch mid-flip).
+          if (!mounted) return;
+          onComplete?.call();
+        });
   }
 
   @override

@@ -21,20 +21,27 @@ class PaintedReportShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // NOTE: deliberately no IconButton tooltips — their overlay timers crash
+    // with "Looking up a deactivated widget's ancestor is unsafe" when the
+    // hosting page/card animates away mid-flip. Semantics covers a11y.
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.flag_outlined, size: size, color: color),
-          tooltip: 'Report',
-          onPressed: () => actions.onReport(context, content),
+        Semantics(
+          label: 'Report',
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.flag_outlined, size: size, color: color),
+            onPressed: () => actions.onReport(context, content),
+          ),
         ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.share_outlined, size: size, color: color),
-          tooltip: 'Share',
-          onPressed: () => actions.onShare(content),
+        Semantics(
+          label: 'Share',
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.share_outlined, size: size, color: color),
+            onPressed: () => actions.onShare(content),
+          ),
         ),
       ],
     );
@@ -64,7 +71,6 @@ class PaintedHeartFavorite extends ConsumerWidget {
     final isFavorite = actions.isFavorite(ref, content);
     return IconButton(
       visualDensity: VisualDensity.compact,
-      tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
       onPressed: () => actions.onFavoriteToggle(ref, content),
       icon: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
