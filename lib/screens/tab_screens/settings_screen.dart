@@ -243,7 +243,14 @@ class SettingsScreen extends StatelessWidget {
     return SafeArea(
       child: Column(
         children: [
-          const TopNavigationBar(title: 'Settings'),
+          // Match the other tabs' top-bar inset (they pad the whole screen).
+          const Padding(
+            padding: EdgeInsets.fromLTRB(10, 8, 10, 0),
+            child: TopNavigationBar(
+              title: 'Settings',
+              icon: Icons.settings_rounded,
+            ),
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),

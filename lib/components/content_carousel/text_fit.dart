@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Binary-search font autosizing for fixed content boxes (book pages,
-/// deck/coverflow cards). Returns the largest font size in [min]..[max]
-/// whose laid-out text fits [box]; returns [min] when even that overflows —
-/// callers should then fall back to an inner scrollable.
+/// Binary-search font autosizing for fixed content boxes (carousel cards).
+/// Returns the largest font size in [min]..[max] whose laid-out text fits
+/// [box]; returns [min] when even that overflows — callers should then fall
+/// back to an inner scrollable.
 double fitFontSize({
   required String text,
   required Size box,
@@ -42,7 +42,7 @@ double fitFontSize({
 }
 
 /// Whether [text] at the chosen size still overflows [box] (callers switch
-/// the page/card body to an inner scroll view when true).
+/// the card body to an inner scroll view when true).
 bool textOverflows({
   required String text,
   required Size box,

@@ -47,7 +47,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Column(
           children: [
-            const TopNavigationBar(title: 'Favorites'),
+            const TopNavigationBar(
+              title: 'Favorites',
+              icon: Icons.favorite_rounded,
+            ),
             _buildTabBar(),
             Expanded(
               child: AnimatedSwitcher(

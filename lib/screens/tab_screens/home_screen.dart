@@ -8,12 +8,11 @@ import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:quotely_flutter_app/notifications/push_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../components/content_carousel/content_item.dart';
+import '../../components/content_carousel/content_mappers.dart';
+import '../../components/content_carousel/vertical_content_carousel.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
-import '../../components/painted_views/shared/content_view_mode.dart';
-import '../../components/painted_views/shared/painted_content.dart';
-import '../../components/painted_views/shared/painted_content_mappers.dart';
-import '../../components/painted_views/shared/painted_view_host.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../constants/colors.dart';
 import '../../constants/shared_preference_keys.dart';
@@ -47,15 +46,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final analytics = getIt.get<FirebaseAnalytics>();
 
-  late final PaintedContentActions _paintedActions;
+  late final ContentActions _contentActions;
 
   @override
   void initState() {
     super.initState();
     FlutterNativeSplash.remove();
-    _paintedActions = buildQuotePaintedActions(
+    _contentActions = buildQuoteContentActions(
       onLastItemReached: _fetchQuotes,
-      onRefresh: _onRefresh,
     );
     _fetchQuotes();
     addAllFavoriteIds();
@@ -299,21 +297,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .addOrUpdateIdList(allFavoriteFactIds);
   }
 
-  Future<void> _onRefresh() async {
-    // Analytics: Log refresh event
-    analytics.logEvent(name: 'quotes_refreshed');
-    setState(() {
-      quotePageNumber = 1;
-      quotes = [];
-      hasMoreData = true;
-    });
-    ref.invalidate(fetchAllQuotesProvider);
-    await _fetchQuotes();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final viewMode = QuotelyApp.of(context).contentViewMode;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
@@ -323,16 +308,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               loading:
                   isLoadingMore &&
                   quotes.isNotEmpty, // Only show spinner on subsequent loads
-              mode: viewMode,
-              // The screen's own setState is required: QuotelyApp.of() is an
-              // ancestor-state lookup, not an inherited dependency, so the
-              // app-level setState alone doesn't rebuild this screen.
-              onCycleMode: () =>
-                  setState(QuotelyApp.of(context).cycleContentViewMode),
-              onSelectMode: (mode) => setState(
-                () => QuotelyApp.of(context).changeContentViewMode(mode),
-              ),
-              onRefresh: _onRefresh,
             ),
             // BUG FIX & REFINEMENT: The conditional logic below is now more structured
             // to prevent multiple states from showing at once.
@@ -363,23 +338,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 },
               ),
             ],
-            Expanded(
-              // Only the scroll mode has a scrollable that can host a
-              // RefreshIndicator; other modes refresh via the top-bar button.
-              child: viewMode.supportsPullToRefresh
-                  ? RefreshIndicator(
-                      onRefresh: _onRefresh,
-                      child: _buildContent(viewMode),
-                    )
-                  : _buildContent(viewMode),
-            ),
+            // The carousel consumes vertical drags, so refresh lives in the
+            // top bar instead of a RefreshIndicator.
+            Expanded(child: _buildContent()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(ContentViewMode viewMode) {
+  Widget _buildContent() {
     // Case 1: Initial load resulted in an error
     if (hasError && quotes.isEmpty) {
       return Center(
@@ -410,12 +378,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // Case 3: Content (the painted views render their own skeletons while
-    // the initial page loads)
-    return PaintedViewHost(
-      mode: viewMode,
-      items: [for (final quote in quotes) paintedFromQuote(quote)],
-      actions: _paintedActions,
+    // Case 3: Content (the carousel renders its own skeleton while the
+    // initial page loads)
+    return VerticalContentCarousel(
+      items: [for (final quote in quotes) contentItemFromQuote(quote)],
+      actions: _contentActions,
       isLoadingMore: isLoadingMore,
       hasMoreData: hasMoreData,
     );

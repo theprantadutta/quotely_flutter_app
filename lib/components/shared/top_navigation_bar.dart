@@ -1,42 +1,61 @@
 import 'package:flutter/material.dart';
 
+/// The shared top bar for all tab screens: a gradient icon badge + gradient
+/// title on the left, with optional [trailing] content on the right edge.
 class TopNavigationBar extends StatelessWidget {
   final String title;
 
-  /// Optional action(s) on the right edge. The title stays visually centered
-  /// via a balancing spacer on the left. Null = original centered rendering.
+  /// Per-tab identity icon, shown inside the gradient badge.
+  final IconData icon;
+
+  /// Optional action/status widget(s) on the right edge.
   final Widget? trailing;
 
-  const TopNavigationBar({super.key, required this.title, this.trailing});
+  /// Optional badge tap (the Home screen hides a debug DB viewer here).
+  final VoidCallback? onIconTap;
+
+  const TopNavigationBar({
+    super.key,
+    required this.title,
+    required this.icon,
+    this.trailing,
+    this.onIconTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final kPrimaryColor = Theme.of(context).primaryColor;
-    final titleText = Text(
-      title,
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.2,
-        color: kPrimaryColor,
-      ),
-    );
+    final primary = Theme.of(context).colorScheme.primary;
 
-    return Container(
+    return SizedBox(
       height: MediaQuery.sizeOf(context).height * 0.06,
-      margin: const EdgeInsets.symmetric(horizontal: 15),
-      child: trailing == null
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [titleText],
-            )
-          : Stack(
-              alignment: Alignment.center,
-              children: [
-                Center(child: titleText),
-                Align(alignment: Alignment.centerRight, child: trailing!),
-              ],
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onIconTap,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(11),
+                color: primary.withValues(alpha: 0.10),
+              ),
+              child: Icon(icon, size: 19, color: primary),
             ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.4,
+              color: primary,
+            ),
+          ),
+          const Spacer(),
+          ?trailing,
+        ],
+      ),
     );
   }
 }

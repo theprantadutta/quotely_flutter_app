@@ -22,7 +22,10 @@ class _AuthorsScreenState extends State<AuthorsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Column(
           children: [
-            const TopNavigationBar(title: 'Authors'),
+            const TopNavigationBar(
+              title: 'Authors',
+              icon: Icons.groups_rounded,
+            ),
             InputFormField(
               labelText: 'Enter Author Name',
               controller: authorSearchController,

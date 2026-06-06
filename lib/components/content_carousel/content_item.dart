@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum PaintedContentType { quote, fact }
+enum ContentItemType { quote, fact }
 
-/// Immutable render model shared by all painted view modes — one shape for
-/// both quotes and facts so Book/Deck/Scroll/Coverflow render either without
-/// knowing which screen they're on.
-class PaintedContent {
+/// Immutable render model shared by the Home (quotes) and Facts screens —
+/// one shape for both so the carousel renders either without knowing which
+/// screen it's on.
+class ContentItem {
   /// Stable string id (AiFact ids are ints, stringified by the mapper).
   final String id;
 
@@ -25,13 +25,13 @@ class PaintedContent {
   /// Author slug for quote → author detail navigation; null for facts.
   final String? routeSlug;
 
-  final PaintedContentType type;
+  final ContentItemType type;
 
   /// The original DTO (QuoteDto / AiFactDto) — action handlers cast this
   /// back when they need the full object (e.g. Drift favorite updates).
   final Object source;
 
-  const PaintedContent({
+  const ContentItem({
     required this.id,
     required this.body,
     required this.type,
@@ -43,36 +43,31 @@ class PaintedContent {
   });
 }
 
-/// Behavior bundle wired once per screen and passed to every view mode.
-class PaintedContentActions {
+/// Behavior bundle wired once per screen and passed to the carousel.
+class ContentActions {
   /// Reactive favorite state — implementations use
   /// `ref.watch(provider.select(...))` so only the affected card rebuilds.
-  final bool Function(WidgetRef ref, PaintedContent content) isFavorite;
+  final bool Function(WidgetRef ref, ContentItem item) isFavorite;
 
-  final Future<void> Function(WidgetRef ref, PaintedContent content)
+  final Future<void> Function(WidgetRef ref, ContentItem item)
   onFavoriteToggle;
 
-  final Future<void> Function(PaintedContent content) onShare;
+  final Future<void> Function(ContentItem item) onShare;
 
-  final void Function(BuildContext context, PaintedContent content) onReport;
+  final void Function(BuildContext context, ContentItem item) onReport;
 
   /// Author tap for quotes (pushes AuthorDetailScreen); null for facts.
-  final void Function(BuildContext context, PaintedContent content)?
-  onTitleTap;
+  final void Function(BuildContext context, ContentItem item)? onTitleTap;
 
-  /// Pagination trigger — called by each mode when the user nears the end.
+  /// Pagination trigger — called when the user nears the end.
   final Future<void> Function() onLastItemReached;
 
-  /// Full refresh — pull-to-refresh in scroll mode, top-bar button elsewhere.
-  final Future<void> Function() onRefresh;
-
-  const PaintedContentActions({
+  const ContentActions({
     required this.isFavorite,
     required this.onFavoriteToggle,
     required this.onShare,
     required this.onReport,
     required this.onLastItemReached,
-    required this.onRefresh,
     this.onTitleTap,
   });
 }

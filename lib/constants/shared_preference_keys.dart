@@ -5,9 +5,9 @@ const kFlexSchemeKey = 'is_flex_scheme_key';
 const kBiometricKey = 'biometric_key';
 const kIsGridViewKey = 'is-grid-view';
 
-/// Custom-painted view mode for the Home & Facts screens (ContentViewMode
-/// name). kIsGridViewKey above still drives the Favorites & Author screens.
-const kContentViewModeKey = 'content-view-mode';
+/// Legacy key from the retired painted view modes (book/deck/scroll/
+/// coverflow); removed on startup now that Home & Facts use one carousel.
+const kLegacyContentViewModeKey = 'content-view-mode';
 
 /// Bump this whenever terms.md or privacy.md changes in a way that requires
 /// users to re-accept. Users who accepted an older version will see the
@@ -21,6 +21,9 @@ const kAcceptedLegalVersionKey = 'accepted-legal-version';
 /// Legacy bool key from before legal versioning; migrated to
 /// [kAcceptedLegalVersionKey] and removed on first read.
 const kLegacyAcceptedTermsKey = 'hasAcceptedTermsV2';
+
+/// One-time "swipe up for more" coach overlay on the Home/Facts carousel.
+const kCarouselCoachShownKey = 'carousel-swipe-coach-shown';
 
 const kNotificationEnabled = 'notification-enabled';
 const kNotificationMotivation = 'notification-motivation';

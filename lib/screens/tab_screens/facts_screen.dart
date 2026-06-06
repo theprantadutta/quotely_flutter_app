@@ -3,16 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../components/content_carousel/content_item.dart';
+import '../../components/content_carousel/content_mappers.dart';
+import '../../components/content_carousel/vertical_content_carousel.dart';
 import '../../components/facts_screen/facts_screen_filter_list.dart';
-import '../../components/painted_views/shared/content_view_mode.dart';
-import '../../components/painted_views/shared/painted_content.dart';
-import '../../components/painted_views/shared/painted_content_mappers.dart';
-import '../../components/painted_views/shared/painted_view_host.dart';
-import '../../components/painted_views/shared/view_mode_button.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../components/shared/top_navigation_bar.dart';
 import '../../dtos/ai_fact_dto.dart';
-import '../../main.dart';
 import '../../riverpods/all_facts_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
 import '../../util/pagination_seed.dart';
@@ -39,14 +36,13 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
 
   final analytics = getIt.get<FirebaseAnalytics>();
 
-  late final PaintedContentActions _paintedActions;
+  late final ContentActions _contentActions;
 
   @override
   void initState() {
     super.initState();
-    _paintedActions = buildFactPaintedActions(
+    _contentActions = buildFactContentActions(
       onLastItemReached: _fetchFacts,
-      onRefresh: _onRefresh,
     );
     _fetchFacts();
   }
@@ -97,46 +93,16 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     }
   }
 
-  Future<void> _onRefresh() async {
-    analytics.logEvent(name: 'facts_refreshed');
-    setState(() {
-      factPageNumber = 1;
-      aiFacts = [];
-      hasMoreData = true;
-    });
-    ref.invalidate(fetchAllFactsProvider);
-    await _fetchFacts();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final viewMode = QuotelyApp.of(context).contentViewMode;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Column(
           children: [
-            TopNavigationBar(
+            const TopNavigationBar(
               title: 'Facts',
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!viewMode.supportsPullToRefresh) ...[
-                    ViewRefreshButton(onRefresh: _onRefresh),
-                    const SizedBox(width: 8),
-                  ],
-                  ViewModeButton(
-                    mode: viewMode,
-                    // Screen setState required: QuotelyApp.of() is not an
-                    // inherited dependency, so it won't rebuild us by itself.
-                    onCycle: () =>
-                        setState(QuotelyApp.of(context).cycleContentViewMode),
-                    onSelect: (mode) => setState(
-                      () => QuotelyApp.of(context).changeContentViewMode(mode),
-                    ),
-                  ),
-                ],
-              ),
+              icon: Icons.lightbulb_rounded,
             ),
             FactsScreenFilterList(
               onSelectedCategoryChange: (category) async {
@@ -155,21 +121,16 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
               },
               allSelectedCategories: allSelectedCategory,
             ),
-            Expanded(
-              child: viewMode.supportsPullToRefresh
-                  ? RefreshIndicator(
-                      onRefresh: _onRefresh,
-                      child: _buildContent(viewMode),
-                    )
-                  : _buildContent(viewMode),
-            ),
+            // The carousel consumes vertical drags, so refresh lives in the
+            // top bar instead of a RefreshIndicator.
+            Expanded(child: _buildContent()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(ContentViewMode viewMode) {
+  Widget _buildContent() {
     if (hasError && aiFacts.isEmpty) {
       return Center(
         child: SomethingWentWrong(
@@ -192,10 +153,9 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       );
     }
 
-    return PaintedViewHost(
-      mode: viewMode,
-      items: [for (final fact in aiFacts) paintedFromFact(fact)],
-      actions: _paintedActions,
+    return VerticalContentCarousel(
+      items: [for (final fact in aiFacts) contentItemFromFact(fact)],
+      actions: _contentActions,
       isLoadingMore: isLoadingMore,
       hasMoreData: hasMoreData,
     );
