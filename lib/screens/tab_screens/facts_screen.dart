@@ -12,6 +12,7 @@ import '../../components/shared/top_navigation_bar.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../riverpods/all_facts_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
+import '../../state_providers/user_interests.dart';
 import '../../util/pagination_seed.dart';
 
 class FactsScreen extends ConsumerStatefulWidget {
@@ -34,6 +35,14 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   List<String> allSelectedCategory = [];
   List<String> allSelectedProvider = [];
 
+  /// Interests last used as the base filter — guards the interests listener
+  /// against redundant refetches (see build()).
+  List<String> _appliedInterests = const [];
+
+  /// Set once the first interest-aware fetch has run; until then the listener
+  /// must not act (the initial load owns the first fetch).
+  bool _initialLoadDone = false;
+
   final analytics = getIt.get<FirebaseAnalytics>();
 
   late final ContentActions _contentActions;
@@ -44,7 +53,18 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     _contentActions = buildFactContentActions(
       onLastItemReached: _fetchFacts,
     );
-    _fetchFacts();
+    _loadInitialFacts();
+  }
+
+  /// First load: wait for saved interests so the very first fetch is already
+  /// filtered correctly — avoids fetching unfiltered, then resetting and
+  /// refetching (which flashed the skeleton and raced the loading guard).
+  Future<void> _loadInitialFacts() async {
+    await ref.read(userInterestsProvider.notifier).ready;
+    if (!mounted) return;
+    _appliedInterests = List.of(ref.read(userInterestsProvider));
+    await _fetchFacts();
+    _initialLoadDone = true;
   }
 
   Future<void> _fetchFacts() async {
@@ -67,11 +87,17 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     });
 
     try {
+      // Base filter: when no chips are selected, fall back to the user's
+      // saved interests. Tapping chips narrows within that base for the visit.
+      final interests = ref.read(userInterestsProvider);
+      final effectiveCategories = allSelectedCategory.isNotEmpty
+          ? allSelectedCategory
+          : interests;
       final newFacts = await ref.read(
         fetchAllFactsProvider(
           factPageNumber,
           factPageSize,
-          allSelectedCategory,
+          effectiveCategories,
           allSelectedProvider,
           PaginationSeed.current,
         ).future,
@@ -95,6 +121,27 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Re-fetch from the top when the user's interests actually change (e.g.
+    // edited in Settings). Compare by CONTENT — Dart lists use reference
+    // equality, so a plain `previous == next` would re-fire endlessly and the
+    // screen would never settle. Track what we've applied so we act once.
+    ref.listen(userInterestsProvider, (previous, next) {
+      // The initial load owns the first fetch; ignore until it's done.
+      if (!_initialLoadDone) return;
+      if (listEquals(_appliedInterests, next)) return;
+      _appliedInterests = List.of(next);
+      // Chips override interests for the current visit, so only the base
+      // (no chips selected) view needs to refetch when interests change.
+      if (allSelectedCategory.isNotEmpty) return;
+      setState(() {
+        factPageNumber = 1;
+        aiFacts = [];
+        hasMoreData = true;
+      });
+      ref.invalidate(fetchAllFactsProvider);
+      _fetchFacts();
+    });
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),

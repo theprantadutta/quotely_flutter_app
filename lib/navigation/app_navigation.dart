@@ -13,8 +13,10 @@ import 'package:quotely_flutter_app/screens/tab_screens/facts_screen.dart';
 import 'package:quotely_flutter_app/screens/weird_fact_wednesday_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/shared_preference_keys.dart';
 import '../screens/author_detail_screen.dart';
 import '../screens/daily_brain_food_list_screen.dart';
+import '../screens/interests_screen.dart';
 import '../screens/daily_inspiration_list_screen.dart';
 import '../screens/fact_of_the_day_list_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
@@ -79,6 +81,15 @@ class AppNavigation {
       //   ),
       // ),
 
+      /// Interest picker (post-onboarding and editable from Settings)
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: InterestsScreen.kRouteName,
+        name: "Interests",
+        builder: (context, state) =>
+            InterestsScreen(key: state.pageKey, isEditing: state.extra == true),
+      ),
+
       /// MainWrapper
       StatefulShellRoute.indexedStack(
         redirect: (context, state) async {
@@ -91,6 +102,13 @@ class AppNavigation {
           if (!onboardingShown) {
             await preferences.setBool('onboardingShown', true);
             return OnboardingScreen.kRouteName; // Redirect to Onboarding screen
+          }
+
+          // Onboarding done but interests not picked yet → force the picker.
+          final hasSelectedInterests =
+              preferences.getBool(kHasSelectedInterestsKey) ?? false;
+          if (!hasSelectedInterests) {
+            return InterestsScreen.kRouteName;
           }
 
           // No redirection needed if none of the conditions apply

@@ -25,6 +25,14 @@ const kLegacyAcceptedTermsKey = 'hasAcceptedTermsV2';
 /// One-time "swipe up for more" coach overlay on the Home/Facts carousel.
 const kCarouselCoachShownKey = 'carousel-swipe-coach-shown';
 
+/// The user's chosen interests (merged quote tags + fact categories). Used as
+/// the base filter for the Home & Facts screens. Stored as a string list.
+const kInterestsKey = 'user-interests';
+
+/// Whether the user has completed the post-onboarding interest picker. Gates
+/// entry to the app the same way onboarding does.
+const kHasSelectedInterestsKey = 'has-selected-interests';
+
 const kNotificationEnabled = 'notification-enabled';
 const kNotificationMotivation = 'notification-motivation';
 const kNotificationDailyInspiration = 'notification-daily-inspiration';

@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../components/settings_screen/appearance/appearance_screen.dart';
 import '../../../components/settings_screen/settings_screen_layout.dart';
 import '../../../components/shared/top_navigation_bar.dart';
+import '../../../screens/interests_screen.dart';
 import '../../../screens/settings_notification_screen.dart';
 import '../settings_download_everything_screen.dart';
 import '../support_us_screen.dart';
@@ -257,6 +258,19 @@ class SettingsScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    // Your Interests (edit the post-onboarding picks)
+                    SettingsScreenLayout(
+                      iconData: Icons.interests_outlined,
+                      title: 'Your Interests',
+                      description: 'Tune the topics for your quotes & facts',
+                      onTap: () => Future.delayed(
+                        Duration.zero,
+                        () => context.push(
+                          InterestsScreen.kRouteName,
+                          extra: true,
+                        ),
+                      ),
+                    ),
                     // Settings Appearance
                     SettingsScreenLayout(
                       iconData: Icons.contrast_outlined,

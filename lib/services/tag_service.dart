@@ -13,10 +13,14 @@ import '../dtos/tag_response_dto.dart';
 class TagService {
   /// Fetches a paginated list of all tags.
   /// Tries the API first, falls back to the local database if the API fails.
+  ///
+  /// Pass [getAllRows] to ask the API for every tag in one response (used by
+  /// the interests picker, which needs the full vocabulary).
   static Future<TagResponseDto> getAllTags({
     required int pageNumber,
     required int pageSize,
     int? seed,
+    bool getAllRows = false,
   }) async {
     try {
       // Use provided seed or get the current session seed
@@ -27,6 +31,7 @@ class TagService {
         'pageNumber': pageNumber.toString(),
         'pageSize': pageSize.toString(),
         'seed': effectiveSeed.toString(),
+        if (getAllRows) 'getAllRows': 'true',
       };
 
       final uri = Uri.parse(
@@ -58,10 +63,12 @@ class TagService {
       }
 
       // --- OFFLINE FALLBACK ---
-      final localTags = await DriftTagService.getLocalTagsWithPagination(
-        pageNumber: pageNumber,
-        pageSize: pageSize,
-      );
+      final localTags = getAllRows
+          ? await DriftTagService.getAllTags()
+          : await DriftTagService.getLocalTagsWithPagination(
+              pageNumber: pageNumber,
+              pageSize: pageSize,
+            );
 
       // Convert the list of Drift entities to a list of DTOs
       final tagDtos = TagDto.fromTagList(localTags);

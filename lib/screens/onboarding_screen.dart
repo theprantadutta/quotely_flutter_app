@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quotely_flutter_app/screens/tab_screens/home_screen.dart';
+import 'package:quotely_flutter_app/screens/interests_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -29,14 +29,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  // This function sets the flag and navigates to the HomeScreen
+  // Marks onboarding complete and sends the user to the interest picker
+  // (which is required before entering the app).
   void _finishOnboarding() async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool('hasSeenOnboarding', true);
+    await preferences.setBool('onboardingShown', true);
 
     if (mounted) {
-      // Use pushReplacementNamed to prevent the user from going back to the onboarding
-      context.pushReplacement(HomeScreen.kRouteName);
+      // pushReplacement so the user can't swipe back into onboarding.
+      context.pushReplacement(InterestsScreen.kRouteName);
     }
   }
 
