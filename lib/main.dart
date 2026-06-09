@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -28,7 +29,8 @@ Talker? talker;
 void main() async {
   talker = TalkerFlutter.init(
     settings: TalkerSettings(
-      enabled: true,
+      // Only log in debug builds — keep release builds quiet and a touch faster.
+      enabled: kDebugMode,
       colors: {
         // TalkerLogType.debug.key: AnsiPen()..magenta(),
         // TalkerLogType.verbose.key: AnsiPen()..magenta(),
@@ -37,6 +39,10 @@ void main() async {
   );
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  // Quotely is designed for portrait only — lock it on both platforms.
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
