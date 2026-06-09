@@ -18,6 +18,28 @@ flutter precache --ios
 # Xcode resolves at build time.
 flutter pub get
 
+# Restore gitignored config files from base64-encoded Xcode Cloud secret
+# environment variables. Generate a value locally with, e.g.:
+#   base64 -i ios/Runner/GoogleService-Info.plist | pbcopy
+# then add it to the workflow as a secret env var of the matching name.
+if [ -n "$GOOGLE_SERVICE_INFO_PLIST_BASE64" ]; then
+  echo "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > ios/Runner/GoogleService-Info.plist
+  echo "Restored ios/Runner/GoogleService-Info.plist from environment."
+fi
+
+# .env is a bundled Flutter asset (see pubspec.yaml) and is gitignored, so it
+# must be restored too or asset bundling fails. Provide ENV_FILE_BASE64 as a
+# secret env var:  base64 -i .env | pbcopy
+if [ -n "$ENV_FILE_BASE64" ]; then
+  echo "$ENV_FILE_BASE64" | base64 --decode > .env
+  echo "Restored .env from environment."
+fi
+
+# Clear cached Swift Package Manager binary artifacts to avoid
+# "<artifact>.zip already exists in file system" errors when Xcode resolves
+# Firebase's binary targets against a restored dependency cache.
+rm -rf "$HOME/Library/Caches/org.swift.swiftpm"
+
 # This project uses Swift Package Manager for its plugins, so there is no
 # Podfile. Only install and run CocoaPods if a Podfile is actually present
 # (e.g. if a pod-only plugin is added in the future).
