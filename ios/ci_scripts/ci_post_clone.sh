@@ -37,8 +37,17 @@ fi
 
 # Clear cached Swift Package Manager binary artifacts to avoid
 # "<artifact>.zip already exists in file system" errors when Xcode resolves
-# Firebase's binary targets against a restored dependency cache.
+# Firebase's binary targets against Xcode Cloud's restored dependency cache.
+# Clear every location SwiftPM may have cached artifacts, plus the resolved
+# SourcePackages in DerivedData. The echo markers let us confirm in the
+# post-clone log that this actually ran.
+echo "==> Clearing SwiftPM caches to avoid Firebase binary-target conflicts"
 rm -rf "$HOME/Library/Caches/org.swift.swiftpm"
+rm -rf /Users/local/Library/Caches/org.swift.swiftpm
+rm -rf "$HOME/Library/org.swift.swiftpm"
+rm -rf "$CI_DERIVED_DATA_PATH/SourcePackages"
+rm -rf /Volumes/workspace/DerivedData/SourcePackages
+echo "==> SwiftPM caches cleared"
 
 # This project uses Swift Package Manager for its plugins, so there is no
 # Podfile. Only install and run CocoaPods if a Podfile is actually present
