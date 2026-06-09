@@ -47,7 +47,14 @@ rm -rf /Users/local/Library/Caches/org.swift.swiftpm
 rm -rf "$HOME/Library/org.swift.swiftpm"
 rm -rf "$CI_DERIVED_DATA_PATH/SourcePackages"
 rm -rf /Volumes/workspace/DerivedData/SourcePackages
-echo "==> SwiftPM caches cleared"
+# Drop the checked-in SwiftPM resolution state so Xcode re-resolves cleanly
+# against the freshly-cleared cache instead of reusing stale pins that point
+# at already-cached binary artifacts.
+rm -f ios/Runner.xcworkspace/xcshareddata/swiftpm/Package.resolved
+rm -f ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+rm -rf ios/Runner.xcworkspace/xcshareddata/swiftpm/.swiftpm
+rm -rf ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/.swiftpm
+echo "==> SwiftPM caches and resolution state cleared"
 
 # This project uses Swift Package Manager for its plugins, so there is no
 # Podfile. Only install and run CocoaPods if a Podfile is actually present
