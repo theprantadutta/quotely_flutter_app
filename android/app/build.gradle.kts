@@ -18,7 +18,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.quotely_flutter_app"
+    namespace = "com.pranta.quotely"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
