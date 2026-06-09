@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,12 @@ import 'package:share_plus/share_plus.dart';
 
 import '../components/layouts/main_layout.dart';
 import '../components/shared/dark_gradient_background.dart';
+
+/// Numeric Apple App Store ID for Quotely, assigned by App Store Connect once
+/// the app record is created. Update this before shipping the iOS build so the
+/// in-app "Share the App" link points at the live App Store listing.
+// TODO(appstore): replace with the real App Store ID from App Store Connect.
+const String kAppStoreId = '0000000000';
 
 class SupportUsScreen extends StatefulWidget {
   static const kRouteName = '/support-us';
@@ -22,7 +29,8 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
 
-  // The IDs for our in-app products, matching the Play Console
+  // The IDs for our in-app products. These must match exactly the product IDs
+  // configured in both App Store Connect (iOS) and the Play Console (Android).
   final Set<String> _productIds = {'support_the_dev_1', 'buy_me_a_coffee_1'};
 
   List<ProductDetails> _products = [];
@@ -118,13 +126,34 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     final PurchaseParam purchaseParam = PurchaseParam(
       productDetails: productDetails,
     );
-    // This will open the Google Play purchase sheet
+    // Opens the platform's native purchase sheet (App Store / Google Play).
     _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
   }
 
+  /// Restores previously bought non-consumable products. Apple requires a
+  /// visible "Restore Purchases" action for any app that sells non-consumables
+  /// (App Store Review Guideline 3.1.1), so this must stay in the UI.
+  Future<void> _restorePurchases() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Restoring your purchases...')),
+    );
+    try {
+      // Restored items are delivered through the same purchaseStream listener,
+      // which handles them via PurchaseStatus.restored above.
+      await _inAppPurchase.restorePurchases();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not restore purchases: $e')),
+      );
+    }
+  }
+
   void _shareApp(BuildContext context) {
-    const String appShareLink =
-        'https://play.google.com/store/apps/details?id=com.pranta.quotely_flutter_app';
+    // Point users to the correct store listing for their platform.
+    final String appShareLink = Platform.isIOS
+        ? 'https://apps.apple.com/app/id$kAppStoreId'
+        : 'https://play.google.com/store/apps/details?id=com.pranta.quotely';
     const String shareMessage =
         'Check out Quotely! A beautiful app for daily quotes and inspiration:';
     SharePlus.instance.share(
@@ -252,6 +281,14 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                             title: 'Share the App',
                             subtitle: 'Help the community grow by sharing.',
                             onTap: () => _shareApp(context),
+                          ),
+                          _buildSupportTile(
+                            context: context,
+                            icon: Icons.restore_rounded,
+                            iconColor: theme.colorScheme.secondary,
+                            title: 'Restore Purchases',
+                            subtitle: 'Already supported us? Restore it here.',
+                            onTap: _restorePurchases,
                           ),
                         ]),
                       ),
