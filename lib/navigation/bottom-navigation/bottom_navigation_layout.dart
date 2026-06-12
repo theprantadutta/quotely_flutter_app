@@ -292,35 +292,28 @@ class BottomNavigationLayout extends StatelessWidget {
                 ),
               ],
             ),
-            // Keep the gradient bar full-width but cluster the destinations
-            // in a readable-width column so they aren't spread across a tablet.
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
-                child: NavigationBar(
-                  // 1. Make the NavigationBar's own background transparent
-                  backgroundColor: Colors.transparent,
-                  // 2. Remove the default shadow to use your custom one from the Container
-                  elevation: 0,
-                  onDestinationSelected: _onTap,
-                  selectedIndex: navigationShell.currentIndex,
-                  indicatorColor: kPrimaryColor.withAlpha(230),
-                  destinations: kBottomDestinations,
-                  labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                    final style = TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    );
-                    if (states.contains(WidgetState.selected)) {
-                      return style.copyWith(
-                        color: kPrimaryColor,
-                        fontWeight: FontWeight.w700,
-                      );
-                    }
-                    return style;
-                  }),
-                ),
-              ),
+            child: NavigationBar(
+              // 1. Make the NavigationBar's own background transparent
+              backgroundColor: Colors.transparent,
+              // 2. Remove the default shadow to use your custom one from the Container
+              elevation: 0,
+              onDestinationSelected: _onTap,
+              selectedIndex: navigationShell.currentIndex,
+              indicatorColor: kPrimaryColor.withAlpha(230),
+              destinations: kBottomDestinations,
+              labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                final style = TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                );
+                if (states.contains(WidgetState.selected)) {
+                  return style.copyWith(
+                    color: kPrimaryColor,
+                    fontWeight: FontWeight.w700,
+                  );
+                }
+                return style;
+              }),
             ),
           ),
         ),
