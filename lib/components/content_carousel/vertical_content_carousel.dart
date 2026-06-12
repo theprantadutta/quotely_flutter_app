@@ -14,8 +14,8 @@ import 'content_item.dart';
 /// scale/fade slightly while swiping, snapping one card per swipe.
 ///
 /// "More content" affordances: edge peeks, soft gradient fades at the
-/// viewport edges, pulsing chevrons when there are cards above/below, and a
-/// one-time "swipe up" coach overlay on first launch.
+/// viewport edges when there are cards above/below, and a one-time "swipe up"
+/// coach overlay on first launch.
 class VerticalContentCarousel extends StatefulWidget {
   final List<ContentItem> items;
   final ContentActions actions;
@@ -42,7 +42,7 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
 
   int _index = 0;
 
-  /// Drives the chevron/coach bobbing.
+  /// Drives the swipe-coach bobbing.
   late final AnimationController _bob = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 900),
@@ -123,98 +123,113 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
     final hasAbove = _index > 0;
     final hasBelow = _index < itemCount - 1 || widget.hasMoreData;
 
-    return Stack(
-      children: [
-        PageView.builder(
-          key: const PageStorageKey('vertical_content_carousel'),
-          controller: _controller,
-          scrollDirection: Axis.vertical,
-          onPageChanged: _onPageChanged,
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final child = index >= widget.items.length
-                ? const CarouselSkeletonCard()
-                : ContentCard(
-                    item: widget.items[index],
-                    actions: widget.actions,
-                  );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Cover the peeking neighbour card (~9% of the viewport each side,
+        // from viewportFraction 0.82) plus a little, so its border melts away.
+        final fadeHeight = constraints.maxHeight * 0.13;
+        return Stack(
+          children: [
+            PageView.builder(
+              key: const PageStorageKey('vertical_content_carousel'),
+              controller: _controller,
+              scrollDirection: Axis.vertical,
+              onPageChanged: _onPageChanged,
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final child = index >= widget.items.length
+                    ? const CarouselSkeletonCard()
+                    : ContentCard(
+                        item: widget.items[index],
+                        actions: widget.actions,
+                      );
 
-            // Subtle scale on the cards entering/leaving the viewport.
-            // Deliberately no opacity fade — translucent neighbours read
-            // as a weird glass panel behind the active card.
-            return AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                double delta = 0;
-                if (_controller.position.haveDimensions) {
-                  delta = ((_controller.page ?? 0) - index).clamp(-1.0, 1.0);
-                }
-                return Transform.scale(
-                  scale: 1 - 0.05 * delta.abs(),
-                  child: child,
+                // Subtle scale on the cards entering/leaving the viewport.
+                // Deliberately no opacity fade — translucent neighbours read
+                // as a weird glass panel behind the active card.
+                return AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    double delta = 0;
+                    if (_controller.position.haveDimensions) {
+                      delta = ((_controller.page ?? 0) - index).clamp(
+                        -1.0,
+                        1.0,
+                      );
+                    }
+                    return Transform.scale(
+                      scale: 1 - 0.05 * delta.abs(),
+                      child: child,
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: child,
+                  ),
                 );
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: child,
+            ),
+            // Soft fades at the top/bottom edges: the peeking neighbour cards
+            // melt into the tinted background, hinting at more content
+            // without arrows or a visible band.
+            _EdgeFade(visible: hasAbove, top: true, height: fadeHeight),
+            _EdgeFade(visible: hasBelow, top: false, height: fadeHeight),
+            // One-time swipe coach.
+            if (_coachVisible)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 64,
+                child: Center(child: _SwipeCoach(bob: _bob)),
               ),
-            );
-          },
-        ),
-        // Pulsing chevrons whenever there's content above/below.
-        _EdgeChevron(visible: hasAbove, top: true, bob: _bob),
-        _EdgeChevron(visible: hasBelow, top: false, bob: _bob),
-        // One-time swipe coach.
-        if (_coachVisible)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 64,
-            child: Center(child: _SwipeCoach(bob: _bob)),
-          ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
 
-/// A gently bobbing chevron hinting at more content above/below.
-class _EdgeChevron extends StatelessWidget {
+/// A soft gradient fade at the top/bottom edge. By letting the peeking
+/// neighbour card dissolve into the background it signals "more content"
+/// above/below without a literal arrow.
+class _EdgeFade extends StatelessWidget {
   final bool visible;
   final bool top;
-  final Animation<double> bob;
+  final double height;
 
-  const _EdgeChevron({
+  const _EdgeFade({
     required this.visible,
     required this.top,
-    required this.bob,
+    required this.height,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onSurface.withValues(
-      alpha: 0.40,
+    final theme = Theme.of(context);
+    // Match the screen's real background: scaffold colour + the faint primary
+    // tint the nav layout paints on top. Fading to the flat scaffold colour
+    // alone leaves a visible mismatched band.
+    final bg = Color.alphaBlend(
+      theme.primaryColor.withValues(alpha: 0.09),
+      theme.scaffoldBackgroundColor,
     );
     return Positioned(
       top: top ? 0 : null,
       bottom: top ? null : 0,
       left: 0,
       right: 0,
+      height: height,
       child: IgnorePointer(
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 250),
           opacity: visible ? 1 : 0,
-          child: AnimatedBuilder(
-            animation: bob,
-            builder: (context, child) => Transform.translate(
-              offset: Offset(0, (top ? -2.5 : 2.5) * bob.value),
-              child: child,
-            ),
-            child: Icon(
-              top
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              size: 24,
-              color: color,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: top ? Alignment.topCenter : Alignment.bottomCenter,
+                end: top ? Alignment.bottomCenter : Alignment.topCenter,
+                colors: [bg, bg.withValues(alpha: 0.0)],
+              ),
             ),
           ),
         ),
@@ -235,10 +250,8 @@ class _SwipeCoach extends StatelessWidget {
     final theme = Theme.of(context);
     return AnimatedBuilder(
       animation: bob,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(0, -5 * bob.value),
-        child: child,
-      ),
+      builder: (context, child) =>
+          Transform.translate(offset: Offset(0, -5 * bob.value), child: child),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(

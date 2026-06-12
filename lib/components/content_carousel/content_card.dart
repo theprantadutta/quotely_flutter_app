@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../constants/colors.dart';
+import 'aurora_background.dart';
 import 'content_item.dart';
 import 'text_fit.dart';
 
@@ -38,25 +38,9 @@ class ContentCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(28),
         child: Stack(
           children: [
-            // Gradient sweep under the content, matching the visual
-            // language of kGetDefaultGradient used across the app.
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    stops: const [0.1, 0.9],
-                    colors: [
-                      theme.primaryColor.withValues(
-                        alpha: isDark ? 0.12 : 0.08,
-                      ),
-                      kHelperColor.withValues(alpha: isDark ? 0.10 : 0.08),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // Living "aurora": soft green→cyan blobs that slowly drift behind
+            // the content, giving each card a calm, breathing atmosphere.
+            Positioned.fill(child: AuroraBackground(isDark: isDark)),
             // Large decorative quote glyph watermark, fully visible in the
             // top-left corner behind the content.
             Positioned(
@@ -133,9 +117,7 @@ class ContentCard extends ConsumerWidget {
                                 ),
                                 child: Text(item.body, style: bodyStyle),
                               )
-                            : Center(
-                                child: Text(item.body, style: bodyStyle),
-                              ),
+                            : Center(child: Text(item.body, style: bodyStyle)),
                       ),
                       // Footer: author + tags on the left, actions right
                       Row(
@@ -165,8 +147,9 @@ class ContentCard extends ConsumerWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: accent,
-                                            borderRadius:
-                                                BorderRadius.circular(2),
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
                                           ),
                                         ),
                                         Flexible(
@@ -219,8 +202,7 @@ class ContentCard extends ConsumerWidget {
                                 size: 19,
                                 color: faintInk,
                               ),
-                              onPressed: () =>
-                                  actions.onReport(context, item),
+                              onPressed: () => actions.onReport(context, item),
                             ),
                           ),
                           Semantics(
@@ -276,9 +258,9 @@ class _HeartButton extends ConsumerWidget {
             size: 22,
             color: isFavorite
                 ? Colors.redAccent
-                : Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: 0.45,
-                  ),
+                : Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.45),
           ),
         ),
       ),
