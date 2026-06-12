@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../constants/responsive.dart';
 import '../shared/dark_gradient_background.dart';
 import '../shared/floating_theme_change_button.dart';
 
@@ -44,7 +45,14 @@ class MainLayout extends StatelessWidget {
           bottom: bottom,
         ),
         body: SingleChildScrollView(
-          child: Stack(children: [DarkGradientBackground(), body]),
+          // The gradient stays full-bleed; only the content is capped to a
+          // readable width and centered on tablets.
+          child: Stack(
+            children: [
+              DarkGradientBackground(),
+              ResponsiveCenter(child: body),
+            ],
+          ),
         ),
         floatingActionButton: kReleaseMode
             ? null // Don't show FloatingActionButton in release (production) mode

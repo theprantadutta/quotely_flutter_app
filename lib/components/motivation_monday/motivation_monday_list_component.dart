@@ -86,7 +86,7 @@ class _MotivationMondayListComponentState
 
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * 0.87,
-      width: MediaQuery.sizeOf(context).width,
+      width: double.infinity,
       child: RefreshIndicator.adaptive(
         onRefresh: _refreshQuotes,
         child: quoteProvider.when(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quotely_flutter_app/components/shared/circle_avatar_with_fallback.dart';
+import 'package:quotely_flutter_app/constants/responsive.dart';
 import 'package:quotely_flutter_app/dtos/author_dto.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -16,7 +17,7 @@ class AuthorDetailAuthorBio extends StatelessWidget {
     final screenHeight = MediaQuery.sizeOf(context).height;
 
     return Container(
-      width: MediaQuery.sizeOf(context).width * 0.92,
+      width: cappedWidth(context, 0.92),
       height: MediaQuery.sizeOf(context).height * 0.8,
       constraints: BoxConstraints(
         maxHeight: screenHeight * 0.8,
@@ -193,7 +194,7 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
 
     return Skeletonizer(
       child: Container(
-        width: MediaQuery.sizeOf(context).width * 0.92,
+        width: cappedWidth(context, 0.92),
         height: MediaQuery.sizeOf(context).height * 0.8,
         constraints: BoxConstraints(
           maxHeight: screenHeight * 0.8,

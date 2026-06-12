@@ -126,7 +126,7 @@ class _AuthorListState extends ConsumerState<AuthorList> {
     return Expanded(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.87,
-        width: MediaQuery.sizeOf(context).width,
+        width: double.infinity,
         // margin: EdgeInsets.symmetric(vertical: 5),
         child: RefreshIndicator.adaptive(
           onRefresh: _refreshAuthors,

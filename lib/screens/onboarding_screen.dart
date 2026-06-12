@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quotely_flutter_app/constants/responsive.dart';
 import 'package:quotely_flutter_app/screens/interests_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -82,53 +83,62 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ],
           ),
 
-          // The bottom navigation controls (dots and buttons)
+          // The bottom navigation controls (dots and buttons), kept within
+          // the readable-width column on tablets.
           Positioned(
             bottom: 30.0,
             left: 20.0,
             right: 20.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // The "SKIP" button
-                TextButton(
-                  onPressed: _finishOnboarding,
-                  child: const Text(
-                    'SKIP',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            child: ResponsiveCenter(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // The "SKIP" button
+                  TextButton(
+                    onPressed: _finishOnboarding,
+                    child: const Text(
+                      'SKIP',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
-                ),
 
-                // The animated dot indicator
-                SmoothPageIndicator(
-                  controller: _pageController,
-                  count: 3,
-                  effect: WormEffect(
-                    spacing: 16,
-                    dotColor: Colors.black26,
-                    activeDotColor: theme.colorScheme.primary,
+                  // The animated dot indicator
+                  SmoothPageIndicator(
+                    controller: _pageController,
+                    count: 3,
+                    effect: WormEffect(
+                      spacing: 16,
+                      dotColor: Colors.black26,
+                      activeDotColor: theme.colorScheme.primary,
+                    ),
+                    onDotClicked: (index) => _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeIn,
+                    ),
                   ),
-                  onDotClicked: (index) => _pageController.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeIn,
-                  ),
-                ),
 
-                // The "NEXT" or "GET STARTED" button
-                TextButton(
-                  onPressed: _isLastPage
-                      ? _finishOnboarding
-                      : () => _pageController.nextPage(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeIn,
-                        ),
-                  child: Text(
-                    _isLastPage ? 'DONE' : 'NEXT',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  // The "NEXT" or "GET STARTED" button
+                  TextButton(
+                    onPressed: _isLastPage
+                        ? _finishOnboarding
+                        : () => _pageController.nextPage(
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeIn,
+                          ),
+                    child: Text(
+                      _isLastPage ? 'DONE' : 'NEXT',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -143,29 +153,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     required String title,
     required String subtitle,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(imagePath, height: 300),
-          const SizedBox(height: 40),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
+    return ResponsiveCenter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(imagePath, height: 300),
+            const SizedBox(height: 40),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            const SizedBox(height: 16),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../components/shared/something_went_wrong.dart';
+import '../constants/responsive.dart';
 import '../riverpods/interest_options_provider.dart';
 import '../state_providers/user_interests.dart';
 import 'tab_screens/home_screen.dart';
@@ -85,116 +86,129 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Your Interests' : 'Pick your interests'),
+        title: Text(
+          widget.isEditing ? 'Your Interests' : 'Pick your interests',
+        ),
         automaticallyImplyLeading: widget.isEditing,
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Choose topics you love. We\'ll tailor your quotes and '
-                    'facts to them — pick up to ${UserInterests.maxInterests}.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (v) => setState(() => _query = v.trim()),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: 'Search interests',
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+        child: ResponsiveCenter(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Choose topics you love. We\'ll tailor your quotes and '
+                      'facts to them — pick up to ${UserInterests.maxInterests}.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-            Expanded(
-              child: optionsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, _) => Center(
-                  child: SomethingWentWrong(
-                    title: 'Failed to load interests.',
-                    onRetryPressed: () =>
-                        ref.invalidate(interestOptionsProvider),
-                  ),
-                ),
-                data: (options) {
-                  final q = _query.toLowerCase();
-                  final filtered = q.isEmpty
-                      ? options
-                      : options
-                            .where((o) => o.toLowerCase().contains(q))
-                            .toList();
-                  if (filtered.isEmpty) {
-                    return const Center(child: Text('No matching interests.'));
-                  }
-                  // A Wrap builds every child eagerly, and the full tag
-                  // vocabulary can be many hundreds of items — rendering them
-                  // all at once janks the main thread. Cap the rendered chips
-                  // and rely on the search box to surface the rest. Selected
-                  // chips come first so they always stay visible/toggleable.
-                  const cap = 120;
-                  final ordered = [
-                    ...filtered.where(_selected.contains),
-                    ...filtered.where((o) => !_selected.contains(o)),
-                  ];
-                  final shown = ordered.take(cap).toList();
-                  final hiddenCount = ordered.length - shown.length;
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final option in shown)
-                              _InterestChip(
-                                label: option,
-                                selected: _selected.contains(option),
-                                onTap: () => _toggle(option),
-                              ),
-                          ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (v) => setState(() => _query = v.trim()),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: 'Search interests',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        if (hiddenCount > 0)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16, bottom: 4),
-                            child: Text(
-                              '+$hiddenCount more — search to narrow down',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(context).colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.6),
-                                  ),
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
-                  );
-                },
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
-            ),
-            _BottomBar(
-              count: _selected.length,
-              saving: _saving,
-              onSave: _save,
-              isEditing: widget.isEditing,
-            ),
-          ],
+              Expanded(
+                child: optionsAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => Center(
+                    child: SomethingWentWrong(
+                      title: 'Failed to load interests.',
+                      onRetryPressed: () =>
+                          ref.invalidate(interestOptionsProvider),
+                    ),
+                  ),
+                  data: (options) {
+                    final q = _query.toLowerCase();
+                    final filtered = q.isEmpty
+                        ? options
+                        : options
+                              .where((o) => o.toLowerCase().contains(q))
+                              .toList();
+                    if (filtered.isEmpty) {
+                      return const Center(
+                        child: Text('No matching interests.'),
+                      );
+                    }
+                    // A Wrap builds every child eagerly, and the full tag
+                    // vocabulary can be many hundreds of items — rendering them
+                    // all at once janks the main thread. Cap the rendered chips
+                    // and rely on the search box to surface the rest. Selected
+                    // chips come first so they always stay visible/toggleable.
+                    const cap = 120;
+                    final ordered = [
+                      ...filtered.where(_selected.contains),
+                      ...filtered.where((o) => !_selected.contains(o)),
+                    ];
+                    final shown = ordered.take(cap).toList();
+                    final hiddenCount = ordered.length - shown.length;
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final option in shown)
+                                _InterestChip(
+                                  label: option,
+                                  selected: _selected.contains(option),
+                                  onTap: () => _toggle(option),
+                                ),
+                            ],
+                          ),
+                          if (hiddenCount > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 16,
+                                bottom: 4,
+                              ),
+                              child: Text(
+                                '+$hiddenCount more — search to narrow down',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              _BottomBar(
+                count: _selected.length,
+                saving: _saving,
+                onSave: _save,
+                isEditing: widget.isEditing,
+              ),
+            ],
+          ),
         ),
       ),
     );

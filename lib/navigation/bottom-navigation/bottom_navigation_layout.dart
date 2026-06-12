@@ -197,6 +197,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quotely_flutter_app/constants/responsive.dart';
 import 'package:quotely_flutter_app/constants/selectors.dart';
 import 'package:quotely_flutter_app/navigation/bottom-navigation/bottom_destinations.dart';
 
@@ -266,7 +267,9 @@ class BottomNavigationLayout extends StatelessWidget {
                 stops: const [0.0, 1.0],
               ),
             ),
-            child: navigationShell,
+            // Gradient container stays full-bleed; tab content is capped to a
+            // readable width and centered on tablets.
+            child: ResponsiveCenter(child: navigationShell),
           ),
         ),
         bottomNavigationBar: NavigationBarTheme(
@@ -289,28 +292,35 @@ class BottomNavigationLayout extends StatelessWidget {
                 ),
               ],
             ),
-            child: NavigationBar(
-              // 1. Make the NavigationBar's own background transparent
-              backgroundColor: Colors.transparent,
-              // 2. Remove the default shadow to use your custom one from the Container
-              elevation: 0,
-              onDestinationSelected: _onTap,
-              selectedIndex: navigationShell.currentIndex,
-              indicatorColor: kPrimaryColor.withAlpha(230),
-              destinations: kBottomDestinations,
-              labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                final style = TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                );
-                if (states.contains(WidgetState.selected)) {
-                  return style.copyWith(
-                    color: kPrimaryColor,
-                    fontWeight: FontWeight.w700,
-                  );
-                }
-                return style;
-              }),
+            // Keep the gradient bar full-width but cluster the destinations
+            // in a readable-width column so they aren't spread across a tablet.
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
+                child: NavigationBar(
+                  // 1. Make the NavigationBar's own background transparent
+                  backgroundColor: Colors.transparent,
+                  // 2. Remove the default shadow to use your custom one from the Container
+                  elevation: 0,
+                  onDestinationSelected: _onTap,
+                  selectedIndex: navigationShell.currentIndex,
+                  indicatorColor: kPrimaryColor.withAlpha(230),
+                  destinations: kBottomDestinations,
+                  labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                    final style = TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    );
+                    if (states.contains(WidgetState.selected)) {
+                      return style.copyWith(
+                        color: kPrimaryColor,
+                        fontWeight: FontWeight.w700,
+                      );
+                    }
+                    return style;
+                  }),
+                ),
+              ),
             ),
           ),
         ),

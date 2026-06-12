@@ -1,6 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 
+import '../../constants/responsive.dart';
 import '../../dtos/quote_dto.dart';
 import '../../main.dart';
 import '../../screens/tab_screens/favorites_screen.dart';
@@ -116,7 +117,7 @@ class _QuoteListState extends State<QuoteList> {
               final quotes = snapshot.data!;
               if (quotes.isEmpty) {
                 return SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
+                  width: cappedWidth(context, 0.8),
                   child: const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

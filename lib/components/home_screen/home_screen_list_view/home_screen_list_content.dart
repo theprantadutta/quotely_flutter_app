@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:quotely_flutter_app/constants/responsive.dart';
 import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 
 class HomeScreenListContent extends StatelessWidget {
@@ -28,7 +29,7 @@ class HomeScreenListContent extends StatelessWidget {
           ),
         ),
         Container(
-          width: MediaQuery.sizeOf(context).width * 0.9,
+          width: cappedWidth(context, 0.9),
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
             quote.content,
@@ -93,7 +94,7 @@ class HomeScreenListContentSkeletor extends StatelessWidget {
           ),
         ),
         Container(
-          width: MediaQuery.sizeOf(context).width * 0.9,
+          width: cappedWidth(context, 0.9),
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: const Text(
             'You will never find the same person twice, not even in the same person',

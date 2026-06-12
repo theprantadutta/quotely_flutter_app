@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../constants/responsive.dart';
 import '../../../dtos/quote_dto.dart';
 import '../../../screens/author_detail_screen.dart';
 
@@ -14,7 +15,10 @@ class HomeScreenGridContent extends StatelessWidget {
   const HomeScreenGridContent({super.key, required this.quote});
 
   double _calculateFontSize(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    // Cap the width feeding the font math so tablets don't get giant text.
+    final screenWidth = MediaQuery.of(
+      context,
+    ).size.width.clamp(0.0, kMaxContentWidth);
     final baseFontSize = screenWidth * maxFontSizePercentage;
 
     // Adjust based on quote length (more characters = smaller font)
@@ -26,7 +30,7 @@ class HomeScreenGridContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageSize = MediaQuery.sizeOf(context).width * 0.2;
+    final imageSize = cappedWidth(context, 0.2);
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final authorColor = isDarkMode
@@ -119,7 +123,7 @@ class HomeScreenGridContentSkeletor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageSize = MediaQuery.sizeOf(context).width * 0.2;
+    final imageSize = cappedWidth(context, 0.2);
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final authorColor = isDarkMode

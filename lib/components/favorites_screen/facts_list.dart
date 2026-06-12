@@ -1,6 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:quotely_flutter_app/components/facts_screen/single_fact.dart';
+import 'package:quotely_flutter_app/constants/responsive.dart';
 import 'package:quotely_flutter_app/dtos/ai_fact_dto.dart';
 import 'package:quotely_flutter_app/service_locator/init_service_locators.dart';
 import 'package:quotely_flutter_app/services/drift_fact_service.dart';
@@ -64,7 +65,7 @@ class _FactsListState extends State<FactsList> {
               final facts = snapshot.data!;
               if (facts.isEmpty) {
                 return SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
+                  width: cappedWidth(context, 0.8),
                   child: const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
