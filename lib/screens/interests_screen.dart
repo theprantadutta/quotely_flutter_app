@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,6 +32,15 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
   String _query = '';
   bool _initializedFromSaved = false;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // The router can land here directly on a fresh launch (onboarding done
+    // but no interests saved yet). Only Onboarding and Home remove the native
+    // splash, so without this the app would stay hidden behind it forever.
+    FlutterNativeSplash.remove();
+  }
 
   @override
   void dispose() {
@@ -138,6 +148,19 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                     ),
                   ),
                   data: (options) {
+                    // Both services fall back to local data and return empty
+                    // lists when the API is unreachable on a fresh install, so
+                    // an empty vocabulary means the fetch failed — offer a
+                    // retry instead of a dead end the user can't save from.
+                    if (options.isEmpty) {
+                      return Center(
+                        child: SomethingWentWrong(
+                          title: 'Failed to load interests.',
+                          onRetryPressed: () =>
+                              ref.invalidate(interestOptionsProvider),
+                        ),
+                      );
+                    }
                     final q = _query.toLowerCase();
                     final filtered = q.isEmpty
                         ? options
