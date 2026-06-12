@@ -45,6 +45,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   List<String> allSelectedTags = [];
 
+  /// Set when the user's saved interests match no quote tags (e.g. they only
+  /// picked fact categories). We then drop the interest filter and show all
+  /// quotes instead of leaving the screen empty. Reset whenever the base
+  /// filter changes (chips toggled or interests edited).
+  bool _ignoreInterestsForQuotes = false;
+
   /// Interests last used as the base filter — guards the interests listener
   /// against redundant refetches (see build()).
   List<String> _appliedInterests = const [];
@@ -61,9 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     FlutterNativeSplash.remove();
-    _contentActions = buildQuoteContentActions(
-      onLastItemReached: _fetchQuotes,
-    );
+    _contentActions = buildQuoteContentActions(onLastItemReached: _fetchQuotes);
     _loadInitialQuotes();
     addAllFavoriteIds();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -278,8 +282,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final interests = ref.read(userInterestsProvider);
       final effectiveTags = allSelectedTags.isNotEmpty
           ? allSelectedTags
-          : interests;
-      final newQuotes = await ref.read(
+          : (_ignoreInterestsForQuotes ? const <String>[] : interests);
+      var newQuotes = await ref.read(
         fetchAllQuotesProvider(
           quotePageNumber,
           quotePageSize,
@@ -287,6 +291,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           PaginationSeed.current,
         ).future,
       );
+
+      // Interests can be fact categories that match no quote tag, which would
+      // leave the screen empty even though quotes exist. If the very first
+      // interest-filtered page comes back empty, drop the filter and show all
+      // quotes for the rest of the session.
+      if (newQuotes.quotes.isEmpty &&
+          quotePageNumber == 1 &&
+          allSelectedTags.isEmpty &&
+          effectiveTags.isNotEmpty) {
+        _ignoreInterestsForQuotes = true;
+        newQuotes = await ref.read(
+          fetchAllQuotesProvider(
+            quotePageNumber,
+            quotePageSize,
+            const <String>[],
+            PaginationSeed.current,
+          ).future,
+        );
+      }
+
       setState(() {
         hasMoreData = newQuotes.quotes.length == quotePageSize;
         quotePageNumber++;
@@ -341,6 +365,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         quotePageNumber = 1;
         quotes = [];
         hasMoreData = true;
+        // Re-evaluate the new interests against the quote tags.
+        _ignoreInterestsForQuotes = false;
       });
       ref.invalidate(fetchAllQuotesProvider);
       _fetchQuotes();
@@ -379,6 +405,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     quotePageNumber = 1;
                     quotes = [];
                     hasMoreData = true;
+                    // Removing the last chip falls back to interests, so
+                    // re-evaluate them against the quote tags.
+                    _ignoreInterestsForQuotes = false;
                   });
                   ref.invalidate(fetchAllQuotesProvider);
                   await _fetchQuotes();

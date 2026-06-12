@@ -35,6 +35,12 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   List<String> allSelectedCategory = [];
   List<String> allSelectedProvider = [];
 
+  /// Set when the user's saved interests match no fact categories (e.g. they
+  /// only picked quote tags). We then drop the interest filter and show all
+  /// facts instead of leaving the screen empty. Reset whenever the base
+  /// filter changes (chips toggled or interests edited).
+  bool _ignoreInterestsForFacts = false;
+
   /// Interests last used as the base filter — guards the interests listener
   /// against redundant refetches (see build()).
   List<String> _appliedInterests = const [];
@@ -50,9 +56,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   @override
   void initState() {
     super.initState();
-    _contentActions = buildFactContentActions(
-      onLastItemReached: _fetchFacts,
-    );
+    _contentActions = buildFactContentActions(onLastItemReached: _fetchFacts);
     _loadInitialFacts();
   }
 
@@ -92,8 +96,8 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       final interests = ref.read(userInterestsProvider);
       final effectiveCategories = allSelectedCategory.isNotEmpty
           ? allSelectedCategory
-          : interests;
-      final newFacts = await ref.read(
+          : (_ignoreInterestsForFacts ? const <String>[] : interests);
+      var newFacts = await ref.read(
         fetchAllFactsProvider(
           factPageNumber,
           factPageSize,
@@ -102,6 +106,27 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
           PaginationSeed.current,
         ).future,
       );
+
+      // Interests can be quote tags that match no fact category, which would
+      // leave the screen empty even though facts exist. If the very first
+      // interest-filtered page comes back empty, drop the filter and show all
+      // facts for the rest of the session.
+      if (newFacts.aiFacts.isEmpty &&
+          factPageNumber == 1 &&
+          allSelectedCategory.isEmpty &&
+          effectiveCategories.isNotEmpty) {
+        _ignoreInterestsForFacts = true;
+        newFacts = await ref.read(
+          fetchAllFactsProvider(
+            factPageNumber,
+            factPageSize,
+            const <String>[],
+            allSelectedProvider,
+            PaginationSeed.current,
+          ).future,
+        );
+      }
+
       setState(() {
         hasMoreData = newFacts.aiFacts.length == 10;
         factPageNumber++;
@@ -137,6 +162,8 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
         factPageNumber = 1;
         aiFacts = [];
         hasMoreData = true;
+        // Re-evaluate the new interests against the fact categories.
+        _ignoreInterestsForFacts = false;
       });
       ref.invalidate(fetchAllFactsProvider);
       _fetchFacts();
@@ -162,6 +189,9 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
                   factPageNumber = 1;
                   aiFacts = [];
                   hasMoreData = true;
+                  // Removing the last chip falls back to interests, so
+                  // re-evaluate them against the fact categories.
+                  _ignoreInterestsForFacts = false;
                 });
                 ref.invalidate(fetchAllFactsProvider);
                 await _fetchFacts();
