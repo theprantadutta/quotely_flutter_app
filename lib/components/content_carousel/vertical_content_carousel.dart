@@ -42,11 +42,10 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
 
   int _index = 0;
 
-  /// Drives the swipe-coach bobbing.
-  late final AnimationController _bob = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  )..repeat(reverse: true);
+  /// Drives the swipe-coach bobbing. Created lazily only when the coach is
+  /// actually shown — never touch it in dispose() unless it exists, or building
+  /// its ticker on a deactivated element throws.
+  AnimationController? _bob;
 
   bool _coachVisible = false;
   Timer? _coachTimer;
@@ -61,6 +60,12 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getBool(kCarouselCoachShownKey) ?? false) return;
     if (!mounted) return;
+    // Create the bobbing controller now (while the element is active), only
+    // because we're actually about to show the coach.
+    _bob = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
     setState(() => _coachVisible = true);
     // Auto-dismiss if the user never swipes.
     _coachTimer = Timer(const Duration(seconds: 7), _dismissCoach);
@@ -88,7 +93,7 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
   @override
   void dispose() {
     _coachTimer?.cancel();
-    _bob.dispose();
+    _bob?.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -175,12 +180,12 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
             _EdgeFade(visible: hasAbove, top: true, height: fadeHeight),
             _EdgeFade(visible: hasBelow, top: false, height: fadeHeight),
             // One-time swipe coach.
-            if (_coachVisible)
+            if (_coachVisible && _bob != null)
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 64,
-                child: Center(child: _SwipeCoach(bob: _bob)),
+                child: Center(child: _SwipeCoach(bob: _bob!)),
               ),
           ],
         );

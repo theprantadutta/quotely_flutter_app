@@ -72,24 +72,11 @@ class AuthorProfileHeader extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: [
-                      _StatPill(
-                        icon: Icons.format_quote_rounded,
-                        label: '${author.quoteCount} quotes',
-                        accent: accent,
-                        filled: true,
-                      ),
-                      _StatPill(
-                        icon: Icons.calendar_today_rounded,
-                        label:
-                            'Since ${DateFormat.y().format(author.dateAdded)}',
-                        accent: accent,
-                      ),
-                    ],
+                  _StatPill(
+                    icon: Icons.format_quote_rounded,
+                    label: '${author.quoteCount} quotes',
+                    accent: accent,
+                    filled: true,
                   ),
                 ],
               ),
@@ -236,7 +223,7 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
                 const SizedBox(height: 6),
                 const Text('American President'),
                 const SizedBox(height: 16),
-                const Text('128 quotes   ·   Since 1809'),
+                const Text('128 quotes'),
               ],
             ),
           ),
