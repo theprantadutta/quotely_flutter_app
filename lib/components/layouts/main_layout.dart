@@ -1,11 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../constants/responsive.dart';
 import '../shared/dark_gradient_background.dart';
-import '../shared/floating_theme_change_button.dart';
 
 class MainLayout extends StatelessWidget {
   final String title;
@@ -54,9 +52,9 @@ class MainLayout extends StatelessWidget {
             ],
           ),
         ),
-        floatingActionButton: kReleaseMode
-            ? null // Don't show FloatingActionButton in release (production) mode
-            : const FloatingThemeChangeButton(),
+        // Theme is toggled from Settings → Appearance; the floating debug
+        // toggle is disabled everywhere.
+        floatingActionButton: null,
       ),
     );
   }
