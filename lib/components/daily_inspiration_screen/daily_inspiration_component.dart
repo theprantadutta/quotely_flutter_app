@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quotely_flutter_app/riverpods/daily_inspiration_provider.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../components/quote_of_the_day_screen/single_quote_of_the_component.dart';
+import '../content_carousel/content_mappers.dart';
+import '../content_carousel/of_the_day_mappers.dart';
+import '../content_carousel/single_feature_card.dart';
 
 class DailyInspirationComponent extends ConsumerWidget {
   const DailyInspirationComponent({super.key});
@@ -16,15 +17,13 @@ class DailyInspirationComponent extends ConsumerWidget {
 
     return dailyInspirationProvider.when(
       data: (data) {
-        return SingleQuoteOfTheComponent(
-          author: data.author,
-          content: data.content,
-          quoteDate: data.quoteDate,
+        return SingleFeatureCard(
+          item: contentItemFromDailyInspiration(data),
+          actions: buildQuoteContentActions(onLastItemReached: () async {}),
         );
       },
       error: (err, stack) => const Center(child: Text('Something Went Wrong')),
-      loading: () =>
-          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
+      loading: () => const SingleFeatureCardSkeleton(),
     );
   }
 }

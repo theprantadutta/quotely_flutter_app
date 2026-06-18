@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../riverpods/motivation_monday_provider.dart';
-import '../quote_of_the_day_screen/single_quote_of_the_component.dart';
+import '../content_carousel/content_mappers.dart';
+import '../content_carousel/of_the_day_mappers.dart';
+import '../content_carousel/single_feature_card.dart';
 
 class MotivationMondayComponent extends ConsumerWidget {
   const MotivationMondayComponent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quoteOfTheDayProvider = ref.watch(fetchMotivationMondayProvider);
+    final motivationMondayProvider = ref.watch(fetchMotivationMondayProvider);
 
-    return quoteOfTheDayProvider.when(
+    return motivationMondayProvider.when(
       data: (data) {
-        return SingleQuoteOfTheComponent(
-          author: data.author,
-          content: data.content,
-          quoteDate: data.quoteDate,
+        return SingleFeatureCard(
+          item: contentItemFromMotivationMonday(data),
+          actions: buildQuoteContentActions(onLastItemReached: () async {}),
         );
       },
       error: (err, stack) {
         return const Center(child: Text('Something Went Wrong'));
       },
-      loading: () =>
-          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
+      loading: () => const SingleFeatureCardSkeleton(),
     );
   }
 }

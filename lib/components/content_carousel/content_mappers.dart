@@ -13,24 +13,32 @@ import '../facts_screen/report_fact_dialog.dart';
 import '../home_screen/report_quote_dialog.dart';
 import 'content_item.dart';
 
-ContentItem contentItemFromQuote(QuoteDto quote) => ContentItem(
-  id: quote.id,
-  body: quote.content,
-  title: quote.author,
-  tags: quote.tags,
-  routeSlug: quote.authorSlug,
-  type: ContentItemType.quote,
-  source: quote,
-);
+/// [eyebrow] overrides the small uppercase label shown at the top of the card.
+/// Quotes have no eyebrow by default (the card falls back to "QUOTE"); the
+/// "of the day" screens pass the item's date here.
+ContentItem contentItemFromQuote(QuoteDto quote, {String? eyebrow}) =>
+    ContentItem(
+      id: quote.id,
+      body: quote.content,
+      title: quote.author,
+      subtitle: eyebrow,
+      tags: quote.tags,
+      routeSlug: quote.authorSlug,
+      type: ContentItemType.quote,
+      source: quote,
+    );
 
-ContentItem contentItemFromFact(AiFactDto fact) => ContentItem(
-  id: fact.id.toString(),
-  body: fact.content,
-  subtitle: fact.aiFactCategory,
-  tags: [fact.aiFactCategory],
-  type: ContentItemType.fact,
-  source: fact,
-);
+/// [eyebrow] overrides the eyebrow label. Defaults to the fact's category (as
+/// on the Facts tab); the "of the day" screens pass the item's date instead.
+ContentItem contentItemFromFact(AiFactDto fact, {String? eyebrow}) =>
+    ContentItem(
+      id: fact.id.toString(),
+      body: fact.content,
+      subtitle: eyebrow ?? fact.aiFactCategory,
+      tags: [fact.aiFactCategory],
+      type: ContentItemType.fact,
+      source: fact,
+    );
 
 /// Builds the quote action bundle (share text format, favorite toggling via
 /// Drift, report dialog, author navigation).
@@ -78,9 +86,7 @@ Shared via Quotely
         ? null
         : (context, item) {
             if (item.routeSlug == null) return;
-            context.push(
-              '${AuthorDetailScreen.kRouteName}/${item.routeSlug}',
-            );
+            context.push('${AuthorDetailScreen.kRouteName}/${item.routeSlug}');
           },
     onLastItemReached: onLastItemReached,
   );

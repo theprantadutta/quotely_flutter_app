@@ -49,8 +49,7 @@ class ContentActions {
   /// `ref.watch(provider.select(...))` so only the affected card rebuilds.
   final bool Function(WidgetRef ref, ContentItem item) isFavorite;
 
-  final Future<void> Function(WidgetRef ref, ContentItem item)
-  onFavoriteToggle;
+  final Future<void> Function(WidgetRef ref, ContentItem item) onFavoriteToggle;
 
   final Future<void> Function(ContentItem item) onShare;
 

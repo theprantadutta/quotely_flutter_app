@@ -324,7 +324,12 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
           color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
         ),
       ),
-      child: ClipRRect(borderRadius: BorderRadius.circular(16), child: child),
+      // Transparent Material above the container's colour so the tile's ink
+      // ripple is visible (and Flutter doesn't warn it may be hidden).
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Material(type: MaterialType.transparency, child: child),
+      ),
     );
   }
 
@@ -336,7 +341,10 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: Column(children: children),
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(children: children),
+        ),
       ),
     );
   }

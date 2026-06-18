@@ -153,16 +153,3 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 }
-
-// The FavoritesScreenSkeletor seems fine, it's a simple layout
-// wrapper and doesn't require any analytics logging itself.
-class FavoritesScreenSkeletor extends StatelessWidget {
-  final Widget widget;
-
-  const FavoritesScreenSkeletor({super.key, required this.widget});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [Expanded(child: widget)]);
-  }
-}

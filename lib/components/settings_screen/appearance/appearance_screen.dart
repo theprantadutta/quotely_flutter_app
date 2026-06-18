@@ -319,7 +319,12 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: child,
+      // Transparent Material above the container's colour so any tile ink
+      // ripple is visible (and Flutter doesn't warn it may be hidden).
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Material(type: MaterialType.transparency, child: child),
+      ),
     );
   }
 }

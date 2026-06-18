@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../components/quote_of_the_day_screen/single_quote_of_the_component.dart';
 import '../../riverpods/today_quote_of_the_day_provider.dart';
+import '../content_carousel/content_mappers.dart';
+import '../content_carousel/of_the_day_mappers.dart';
+import '../content_carousel/single_feature_card.dart';
 
 class QuoteOfTheDayComponent extends ConsumerWidget {
   const QuoteOfTheDayComponent({super.key});
@@ -14,15 +15,13 @@ class QuoteOfTheDayComponent extends ConsumerWidget {
 
     return quoteOfTheDayProvider.when(
       data: (data) {
-        return SingleQuoteOfTheComponent(
-          quoteDate: data.quoteDate,
-          author: data.author,
-          content: data.content,
+        return SingleFeatureCard(
+          item: contentItemFromQuoteOfTheDay(data),
+          actions: buildQuoteContentActions(onLastItemReached: () async {}),
         );
       },
       error: (err, stack) => const Center(child: Text('Something Went Wrong')),
-      loading: () =>
-          const Skeletonizer(child: SingleQuoteOfTheComponentSkeletor()),
+      loading: () => const SingleFeatureCardSkeleton(),
     );
   }
 }
