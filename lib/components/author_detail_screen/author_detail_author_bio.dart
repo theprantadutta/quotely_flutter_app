@@ -1,180 +1,98 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:quotely_flutter_app/components/shared/circle_avatar_with_fallback.dart';
-import 'package:quotely_flutter_app/constants/responsive.dart';
 import 'package:quotely_flutter_app/dtos/author_dto.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class AuthorDetailAuthorBio extends StatelessWidget {
+import '../authors_screen/gradient_ring_avatar.dart';
+import '../content_carousel/aurora_background.dart';
+
+/// Premium profile header for an author: a gradient-ring avatar over the app's
+/// living aurora background, the name, role, and stat pills (quote count + when
+/// they were added).
+class AuthorProfileHeader extends StatelessWidget {
   final AuthorDto author;
 
-  const AuthorDetailAuthorBio({super.key, required this.author});
+  const AuthorProfileHeader({super.key, required this.author});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkTheme = theme.brightness == Brightness.dark;
-    final screenHeight = MediaQuery.sizeOf(context).height;
+    final isDark = theme.brightness == Brightness.dark;
+    final accent = isDark
+        ? theme.colorScheme.secondary
+        : theme.primaryColor.withValues(alpha: 0.85);
 
     return Container(
-      width: cappedWidth(context, 0.92),
-      height: MediaQuery.sizeOf(context).height * 0.8,
-      constraints: BoxConstraints(
-        maxHeight: screenHeight * 0.8,
-        minHeight: screenHeight * 0.5,
-      ),
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: isDarkTheme
-            ? Colors.grey[900]!.withValues(alpha: 0.6)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: theme.primaryColor.withValues(alpha: 0.1),
-          width: 1.5,
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
         ),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
           children: [
-            // Avatar with decorative ring
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: theme.primaryColor.withValues(alpha: 0.3),
-                  width: 3,
-                ),
-              ),
-              child: CircleAvatarWithFallback(
-                name: author.name,
-                radius: 60,
-                imageUrl: author.imageUrl,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Name with subtle divider
-            Column(
-              children: [
-                Text(
-                  author.name,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
+            Positioned.fill(child: AuroraBackground(isDark: isDark)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 22),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GradientRingAvatar(
+                    name: author.name,
+                    imageUrl: author.imageUrl,
+                    radius: 52,
+                    ringWidth: 4,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  width: 80,
-                  height: 2,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(2),
-                    gradient: LinearGradient(
-                      colors: [
-                        theme.primaryColor.withValues(alpha: 0.2),
-                        theme.primaryColor,
-                        theme.primaryColor.withValues(alpha: 0.2),
-                      ],
+                  const SizedBox(height: 16),
+                  Text(
+                    author.name,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 26,
+                      height: 1.15,
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Description in emphasized style
-            if (author.description.isNotEmpty) ...[
-              Text(
-                author.description,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: theme.primaryColor,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // Bio in readable format
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                author.bio,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.6,
-                  fontWeight: FontWeight.w400,
-                  color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
-                ),
-              ),
-            ),
-
-            // Metadata at bottom
-            const SizedBox(height: 24),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 16,
-              runSpacing: 8,
-              children: [
-                if (author.link.isNotEmpty)
-                  _buildMetaChip(
-                    context,
-                    Icons.calendar_today,
-                    'Created At ${DateFormat.yMMMd().format(author.dateAdded)}',
+                  if (author.description.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      author.description,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FontStyle.italic,
+                        color: accent,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: [
+                      _StatPill(
+                        icon: Icons.format_quote_rounded,
+                        label: '${author.quoteCount} quotes',
+                        accent: accent,
+                        filled: true,
+                      ),
+                      _StatPill(
+                        icon: Icons.calendar_today_rounded,
+                        label:
+                            'Since ${DateFormat.y().format(author.dateAdded)}',
+                        accent: accent,
+                      ),
+                    ],
                   ),
-                _buildMetaChip(
-                  context,
-                  Icons.edit,
-                  'Updated At ${DateFormat.yMMMd().format(author.dateModified)}',
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetaChip(
-    BuildContext context,
-    IconData icon,
-    String text, {
-    VoidCallback? onTap,
-  }) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: theme.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: theme.primaryColor),
-            const SizedBox(width: 6),
-            Text(
-              text,
-              style: TextStyle(fontSize: 12, color: theme.primaryColor),
+                ],
+              ),
             ),
           ],
         ),
@@ -183,178 +101,172 @@ class AuthorDetailAuthorBio extends StatelessWidget {
   }
 }
 
+/// The author's biography in a clean, readable card.
+class AuthorAboutCard extends StatelessWidget {
+  final AuthorDto author;
+
+  const AuthorAboutCard({super.key, required this.author});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final accent = isDark
+        ? theme.colorScheme.secondary
+        : theme.primaryColor.withValues(alpha: 0.85);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'ABOUT',
+            style: TextStyle(
+              fontSize: 11,
+              letterSpacing: 2.4,
+              fontWeight: FontWeight.w700,
+              color: accent,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            author.bio,
+            style: TextStyle(
+              fontSize: 14.5,
+              height: 1.6,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Updated ${DateFormat.yMMMd().format(author.dateModified)}',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color accent;
+  final bool filled;
+
+  const _StatPill({
+    required this.icon,
+    required this.label,
+    required this.accent,
+    this.filled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: filled ? 0.16 : 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: filled
+            ? null
+            : Border.all(color: accent.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: accent),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Loading placeholder for the profile header + about card; wrap in Skeletonizer.
 class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
   const AuthorDetailAuthorBioSkeletor({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkTheme = theme.brightness == Brightness.dark;
-    final screenHeight = MediaQuery.sizeOf(context).height;
-
     return Skeletonizer(
-      child: Container(
-        width: cappedWidth(context, 0.92),
-        height: MediaQuery.sizeOf(context).height * 0.8,
-        constraints: BoxConstraints(
-          maxHeight: screenHeight * 0.8,
-          minHeight: screenHeight * 0.5,
-        ),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDarkTheme
-              ? Colors.grey[900]!.withValues(alpha: 0.6)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 22),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+              ),
             ),
-          ],
-          border: Border.all(
-            color: theme.primaryColor.withValues(alpha: 0.1),
-            width: 1.5,
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Avatar with decorative ring
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: theme.primaryColor.withValues(alpha: 0.3),
-                    width: 3,
-                  ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(radius: 52, backgroundColor: Colors.grey.shade300),
+                const SizedBox(height: 16),
+                const Text(
+                  'Abraham Lincoln',
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
                 ),
-                child: CircleAvatarWithFallback(
-                  name: 'Abraham Lincoln',
-                  radius: 60,
-                  imageUrl: null,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Name with subtle divider
-              Column(
-                children: [
-                  Text(
-                    'Abraham Lincoln',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 80,
-                    height: 2,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(2),
-                      gradient: LinearGradient(
-                        colors: [
-                          theme.primaryColor.withValues(alpha: 0.2),
-                          theme.primaryColor,
-                          theme.primaryColor.withValues(alpha: 0.2),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Description in emphasized style
-              ...[
-                Text(
-                  'American President',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: theme.primaryColor,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 6),
+                const Text('American President'),
+                const SizedBox(height: 16),
+                const Text('128 quotes   ·   Since 1809'),
               ],
-
-              // Bio in readable format
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'American politician who served as the 16th president of the United States from 1861 to 1865.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1.6,
-                    fontWeight: FontWeight.w400,
-                    color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
-                  ),
-                ),
-              ),
-
-              // Metadata at bottom
-              const SizedBox(height: 24),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 16,
-                runSpacing: 8,
-                children: [
-                  _buildMetaChip(
-                    context,
-                    Icons.calendar_today,
-                    'Since ${DateFormat.yMMMd().format(DateTime.now())}',
-                  ),
-                  _buildMetaChip(
-                    context,
-                    Icons.edit,
-                    'Updated ${DateFormat.yMMMd().format(DateTime.now())}',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetaChip(
-    BuildContext context,
-    IconData icon,
-    String text, {
-    VoidCallback? onTap,
-  }) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: theme.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: theme.primaryColor),
-            const SizedBox(width: 6),
-            Text(
-              text,
-              style: TextStyle(fontSize: 12, color: theme.primaryColor),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+              ),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('ABOUT'),
+                SizedBox(height: 12),
+                Text(
+                  'American politician who served as the 16th president of the '
+                  'United States from 1861 to 1865, leading the nation through '
+                  'the Civil War.',
+                  style: TextStyle(height: 1.6),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
