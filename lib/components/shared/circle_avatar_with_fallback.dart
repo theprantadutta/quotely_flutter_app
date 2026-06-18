@@ -19,6 +19,13 @@ class CircleAvatarWithFallback extends StatelessWidget {
     required this.radius,
   });
 
+  /// Wikimedia (and many hosts) throttle/deny image requests that arrive
+  /// without a descriptive User-Agent — that's what caused the 429s. Send one.
+  static const Map<String, String> _imageHeaders = {
+    'User-Agent':
+        'QuotelyApp/1.0 (https://github.com/prantadutta; prantadutta1997@gmail.com)',
+  };
+
   /// On-brand gradient pairs for monogram fallbacks. Chosen for good contrast
   /// against white initials in both light and dark themes.
   static const List<List<Color>> _palettes = [
@@ -43,6 +50,30 @@ class CircleAvatarWithFallback extends StatelessWidget {
   List<Color> _gradientFor(String name) =>
       _palettes[name.hashCode.abs() % _palettes.length];
 
+  Widget _monogram() {
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: _gradientFor(name),
+        ),
+      ),
+      child: Text(
+        _getInitials(name),
+        style: TextStyle(
+          fontSize: radius * 0.7,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
@@ -50,32 +81,23 @@ class CircleAvatarWithFallback extends StatelessWidget {
     return Hero(
       tag: name,
       child: hasImage
-          ? CircleAvatar(
-              radius: radius,
-              backgroundColor: Colors.grey.shade200,
-              backgroundImage: NetworkImage(imageUrl!),
+          ? ClipOval(
+              child: Image.network(
+                imageUrl!,
+                width: radius * 2,
+                height: radius * 2,
+                fit: BoxFit.cover,
+                headers: _imageHeaders,
+                // Show the monogram until the photo is ready (no grey flash)…
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded || frame != null) return child;
+                  return _monogram();
+                },
+                // …and keep it if the photo fails (e.g. 429/404).
+                errorBuilder: (context, error, stackTrace) => _monogram(),
+              ),
             )
-          : Container(
-              width: radius * 2,
-              height: radius * 2,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: _gradientFor(name),
-                ),
-              ),
-              child: Text(
-                _getInitials(name),
-                style: TextStyle(
-                  fontSize: radius * 0.7,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+          : _monogram(),
     );
   }
 }
