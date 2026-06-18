@@ -107,10 +107,6 @@ class NotificationService {
   Future<void> initializeNotificationPreferencesOnce() async {
     final preferences = await SharedPreferences.getInstance();
 
-    // Key to check if initialization has already occurred
-    const String kNotificationsInitializedKey =
-        'notifications_preferences_initialized';
-
     // run the subscribe function
     await enableNotificationsBasedOnPreferences();
 

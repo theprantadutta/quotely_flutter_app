@@ -21,6 +21,7 @@ import '../screens/daily_inspiration_list_screen.dart';
 import '../screens/fact_of_the_day_list_screen.dart';
 import '../screens/motivation_monday_list_screen.dart';
 import '../screens/motivation_monday_screen.dart';
+import '../screens/notifications_onboarding_screen.dart';
 import '../screens/onboarding_screen.dart';
 import '../screens/settings_download_everything_screen.dart';
 import '../screens/support_us_screen.dart';
@@ -90,6 +91,15 @@ class AppNavigation {
             InterestsScreen(key: state.pageKey, isEditing: state.extra == true),
       ),
 
+      /// Notification permission + preferences primer (shown after Interests)
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: NotificationsOnboardingScreen.kRouteName,
+        name: "Notifications Onboarding",
+        builder: (context, state) =>
+            NotificationsOnboardingScreen(key: state.pageKey),
+      ),
+
       /// MainWrapper
       StatefulShellRoute.indexedStack(
         redirect: (context, state) async {
@@ -109,6 +119,14 @@ class AppNavigation {
               preferences.getBool(kHasSelectedInterestsKey) ?? false;
           if (!hasSelectedInterests) {
             return InterestsScreen.kRouteName;
+          }
+
+          // Interests done but the notification primer not seen yet → show it
+          // once (new users in-flow, and existing users on their next launch).
+          final hasSeenNotificationPrompt =
+              preferences.getBool(kHasSeenNotificationPrompt) ?? false;
+          if (!hasSeenNotificationPrompt) {
+            return NotificationsOnboardingScreen.kRouteName;
           }
 
           // No redirection needed if none of the conditions apply

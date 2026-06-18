@@ -30,14 +30,10 @@ class PushNotifications {
         ),
       );
 
-      // 2. Request permissions
-      // await _requestNotificationPermissions();
-      asyncQueue.addJob(
-        (_) => Future.delayed(
-          const Duration(milliseconds: 400),
-          () => _requestNotificationPermissions(),
-        ),
-      );
+      // 2. Permission is now requested by the dedicated notifications
+      // onboarding screen (NotificationsOnboardingScreen), shown after the
+      // interest picker — see PushNotifications.requestPermissions(). It's
+      // deliberately NOT queued here so Home no longer triggers the OS prompt.
 
       // 3. Initialize local notifications
       // await _initializeLocalNotifications();
@@ -95,8 +91,9 @@ class PushNotifications {
         ?.createNotificationChannel(channel);
   }
 
-  // Permission Handling
-  static Future<void> _requestNotificationPermissions() async {
+  // Permission Handling. Public so the notifications onboarding screen can
+  // trigger the OS permission prompt when the user taps "Allow notifications".
+  static Future<void> requestPermissions() async {
     await _firebaseMessaging.requestPermission(
       alert: true,
       announcement: true,

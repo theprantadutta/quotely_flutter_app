@@ -12,8 +12,9 @@ part '../generated/state_providers/user_interests.g.dart';
 /// and flips the "has selected interests" gate used by the router.
 @Riverpod(keepAlive: true)
 class UserInterests extends _$UserInterests {
-  /// Hard cap on how many interests a user can pick.
-  static const int maxInterests = 50;
+  /// Minimum number of interests a user must pick. There is no upper limit —
+  /// users can select as many as they like.
+  static const int minInterests = 10;
 
   Future<void>? _loadFuture;
 
@@ -33,13 +34,13 @@ class UserInterests extends _$UserInterests {
   /// unfiltered first, then refetch — which caused a skeleton flash).
   Future<void> get ready => _loadFuture ?? Future.value();
 
-  /// Persists [interests] (capped at [maxInterests]) and marks the picker as
-  /// completed so the onboarding gate lets the user through.
+  /// Persists [interests] and marks the picker as completed so the onboarding
+  /// gate lets the user through.
   Future<void> save(List<String> interests) async {
-    final capped = interests.take(maxInterests).toList();
-    state = capped;
+    final selected = interests.toList();
+    state = selected;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(kInterestsKey, capped);
+    await prefs.setStringList(kInterestsKey, selected);
     await prefs.setBool(kHasSelectedInterestsKey, true);
   }
 }

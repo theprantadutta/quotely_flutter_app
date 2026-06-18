@@ -7,11 +7,11 @@ import '../components/shared/something_went_wrong.dart';
 import '../constants/responsive.dart';
 import '../riverpods/interest_options_provider.dart';
 import '../state_providers/user_interests.dart';
-import 'tab_screens/home_screen.dart';
+import 'notifications_onboarding_screen.dart';
 
-/// Post-onboarding interest picker. The user selects up to
-/// [UserInterests.maxInterests] topics that become the base filter for the
-/// Home & Facts screens.
+/// Post-onboarding interest picker. The user selects at least
+/// [UserInterests.minInterests] topics (no upper limit) that become the base
+/// filter for the Home & Facts screens.
 ///
 /// [isEditing] is true when reached from Settings (saving pops back); false
 /// during onboarding (saving enters the app).
@@ -27,11 +27,24 @@ class InterestsScreen extends ConsumerStatefulWidget {
 }
 
 class _InterestsScreenState extends ConsumerState<InterestsScreen> {
+  /// How many chips to render initially and to add each time the user scrolls
+  /// near the bottom. The full vocabulary lives in memory; we reveal it in
+  /// batches so a Wrap never has to build hundreds of chips at once.
+  static const int _batchSize = 80;
+
   final _selected = <String>{};
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
   String _query = '';
   bool _initializedFromSaved = false;
   bool _saving = false;
+
+  /// Number of chips currently revealed from the filtered list.
+  int _visibleCount = _batchSize;
+
+  /// Size of the current filtered list — cached from build() so the scroll
+  /// listener knows whether there's more to reveal.
+  int _filteredCount = 0;
 
   @override
   void initState() {
@@ -40,44 +53,50 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
     // but no interests saved yet). Only Onboarding and Home remove the native
     // splash, so without this the app would stay hidden behind it forever.
     FlutterNativeSplash.remove();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
+
+  /// Reveal the next batch as the user nears the bottom of the list.
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 320 &&
+        _visibleCount < _filteredCount) {
+      setState(() => _visibleCount += _batchSize);
+    }
+  }
+
+  /// Reset the reveal window to the top — used when the search query changes so
+  /// results start from the first match.
+  void _resetReveal() => _visibleCount = _batchSize;
 
   void _toggle(String option) {
     setState(() {
       if (_selected.contains(option)) {
         _selected.remove(option);
       } else {
-        if (_selected.length >= UserInterests.maxInterests) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'You can pick up to ${UserInterests.maxInterests} interests.',
-              ),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          return;
-        }
         _selected.add(option);
       }
     });
   }
 
   Future<void> _save() async {
-    if (_selected.isEmpty || _saving) return;
+    if (_selected.length < UserInterests.minInterests || _saving) return;
     setState(() => _saving = true);
     await ref.read(userInterestsProvider.notifier).save(_selected.toList());
     if (!mounted) return;
     if (widget.isEditing) {
       context.pop();
     } else {
-      context.go(HomeScreen.kRouteName);
+      // First-run flow: hand off to the notification primer before Home.
+      context.go(NotificationsOnboardingScreen.kRouteName);
     }
   }
 
@@ -112,7 +131,7 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                   children: [
                     Text(
                       'Choose topics you love. We\'ll tailor your quotes and '
-                      'facts to them — pick up to ${UserInterests.maxInterests}.',
+                      'facts to them — pick at least ${UserInterests.minInterests}.',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(
                           alpha: 0.7,
@@ -122,7 +141,10 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: _searchController,
-                      onChanged: (v) => setState(() => _query = v.trim()),
+                      onChanged: (v) => setState(() {
+                        _query = v.trim();
+                        _resetReveal();
+                      }),
                       decoration: InputDecoration(
                         isDense: true,
                         hintText: 'Search interests',
@@ -172,19 +194,28 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                         child: Text('No matching interests.'),
                       );
                     }
-                    // A Wrap builds every child eagerly, and the full tag
-                    // vocabulary can be many hundreds of items — rendering them
-                    // all at once janks the main thread. Cap the rendered chips
-                    // and rely on the search box to surface the rest. Selected
-                    // chips come first so they always stay visible/toggleable.
-                    const cap = 120;
-                    final ordered = [
-                      ...filtered.where(_selected.contains),
-                      ...filtered.where((o) => !_selected.contains(o)),
-                    ];
-                    final shown = ordered.take(cap).toList();
-                    final hiddenCount = ordered.length - shown.length;
+                    // The whole vocabulary is already in memory, but a Wrap
+                    // builds every child eagerly and there can be hundreds —
+                    // building them all at once janks the main thread. So we
+                    // reveal them in batches, growing the window as the user
+                    // scrolls (see _onScroll). Natural order is preserved so
+                    // tapping a chip toggles it in place instead of jumping.
+                    _filteredCount = filtered.length;
+                    final visible = _visibleCount.clamp(0, filtered.length);
+                    final base = filtered.take(visible).toList();
+                    final baseSet = base.toSet();
+                    // Keep any selected items that haven't been scrolled into
+                    // view yet (e.g. interests seeded from a previous save in
+                    // edit mode) visible and removable.
+                    final hiddenSelected = filtered
+                        .where(
+                          (o) => _selected.contains(o) && !baseSet.contains(o),
+                        )
+                        .toList();
+                    final shown = [...base, ...hiddenSelected];
+                    final hasMore = visible < filtered.length;
                     return SingleChildScrollView(
+                      controller: _scrollController,
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,21 +232,17 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                                 ),
                             ],
                           ),
-                          if (hiddenCount > 0)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 16,
-                                bottom: 4,
-                              ),
-                              child: Text(
-                                '+$hiddenCount more — search to narrow down',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.6),
-                                    ),
+                          if (hasMore)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 20, bottom: 4),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
                               ),
                             ),
                         ],
@@ -310,7 +337,9 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final enabled = count > 0 && !saving;
+    const min = UserInterests.minInterests;
+    final hasMin = count >= min;
+    final enabled = hasMin && !saving;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
       decoration: BoxDecoration(
@@ -323,14 +352,35 @@ class _BottomBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(
-            '$count / ${UserInterests.maxInterests} selected',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+          // Count on its own line; below the minimum, a second line nudges the
+          // user toward it (there's no upper limit once met).
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$count selected',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+                if (!hasMin)
+                  Text(
+                    'Pick at least $min',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                    ),
+                  ),
+              ],
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 12),
           FilledButton(
             onPressed: enabled ? onSave : null,
             child: saving

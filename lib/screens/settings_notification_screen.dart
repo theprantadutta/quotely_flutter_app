@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/layouts/main_layout.dart';
-import 'package:quotely_flutter_app/components/settings_screen/notifications/switch_settings_layout.dart';
+import 'package:quotely_flutter_app/components/notifications_screen/notification_toggles_section.dart';
 import 'package:quotely_flutter_app/constants/notification_keys.dart';
 import 'package:quotely_flutter_app/screens/daily_inspiration_screen.dart';
 import 'package:quotely_flutter_app/screens/motivation_monday_screen.dart';
@@ -147,92 +147,13 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
 
             const SizedBox(height: 32),
 
-            // --- 3. Quote Notification Toggles ---
-            _buildSectionHeader(context, "Quote Notification Toggles"),
-            const SizedBox(height: 8),
-            IgnorePointer(
-              ignoring: !areNotificationsEnabled,
-              child: Opacity(
-                opacity: areNotificationsEnabled ? 1.0 : 0.5,
-                child: _buildSectionContainer(
-                  children: [
-                    SwitchSettingsLayout(
-                      title: 'Quote of the Day',
-                      value: _notifications[kNotificationQuoteOfTheDay]!,
-                      onSwitchChanged: (value) => _onNotificationSwitched(
-                        kNotificationQuoteOfTheDay,
-                        kNotificationQuoteOfTheDayTopic,
-                        value,
-                      ),
-                    ),
-                    const Divider(height: 1, indent: 20, endIndent: 20),
-                    SwitchSettingsLayout(
-                      title: 'Daily Inspiration',
-                      value: _notifications[kNotificationDailyInspiration]!,
-                      onSwitchChanged: (value) => _onNotificationSwitched(
-                        kNotificationDailyInspiration,
-                        kNotificationDailyInspirationTopic,
-                        value,
-                      ),
-                    ),
-                    const Divider(height: 1, indent: 20, endIndent: 20),
-                    SwitchSettingsLayout(
-                      title: 'Motivation Monday',
-                      value: _notifications[kNotificationMotivation]!,
-                      onSwitchChanged: (value) => _onNotificationSwitched(
-                        kNotificationMotivation,
-                        kNotificationMotivationMondayTopic,
-                        value,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // --- 4. Fact Notification Toggles ---
-            _buildSectionHeader(context, "Fact Notification Toggles"),
-            const SizedBox(height: 8),
-            IgnorePointer(
-              ignoring: !areNotificationsEnabled,
-              child: Opacity(
-                opacity: areNotificationsEnabled ? 1.0 : 0.5,
-                child: _buildSectionContainer(
-                  children: [
-                    SwitchSettingsLayout(
-                      title: 'Fact of the Day',
-                      value: _notifications[kNotificationFactOfTheDay]!,
-                      onSwitchChanged: (value) => _onNotificationSwitched(
-                        kNotificationFactOfTheDay,
-                        kNotificationFactOfTheDayTopic,
-                        value,
-                      ),
-                    ),
-                    const Divider(height: 1, indent: 20, endIndent: 20),
-                    SwitchSettingsLayout(
-                      title: 'Daily Brain Food',
-                      value: _notifications[kNotificationDailyBrainFood]!,
-                      onSwitchChanged: (value) => _onNotificationSwitched(
-                        kNotificationDailyBrainFood,
-                        kNotificationDailyBrainFoodTopic,
-                        value,
-                      ),
-                    ),
-                    const Divider(height: 1, indent: 20, endIndent: 20),
-                    SwitchSettingsLayout(
-                      title: 'Weird Fact Wednesday',
-                      value: _notifications[kNotificationWeirdFactWednesday]!,
-                      onSwitchChanged: (value) => _onNotificationSwitched(
-                        kNotificationWeirdFactWednesday,
-                        kNotificationWeirdFactWednesdayTopic,
-                        value,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            // --- 3 & 4. Per-type toggles (shared with the onboarding primer
+            // so both screens always show the same set, styled identically) ---
+            NotificationTogglesSection(
+              values: _notifications,
+              enabled: areNotificationsEnabled,
+              onChanged: (type, value) =>
+                  _onNotificationSwitched(type.prefKey, type.topic, value),
             ),
 
             const SizedBox(height: 32),

@@ -40,3 +40,12 @@ const kNotificationQuoteOfTheDay = 'notification-quote-of-the-week';
 const kNotificationFactOfTheDay = 'notification-fact-of-the-day';
 const kNotificationDailyBrainFood = 'notification-daily-brain-food';
 const kNotificationWeirdFactWednesday = 'notification-weird-fact-wednesday';
+
+/// Set once the notification-default prefs have been seeded + subscribed (see
+/// [NotificationService.initializeNotificationPreferencesOnce]). Once true, the
+/// Home startup job won't re-seed prefs and clobber the user's choices.
+const kNotificationsInitializedKey = 'notifications_preferences_initialized';
+
+/// Whether the user has been shown the post-interests notification permission +
+/// preferences screen. Gates that screen the same way onboarding/interests do.
+const kHasSeenNotificationPrompt = 'has-seen-notification-prompt';
