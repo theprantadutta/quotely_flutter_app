@@ -34,3 +34,5 @@ const kGetTodayDailyBrainFood = 'DailyBrainFood/GetTodayDailyBrainFood';
 const kGetAllWeirdFactWednesday = 'WeirdFactWednesday/GetAllWeirdFactWednesday';
 const kGetTodayWeirdFactWednesday =
     'WeirdFactWednesday/GetTodayWeirdFactWednesday';
+
+const kGetApplicationInfo = 'Application/GetApplicationInfo';

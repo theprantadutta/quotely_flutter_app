@@ -13,6 +13,7 @@ import '../../components/content_carousel/content_mappers.dart';
 import '../../components/content_carousel/vertical_content_carousel.dart';
 import '../../components/home_screen/home_screen_quote_filters.dart';
 import '../../components/home_screen/home_screen_top_bar.dart';
+import '../../components/home_screen/ios_update_banner.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../constants/colors.dart';
 import '../../constants/shared_preference_keys.dart';
@@ -382,6 +383,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   isLoadingMore &&
                   quotes.isNotEmpty, // Only show spinner on subsequent loads
             ),
+            // iOS-only: dashboard-managed App Store update notice (Android
+            // updates are handled by in_app_update in main.dart)
+            const IosUpdateBanner(),
             // BUG FIX & REFINEMENT: The conditional logic below is now more structured
             // to prevent multiple states from showing at once.
             if (!hasError) ...[
