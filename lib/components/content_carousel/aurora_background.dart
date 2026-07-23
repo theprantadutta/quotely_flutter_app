@@ -21,10 +21,15 @@ class _AuroraBackgroundState extends State<AuroraBackground>
     duration: const Duration(seconds: 14),
   )..repeat(reverse: true);
 
-  // Green → turquoise → cyan.
+  // Green → turquoise → cyan (dark mode keeps the original trio).
   static const _green = Color(0xFF2ECC71);
   static const _turquoise = Color(0xFF1ABC9C);
   static const _cyan = Color(0xFF00BCD4);
+
+  // Light mode swaps the turquoise for a soft blue-violet: with three
+  // same-hue greens the overlapping blobs blended into one flat mint wash;
+  // a contrasting hue gives the aurora actual depth.
+  static const _violet = Color(0xFF8B7CF6);
 
   @override
   void dispose() {
@@ -34,7 +39,22 @@ class _AuroraBackgroundState extends State<AuroraBackground>
 
   @override
   Widget build(BuildContext context) {
-    final alpha = widget.isDark ? 0.26 : 0.18;
+    final isDark = widget.isDark;
+    // Light mode: smaller, unevenly weighted blobs so clean white surface
+    // shows between them — brighter card, crisper text, real aurora feel.
+    // Dark mode: unchanged big soft wash.
+    final radius = isDark ? 0.95 : 0.62;
+    final colors = isDark
+        ? [
+            _cyan.withValues(alpha: 0.26),
+            _green.withValues(alpha: 0.26),
+            _turquoise.withValues(alpha: 0.26),
+          ]
+        : [
+            _cyan.withValues(alpha: 0.20),
+            _green.withValues(alpha: 0.13),
+            _violet.withValues(alpha: 0.12),
+          ];
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
@@ -47,7 +67,8 @@ class _AuroraBackgroundState extends State<AuroraBackground>
                 const Alignment(-0.2, -0.4),
                 t,
               )!,
-              _cyan.withValues(alpha: alpha),
+              colors[0],
+              radius,
             ),
             _blob(
               Alignment.lerp(
@@ -55,7 +76,8 @@ class _AuroraBackgroundState extends State<AuroraBackground>
                 const Alignment(0.4, 0.2),
                 t,
               )!,
-              _green.withValues(alpha: alpha),
+              colors[1],
+              radius,
             ),
             _blob(
               Alignment.lerp(
@@ -63,7 +85,8 @@ class _AuroraBackgroundState extends State<AuroraBackground>
                 const Alignment(0.5, 0.5),
                 t,
               )!,
-              _turquoise.withValues(alpha: alpha),
+              colors[2],
+              radius,
             ),
           ],
         );
@@ -71,13 +94,13 @@ class _AuroraBackgroundState extends State<AuroraBackground>
     );
   }
 
-  Widget _blob(Alignment center, Color color) {
+  Widget _blob(Alignment center, Color color, double radius) {
     return Positioned.fill(
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: RadialGradient(
             center: center,
-            radius: 0.95,
+            radius: radius,
             colors: [color, color.withValues(alpha: 0)],
           ),
         ),
