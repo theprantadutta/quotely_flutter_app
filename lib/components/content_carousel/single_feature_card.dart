@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../constants/responsive.dart';
 import 'carousel_skeleton.dart';
 import 'content_card.dart';
 import 'content_item.dart';
@@ -7,7 +8,8 @@ import 'content_item.dart';
 /// A single full-height [ContentCard] for the "today" detail screens (Quote of
 /// the Day, Fact of the Day, Daily Inspiration, etc.). Gives those screens the
 /// same card as the main feed, sized to sit above the "See All" button in the
-/// notification layout.
+/// notification layout. Phone: 78% of screen height, as before. Tablet: capped
+/// via [ResponsiveCardBox] so the card keeps feed proportions.
 class SingleFeatureCard extends StatelessWidget {
   final ContentItem item;
   final ContentActions actions;
@@ -20,9 +22,11 @@ class SingleFeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.78,
-      child: ContentCard(item: item, actions: actions),
+    return ResponsiveCardBox(
+      child: SizedBox(
+        height: cappedHeight(context, 0.78),
+        child: ContentCard(item: item, actions: actions),
+      ),
     );
   }
 }
@@ -33,9 +37,11 @@ class SingleFeatureCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.78,
-      child: const CarouselSkeletonCard(),
+    return ResponsiveCardBox(
+      child: SizedBox(
+        height: cappedHeight(context, 0.78),
+        child: const CarouselSkeletonCard(),
+      ),
     );
   }
 }

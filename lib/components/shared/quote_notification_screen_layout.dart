@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../constants/responsive.dart';
 import '../layouts/main_layout.dart';
 
 class QuoteNotificationScreenLayout extends StatelessWidget {
@@ -28,7 +29,7 @@ class QuoteNotificationScreenLayout extends StatelessWidget {
             GestureDetector(
               onTap: () => context.push(allQuoteRoute),
               child: Container(
-                height: MediaQuery.sizeOf(context).height * 0.05,
+                height: kSeeAllButtonHeight,
                 margin: const EdgeInsets.only(top: 8, bottom: 5),
                 width: double.infinity,
                 decoration: BoxDecoration(

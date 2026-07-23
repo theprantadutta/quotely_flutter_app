@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
@@ -159,7 +161,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(imagePath, height: 300),
+            // Shrinks on short (tablet landscape) viewports instead of
+            // overflowing the page.
+            Image.asset(
+              imagePath,
+              height: math.min(300, MediaQuery.sizeOf(context).height * 0.35),
+            ),
             const SizedBox(height: 40),
             Text(
               title,

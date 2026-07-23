@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../constants/responsive.dart';
 import 'aurora_background.dart';
 import 'content_item.dart';
 import 'text_fit.dart';
@@ -25,6 +26,9 @@ class ContentCard extends ConsumerWidget {
         ? theme.colorScheme.secondary
         : theme.primaryColor.withValues(alpha: 0.85);
     final isQuote = item.type == ContentItemType.quote;
+    // Tablet: roomier padding and larger type, so the capped card reads like
+    // a poster instead of a scaled-up phone card.
+    final t = isTablet(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -49,7 +53,7 @@ class ContentCard extends ConsumerWidget {
               child: Text(
                 '“',
                 style: TextStyle(
-                  fontSize: 120,
+                  fontSize: t ? 150 : 120,
                   height: 1,
                   fontWeight: FontWeight.w800,
                   color: accent.withValues(alpha: isDark ? 0.14 : 0.10),
@@ -57,19 +61,21 @@ class ContentCard extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 18, 24, 14),
+              padding: t
+                  ? const EdgeInsets.fromLTRB(32, 24, 32, 20)
+                  : const EdgeInsets.fromLTRB(24, 18, 24, 14),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   // Body area: card minus the header (~44) and footer (~96)
                   final bodyBox = Size(
                     constraints.maxWidth,
-                    constraints.maxHeight - 150,
+                    constraints.maxHeight - (t ? 170 : 150),
                   );
                   final fontSize = fitFontSize(
                     text: item.body,
                     box: bodyBox,
                     baseStyle: theme.textTheme.bodyMedium ?? const TextStyle(),
-                    max: 26,
+                    max: t ? 32 : 26,
                     min: 14,
                   );
                   final bodyStyle = TextStyle(
@@ -98,7 +104,7 @@ class ContentCard extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: t ? 13 : 11,
                                 letterSpacing: 2.4,
                                 fontWeight: FontWeight.w700,
                                 color: accent,
@@ -158,7 +164,7 @@ class ContentCard extends ConsumerWidget {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
-                                              fontSize: 15,
+                                              fontSize: t ? 17 : 15,
                                               fontWeight: FontWeight.w700,
                                               color: accent,
                                             ),
@@ -177,11 +183,16 @@ class ContentCard extends ConsumerWidget {
                                       runSpacing: 6,
                                       children: [
                                         for (final tag in item.tags.take(3))
-                                          _TagChip(label: tag, color: accent),
+                                          _TagChip(
+                                            label: tag,
+                                            color: accent,
+                                            fontSize: t ? 12.5 : 11,
+                                          ),
                                         if (item.tags.length > 3)
                                           _TagChip(
                                             label: '+${item.tags.length - 3}',
                                             color: accent,
+                                            fontSize: t ? 12.5 : 11,
                                           ),
                                       ],
                                     ),
@@ -271,8 +282,13 @@ class _HeartButton extends ConsumerWidget {
 class _TagChip extends StatelessWidget {
   final String label;
   final Color color;
+  final double fontSize;
 
-  const _TagChip({required this.label, required this.color});
+  const _TagChip({
+    required this.label,
+    required this.color,
+    this.fontSize = 11,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +301,7 @@ class _TagChip extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: fontSize,
           letterSpacing: 0.4,
           fontWeight: FontWeight.w600,
           color: color,

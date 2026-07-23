@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../constants/responsive.dart';
+
 /// The shared top bar for all tab screens: a gradient icon badge + gradient
 /// title on the left, with optional [trailing] content on the right edge.
 class TopNavigationBar extends StatelessWidget {
@@ -27,7 +29,7 @@ class TopNavigationBar extends StatelessWidget {
     final primary = Theme.of(context).colorScheme.primary;
 
     return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.06,
+      height: kTopBarHeight,
       child: Row(
         children: [
           GestureDetector(

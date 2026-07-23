@@ -11,6 +11,7 @@ class DailyInspirationListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MainLayout(
       title: 'All Daily Inspiration',
+      scrollable: false,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),

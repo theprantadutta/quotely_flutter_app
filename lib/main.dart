@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' show FlutterView;
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -39,10 +40,9 @@ void main() async {
   );
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  // Quotely is designed for portrait only — lock it on both platforms.
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+  // Phones are portrait-only; tablets/iPads may rotate freely. No BuildContext
+  // exists yet, so read the device class straight from the engine view.
+  await _lockOrientationForDeviceClass(widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
@@ -61,6 +61,32 @@ void main() async {
       child: QuotelyApp(),
     ),
   );
+}
+
+/// Portrait-locks phones and frees tablets (shortest side >= 600dp), matching
+/// `isTablet()` in constants/responsive.dart. On the rare Android device where
+/// the view size isn't known yet at startup, default to portrait and re-check
+/// after the first frame — worst case a tablet starts portrait and unlocks a
+/// frame later.
+Future<void> _lockOrientationForDeviceClass(WidgetsBinding binding) async {
+  Future<void> apply(FlutterView view) {
+    final shortestSide = view.physicalSize.shortestSide / view.devicePixelRatio;
+    return SystemChrome.setPreferredOrientations(
+      shortestSide >= 600
+          ? DeviceOrientation.values
+          : [DeviceOrientation.portraitUp],
+    );
+  }
+
+  final view = binding.platformDispatcher.views.first;
+  if (view.physicalSize.isEmpty) {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    binding.addPostFrameCallback((_) {
+      apply(binding.platformDispatcher.views.first);
+    });
+    return;
+  }
+  await apply(view);
 }
 
 class QuotelyApp extends StatefulWidget {

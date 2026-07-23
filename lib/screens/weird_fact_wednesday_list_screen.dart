@@ -11,6 +11,7 @@ class WeirdFactWednesdayListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MainLayout(
       title: 'All Weird Fact Wednesday',
+      scrollable: false,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),

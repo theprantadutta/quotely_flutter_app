@@ -11,6 +11,7 @@ class DailyBrainFoodListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MainLayout(
       title: 'All Daily Brain Food',
+      scrollable: false,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),

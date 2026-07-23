@@ -11,6 +11,7 @@ class QuoteOfTheDayListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MainLayout(
       title: 'All Quote of the Day',
+      scrollable: false,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),

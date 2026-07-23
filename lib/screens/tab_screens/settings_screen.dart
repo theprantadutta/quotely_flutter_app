@@ -7,6 +7,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:quotely_flutter_app/constants/responsive.dart';
 import 'package:quotely_flutter_app/constants/selectors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -206,10 +207,10 @@ class SettingsScreen extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           // The content needs to be scrollable and have a defined size.
+          // Capped on tablets so it reads as a document, not a wall of text.
           content: SizedBox(
-            width: double.maxFinite,
-            // Constrain the height to prevent the dialog from being too tall on large screens.
-            height: MediaQuery.of(context).size.height * 0.6,
+            width: kMaxDialogWidth,
+            height: cappedHeight(context, 0.6, max: 620),
             child: SingleChildScrollView(
               child: MarkdownBody(
                 data: markdownContent,

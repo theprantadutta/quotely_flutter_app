@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quotely_flutter_app/main.dart';
 
+import '../../../constants/responsive.dart';
 import '../../layouts/main_layout.dart';
 
 const List<String> kFontFamilies = [
@@ -100,8 +101,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               context,
               // --- UPDATED: Replaced Wrap with a SizedBox and horizontal ListView ---
               child: SizedBox(
-                // Set a fixed height for the horizontal list
-                height: 70,
+                // Fixed height for the horizontal list; slightly larger
+                // swatches on tablets.
+                height: isTablet(context) ? 84 : 70,
                 child: ListView.builder(
                   // Set the scroll direction to horizontal
                   scrollDirection: Axis.horizontal,
@@ -124,8 +126,8 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                           // Added a tooltip to show the color name on long press
                           message: scheme.name,
                           child: Container(
-                            width: 50,
-                            height: 50,
+                            width: isTablet(context) ? 60 : 50,
+                            height: isTablet(context) ? 60 : 50,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: FlexThemeData.light(

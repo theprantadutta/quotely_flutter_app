@@ -5,6 +5,7 @@ import 'package:quotely_flutter_app/dtos/author_dto.dart';
 import 'package:quotely_flutter_app/riverpods/all_quotes_by_author_provider.dart';
 import 'package:quotely_flutter_app/util/pagination_seed.dart';
 
+import '../../constants/responsive.dart';
 import '../../dtos/quote_dto.dart';
 import '../content_carousel/content_item.dart';
 import '../content_carousel/content_mappers.dart';
@@ -14,7 +15,15 @@ import '../shared/something_went_wrong.dart';
 class AuthorDetailAuthorQuoteList extends ConsumerStatefulWidget {
   final AuthorDto author;
 
-  const AuthorDetailAuthorQuoteList({super.key, required this.author});
+  /// When true the carousel fills whatever bounded space the parent gives it
+  /// (tablet-landscape side-by-side layout) instead of a fixed height.
+  final bool expand;
+
+  const AuthorDetailAuthorQuoteList({
+    super.key,
+    required this.author,
+    this.expand = false,
+  });
 
   @override
   ConsumerState<AuthorDetailAuthorQuoteList> createState() =>
@@ -81,9 +90,8 @@ class _AuthorDetailAuthorQuoteListState
   @override
   Widget build(BuildContext context) {
     if (hasError && quotes.isEmpty) {
-      return SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.5,
-        child: Center(
+      return _stateBox(
+        Center(
           child: SomethingWentWrong(
             title: 'Failed to get Quotes.',
             onRetryPressed: _fetchQuotes,
@@ -93,9 +101,8 @@ class _AuthorDetailAuthorQuoteListState
     }
 
     if (!hasError && !isLoadingMore && quotes.isEmpty) {
-      return SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.5,
-        child: Column(
+      return _stateBox(
+        Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.hourglass_empty_outlined, size: 80),
@@ -112,14 +119,22 @@ class _AuthorDetailAuthorQuoteListState
 
     // Same card carousel as the Home screen (it renders its own skeleton
     // while the first page loads).
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.67,
-      child: VerticalContentCarousel(
-        items: [for (final quote in quotes) contentItemFromQuote(quote)],
-        actions: _contentActions,
-        isLoadingMore: isLoadingMore,
-        hasMoreData: hasMoreData,
-      ),
+    final carousel = VerticalContentCarousel(
+      items: [for (final quote in quotes) contentItemFromQuote(quote)],
+      actions: _contentActions,
+      isLoadingMore: isLoadingMore,
+      hasMoreData: hasMoreData,
     );
+    if (widget.expand) return SizedBox.expand(child: carousel);
+    // Capped so the embedded carousel can't balloon on tall tablets.
+    return SizedBox(
+      height: cappedHeight(context, 0.67, max: 640),
+      child: carousel,
+    );
+  }
+
+  Widget _stateBox(Widget child) {
+    if (widget.expand) return SizedBox.expand(child: Center(child: child));
+    return SizedBox(height: cappedHeight(context, 0.5, max: 420), child: child);
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../constants/responsive.dart';
 import '../../riverpods/all_facts_categories_data_provider.dart';
 import '../home_screen/home_screen_quote_single_filter.dart';
 
@@ -272,7 +273,7 @@ class _FactsScreenFilterListState extends ConsumerState<FactsScreenFilterList> {
     if (isLoading && pageNumber == 1) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
-        height: MediaQuery.sizeOf(context).height * 0.038,
+        height: kFilterChipRowHeight,
         child: Skeletonizer(
           child: ListView.builder(
             itemCount: 10,
@@ -290,7 +291,7 @@ class _FactsScreenFilterListState extends ConsumerState<FactsScreenFilterList> {
     if (hasError && aiCategories.isEmpty) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
-        height: MediaQuery.sizeOf(context).height * 0.038,
+        height: kFilterChipRowHeight,
         child: _buildErrorWidget(),
       );
     }
@@ -298,14 +299,14 @@ class _FactsScreenFilterListState extends ConsumerState<FactsScreenFilterList> {
     if (aiCategories.isEmpty) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
-        height: MediaQuery.sizeOf(context).height * 0.038,
+        height: kFilterChipRowHeight,
         child: _buildEmptyState(),
       );
     }
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
-      height: MediaQuery.sizeOf(context).height * 0.038,
+      height: kFilterChipRowHeight,
       child: ListView.builder(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,

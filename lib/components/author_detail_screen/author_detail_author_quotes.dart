@@ -6,7 +6,15 @@ import 'package:quotely_flutter_app/dtos/author_dto.dart';
 class AuthorDetailAuthorQuotes extends StatelessWidget {
   final AuthorDto author;
 
-  const AuthorDetailAuthorQuotes({super.key, required this.author});
+  /// When true the carousel fills the remaining bounded height (tablet
+  /// landscape side pane) instead of using a fixed height.
+  final bool expand;
+
+  const AuthorDetailAuthorQuotes({
+    super.key,
+    required this.author,
+    this.expand = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +56,12 @@ class AuthorDetailAuthorQuotes extends StatelessWidget {
             ],
           ),
         ),
-        AuthorDetailAuthorQuoteList(author: author),
+        if (expand)
+          Expanded(
+            child: AuthorDetailAuthorQuoteList(author: author, expand: true),
+          )
+        else
+          AuthorDetailAuthorQuoteList(author: author),
       ],
     );
   }

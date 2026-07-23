@@ -7,8 +7,9 @@ class DarkGradientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Fills whatever space the parent gives it — a fixed 90%-of-screen height
+    // ran out under tall content and in landscape.
     return Container(
-      height: MediaQuery.sizeOf(context).height * 0.9,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         gradient: LinearGradient(

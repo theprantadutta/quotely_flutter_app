@@ -11,6 +11,7 @@ class MotivationMondayListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MainLayout(
       title: 'All Monday Motivation',
+      scrollable: false,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),

@@ -51,9 +51,9 @@ class _DailyInspirationListComponentState
       fetchAllDailyInspirationProvider(pageNumber, pageSize),
     );
 
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.87,
-      width: double.infinity,
+    // Fills the bounded viewport from MainLayout(scrollable: false) instead
+    // of assuming a portrait screen fraction — works in any orientation.
+    return SizedBox.expand(
       child: quoteProvider.when(
         skipLoadingOnRefresh: false,
         data: (data) {

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../constants/responsive.dart';
 import '../../constants/shared_preference_keys.dart';
 import 'carousel_skeleton.dart';
 import 'content_card.dart';
@@ -37,10 +39,42 @@ class VerticalContentCarousel extends StatefulWidget {
 
 class _VerticalContentCarouselState extends State<VerticalContentCarousel>
     with SingleTickerProviderStateMixin {
-  // <1 so the neighbouring cards peek above/below the active one.
-  final PageController _controller = PageController(viewportFraction: 0.82);
+  // <1 so the neighbouring cards peek above/below the active one. Created
+  // lazily inside the LayoutBuilder because the fraction depends on viewport
+  // height: on tall tablets the card is capped at [kMaxFeedCardHeight], so a
+  // fixed 0.82 would leave dead gaps between pages.
+  PageController? _controller;
+  double _fraction = 0.82;
 
   int _index = 0;
+
+  /// Card height for a given viewport height: the phone-tuned 82% of the
+  /// viewport, capped so tablets get a well-proportioned card instead of a
+  /// stretched one.
+  static double _cardHeightFor(double maxHeight) =>
+      math.min(kMaxFeedCardHeight, maxHeight * 0.82);
+
+  /// (Re)creates the controller when the viewport-derived fraction changes
+  /// meaningfully (rotation, window resize), preserving the current page.
+  /// On phones the math yields ~0.82 — identical to the old fixed value.
+  PageController _controllerFor(double maxHeight) {
+    final cardH = _cardHeightFor(maxHeight);
+    final fraction = ((cardH + 24) / maxHeight).clamp(0.55, 0.82);
+    final existing = _controller;
+    if (existing != null && (fraction - _fraction).abs() < 0.01) {
+      return existing;
+    }
+    _fraction = fraction;
+    _controller = PageController(
+      viewportFraction: fraction,
+      initialPage: _index,
+    );
+    if (existing != null) {
+      // Dispose after the frame so the outgoing PageView detaches first.
+      WidgetsBinding.instance.addPostFrameCallback((_) => existing.dispose());
+    }
+    return _controller!;
+  }
 
   /// Drives the swipe-coach bobbing. Created lazily only when the coach is
   /// actually shown — never touch it in dispose() unless it exists, or building
@@ -84,9 +118,9 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
     super.didUpdateWidget(oldWidget);
     // Refresh / filter change rebuilds the list from scratch — snap back up.
     if (widget.items.length < oldWidget.items.length &&
-        _controller.hasClients) {
+        (_controller?.hasClients ?? false)) {
       _index = 0;
-      _controller.jumpToPage(0);
+      _controller!.jumpToPage(0);
     }
   }
 
@@ -94,7 +128,7 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
   void dispose() {
     _coachTimer?.cancel();
     _bob?.dispose();
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -110,12 +144,17 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
   @override
   Widget build(BuildContext context) {
     if (widget.items.isEmpty && widget.isLoadingMore) {
-      return const FractionallySizedBox(
-        heightFactor: 0.82,
-        alignment: Alignment.center,
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: CarouselSkeletonCard(),
+      // Same sizing math as the real pages below, so the loading and loaded
+      // states are footprint-identical on every device.
+      return LayoutBuilder(
+        builder: (context, constraints) => ResponsiveCardBox(
+          child: SizedBox(
+            height: _cardHeightFor(constraints.maxHeight),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: CarouselSkeletonCard(),
+            ),
+          ),
         ),
       );
     }
@@ -130,14 +169,16 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Cover the peeking neighbour card (~9% of the viewport each side,
-        // from viewportFraction 0.82) plus a little, so its border melts away.
-        final fadeHeight = constraints.maxHeight * 0.13;
+        final controller = _controllerFor(constraints.maxHeight);
+        // Cover the peeking neighbour card plus a little, so its border melts
+        // away. The peek grows on tall tablets where the fraction shrinks.
+        final peek = constraints.maxHeight * (1 - _fraction) / 2;
+        final fadeHeight = math.max(constraints.maxHeight * 0.13, peek + 30);
         return Stack(
           children: [
             PageView.builder(
               key: const PageStorageKey('vertical_content_carousel'),
-              controller: _controller,
+              controller: controller,
               scrollDirection: Axis.vertical,
               onPageChanged: _onPageChanged,
               itemCount: itemCount,
@@ -153,14 +194,11 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
                 // Deliberately no opacity fade — translucent neighbours read
                 // as a weird glass panel behind the active card.
                 return AnimatedBuilder(
-                  animation: _controller,
+                  animation: controller,
                   builder: (context, child) {
                     double delta = 0;
-                    if (_controller.position.haveDimensions) {
-                      delta = ((_controller.page ?? 0) - index).clamp(
-                        -1.0,
-                        1.0,
-                      );
+                    if (controller.position.haveDimensions) {
+                      delta = ((controller.page ?? 0) - index).clamp(-1.0, 1.0);
                     }
                     return Transform.scale(
                       scale: 1 - 0.05 * delta.abs(),
@@ -169,7 +207,8 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: child,
+                    // Centers and caps the card on tablets; no-op on phones.
+                    child: ResponsiveCardBox(child: child),
                   ),
                 );
               },

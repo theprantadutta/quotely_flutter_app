@@ -22,8 +22,10 @@ class SettingsScreenLayout extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: MediaQuery.sizeOf(context).height * 0.12,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        // Intrinsic height with a floor — a screen fraction ballooned on
+        // tablets and shrank in landscape.
+        constraints: const BoxConstraints(minHeight: 88),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
         margin: const EdgeInsets.symmetric(vertical: 3),
         decoration: BoxDecoration(
           // color: kPrimaryColor.withValues(alpha: 0.05),

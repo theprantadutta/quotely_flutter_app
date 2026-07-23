@@ -5,6 +5,7 @@ import 'package:quotely_flutter_app/service_locator/init_service_locators.dart';
 import '../../components/favorites_screen/facts_list.dart';
 import '../../components/favorites_screen/quote_list.dart';
 import '../../components/shared/top_navigation_bar.dart';
+import '../../constants/responsive.dart';
 
 class FavoritesScreen extends StatefulWidget {
   static const kRouteName = '/favorites';
@@ -74,11 +75,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
     final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
+    // Resolution-independent geometry: the thumb is always half the track,
+    // slid with alignment instead of hardcoded pixel offsets. Slightly wider
+    // on tablets for a larger touch target.
+    final trackWidth = isTablet(context) ? 240.0 : 200.0;
+
     return Padding(
       padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
       child: Center(
         child: Container(
-          width: 200,
+          width: trackWidth,
           height: 35, // Slightly increased height for better touch target
           decoration: BoxDecoration(
             color: Theme.of(
@@ -88,12 +94,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           child: Stack(
             children: [
-              AnimatedPositioned(
+              AnimatedAlign(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                left: showQuotes ? 0 : 100,
+                alignment: showQuotes
+                    ? Alignment.centerLeft
+                    : Alignment.centerRight,
                 child: Container(
-                  width: 100,
+                  width: trackWidth / 2,
                   height: 35,
                   decoration: BoxDecoration(
                     color: primaryColor,

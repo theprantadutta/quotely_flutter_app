@@ -16,6 +16,7 @@ import '../../components/home_screen/home_screen_top_bar.dart';
 import '../../components/home_screen/ios_update_banner.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../constants/colors.dart';
+import '../../constants/responsive.dart';
 import '../../constants/shared_preference_keys.dart';
 import '../../state_providers/user_interests.dart';
 import '../../main.dart';
@@ -120,68 +121,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? 'Our Policies Have Changed'
                     : 'Welcome to Quotely!',
               ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isPolicyUpdate
-                          ? 'We\'ve updated our policies since you last accepted them. Please review and accept to continue.'
-                          : 'Before you begin, please review our policies. By continuing, you agree to our terms.',
-                    ),
-                    const SizedBox(height: 16),
-                    // This RichText widget makes the links tappable
-                    RichText(
-                      text: TextSpan(
-                        style: Theme.of(context).textTheme.bodyMedium,
+              // Capped so the dialog doesn't stretch across a tablet screen.
+              content: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: kMaxDialogWidth),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isPolicyUpdate
+                            ? 'We\'ve updated our policies since you last accepted them. Please review and accept to continue.'
+                            : 'Before you begin, please review our policies. By continuing, you agree to our terms.',
+                      ),
+                      const SizedBox(height: 16),
+                      // This RichText widget makes the links tappable
+                      RichText(
+                        text: TextSpan(
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          children: [
+                            const TextSpan(
+                              text: 'I have read and agree to the ',
+                            ),
+                            TextSpan(
+                              text: 'Terms & Conditions',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => openLegalScreen(
+                                  'Terms & Conditions',
+                                  'assets/legal/terms.md',
+                                ),
+                            ),
+                            const TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'Privacy Policy',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => openLegalScreen(
+                                  'Privacy & Policy',
+                                  'assets/legal/privacy.md',
+                                ),
+                            ),
+                            const TextSpan(text: '.'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // The single checkbox for acceptance
+                      Row(
                         children: [
-                          const TextSpan(text: 'I have read and agree to the '),
-                          TextSpan(
-                            text: 'Terms & Conditions',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              decoration: TextDecoration.underline,
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () => openLegalScreen(
-                                'Terms & Conditions',
-                                'assets/legal/terms.md',
-                              ),
+                          Checkbox(
+                            value: isChecked,
+                            onChanged: (bool? value) {
+                              setDialogState(() {
+                                isChecked = value ?? false;
+                              });
+                            },
                           ),
-                          const TextSpan(text: ' and '),
-                          TextSpan(
-                            text: 'Privacy Policy',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              decoration: TextDecoration.underline,
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () => openLegalScreen(
-                                'Privacy & Policy',
-                                'assets/legal/privacy.md',
-                              ),
+                          const Expanded(
+                            child: Text("I understand and accept."),
                           ),
-                          const TextSpan(text: '.'),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    // The single checkbox for acceptance
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: isChecked,
-                          onChanged: (bool? value) {
-                            setDialogState(() {
-                              isChecked = value ?? false;
-                            });
-                          },
-                        ),
-                        const Expanded(child: Text("I understand and accept.")),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               actions: <Widget>[

@@ -4,6 +4,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../components/home_screen/home_screen_quote_single_filter.dart';
+import '../../constants/responsive.dart';
 import '../../dtos/tag_dto.dart';
 import '../../riverpods/all_tag_data_provider.dart';
 import '../../util/pagination_seed.dart';
@@ -93,7 +94,7 @@ class _HomeScreenQuoteFiltersState
     final kPrimaryColor = Theme.of(context).primaryColor;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
-      height: MediaQuery.sizeOf(context).height * 0.038,
+      height: kFilterChipRowHeight,
       child: tags.isEmpty && isLoadingMore
           ? Skeletonizer(
               child: ListView.builder(

@@ -1,199 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:quotely_flutter_app/navigation/bottom-navigation/bottom_destinations.dart';
-
-// import '../../constants/selectors.dart';
-// import 'awesome_bottom_bar/top_level_page_view.dart';
-// import 'top_level_pages.dart';
-
-// class BottomNavigationLayout extends StatefulWidget {
-//   final StatefulNavigationShell navigationShell;
-
-//   const BottomNavigationLayout({
-//     super.key,
-//     required this.navigationShell,
-//   });
-
-//   @override
-//   State<BottomNavigationLayout> createState() => _BottomNavigationLayoutState();
-
-//   // ignore: library_private_types_in_public_api
-//   static _BottomNavigationLayoutState of(BuildContext context) =>
-//       context.findAncestorStateOfType<_BottomNavigationLayoutState>()!;
-// }
-
-// class _BottomNavigationLayoutState extends State<BottomNavigationLayout> {
-//   int selectedIndex = 0;
-//   late PageController pageController;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     pageController = PageController(
-//       initialPage: selectedIndex,
-//     );
-//   }
-
-//   @override
-//   void dispose() {
-//     pageController.dispose();
-//     super.dispose();
-//   }
-
-//   void _updateCurrentPageIndex(int index) {
-//     setState(() {
-//       selectedIndex = index;
-//     });
-//     pageController.animateToPage(
-//       index,
-//       duration: const Duration(milliseconds: 400),
-//       curve: Curves.easeInOut,
-//     );
-//   }
-
-//   // void _handlePageViewChanged(int currentPageIndex) {
-//   //   setState(() {
-//   //     selectedIndex = currentPageIndex;
-//   //   });
-//   // }
-
-//   gotoPage(int index) {
-//     if (index < kTopLevelPages.length && index >= 0) {
-//       _updateCurrentPageIndex(index);
-//       // _handleIconPress(index);
-//     }
-//   }
-
-//   gotoNextPage() {
-//     if (selectedIndex != kTopLevelPages.length - 1) {
-//       _updateCurrentPageIndex(selectedIndex + 1);
-//       // _handleIconPress(selectedIndex + 1);
-//     }
-//   }
-
-//   gotoPreviousPage() {
-//     if (selectedIndex != 0) {
-//       _updateCurrentPageIndex(selectedIndex - 1);
-//       // _handleIconPress(selectedIndex - 1);
-//     }
-//   }
-
-//   Future<bool> _onWillPop(BuildContext context) async {
-//     return (await showDialog(
-//           context: context,
-//           builder: (context) => AlertDialog(
-//             title: const Text('Are you sure?'),
-//             content: const Text('Do you want to exit the app?'),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () => Navigator.of(context).pop(true),
-//                 child: const Text('No'),
-//               ),
-//               TextButton(
-//                 onPressed: () =>
-//                     // Exit the app
-//                     SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
-//                 // FlutterExitApp.exitApp(),
-//                 child: const Text('Yes'),
-//               ),
-//             ],
-//           ),
-//         )) ??
-//         true;
-//   }
-
-//   Future<bool> _onBackButtonPressed() async {
-//     debugPrint('Back button Pressed');
-//     if (selectedIndex == 0) {
-//       // Exit the app
-//       debugPrint('Existing the app as we are on top level page');
-//       return await _onWillPop(context);
-//     } else {
-//       // Go back
-//       debugPrint('Going back to previous page');
-//       gotoPreviousPage();
-//       return true;
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-//     final kPrimaryColor = Theme.of(context).primaryColor;
-//     return BackButtonListener(
-//       onBackButtonPressed: _onBackButtonPressed,
-//       child: Scaffold(
-//         extendBodyBehindAppBar: false,
-//         resizeToAvoidBottomInset: false,
-//         body: AnnotatedRegion(
-//           value: getDefaultSystemUiStyle(isDarkTheme),
-//           child: Container(
-//             decoration: BoxDecoration(
-//               gradient: LinearGradient(
-//                 begin: Alignment.topLeft,
-//                 end: Alignment.bottomRight,
-//                 colors: [
-//                   kPrimaryColor.withValues(alpha: 0.12), // Soft start
-//                   kPrimaryColor.withValues(alpha: 0.06), // Lighter end
-//                 ],
-//                 stops: const [0.0, 1.0],
-//               ),
-//             ),
-//             child: TopLevelPageView(
-//               pageController: pageController,
-//               onPageChanged: _updateCurrentPageIndex,
-//             ),
-//           ),
-//         ),
-//         extendBody: false,
-//         bottomNavigationBar: NavigationBarTheme(
-//           data: NavigationBarThemeData(
-//             labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
-//               (Set<WidgetState> states) => states.contains(WidgetState.selected)
-//                   ? TextStyle(
-//                       color: kPrimaryColor,
-//                       fontWeight: FontWeight.w700,
-//                       fontSize: 13,
-//                     )
-//                   : const TextStyle(
-//                       fontSize: 13,
-//                     ),
-//             ),
-//             iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
-//               (Set<WidgetState> states) => states.contains(WidgetState.selected)
-//                   ? const IconThemeData(
-//                       color: Colors.white,
-//                     )
-//                   : const IconThemeData(),
-//             ),
-//           ),
-//           child: NavigationBar(
-//             onDestinationSelected: _updateCurrentPageIndex,
-//             indicatorColor: kPrimaryColor.withValues(alpha: 0.9),
-//             surfaceTintColor: kPrimaryColor,
-//             selectedIndex: selectedIndex,
-//             destinations: kBottomDestinations,
-//             labelTextStyle: WidgetStateTextStyle.resolveWith(
-//               (states) {
-//                 return states.contains(WidgetState.selected)
-//                     ? TextStyle(
-//                         color: kPrimaryColor,
-//                         fontWeight: FontWeight.w700,
-//                         fontSize: 12,
-//                       )
-//                     : TextStyle(
-//                         fontSize: 12,
-//                       );
-//               },
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -221,6 +25,28 @@ class BottomNavigationLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final kPrimaryColor = Theme.of(context).primaryColor;
+    final tablet = isTablet(context);
+
+    // Gradient container stays full-bleed; tab content is capped to a
+    // readable width and centered. Tablets get the wider shell cap so the
+    // feed card has room to breathe.
+    final content = Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            kPrimaryColor.withValues(alpha: 0.12), // Soft start
+            kPrimaryColor.withValues(alpha: 0.06), // Lighter end
+          ],
+          stops: const [0.0, 1.0],
+        ),
+      ),
+      child: ResponsiveCenter(
+        maxWidth: tablet ? kMaxShellWidth : kMaxContentWidth,
+        child: navigationShell,
+      ),
+    );
 
     // Using PopScope is the modern way to handle back button presses.
     // canPop is false, so we can show a custom dialog before exiting.
@@ -255,67 +81,104 @@ class BottomNavigationLayout extends StatelessWidget {
       child: Scaffold(
         body: AnnotatedRegion(
           value: getDefaultSystemUiStyle(isDarkTheme),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  kPrimaryColor.withValues(alpha: 0.12), // Soft start
-                  kPrimaryColor.withValues(alpha: 0.06), // Lighter end
-                ],
-                stops: const [0.0, 1.0],
-              ),
+          child: tablet
+              ? Row(
+                  children: [
+                    _buildRail(context, kPrimaryColor),
+                    Expanded(child: content),
+                  ],
+                )
+              : content,
+        ),
+        bottomNavigationBar: tablet ? null : _buildBar(context, kPrimaryColor),
+      ),
+    );
+  }
+
+  /// Tablet navigation: a side rail with the same gradient identity as the
+  /// phone bottom bar (shadow cast to the right instead of upward).
+  Widget _buildRail(BuildContext context, Color kPrimaryColor) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: kGetDefaultGradient(context),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(4, 0),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: NavigationRailTheme(
+          data: NavigationRailThemeData(
+            selectedIconTheme: const IconThemeData(color: Colors.white),
+            selectedLabelTextStyle: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: kPrimaryColor,
             ),
-            // Gradient container stays full-bleed; tab content is capped to a
-            // readable width and centered on tablets.
-            child: ResponsiveCenter(child: navigationShell),
+            unselectedLabelTextStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          child: NavigationRail(
+            backgroundColor: Colors.transparent,
+            labelType: NavigationRailLabelType.all,
+            groupAlignment: 0.0,
+            indicatorColor: kPrimaryColor.withAlpha(230),
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: _onTap,
+            destinations: buildRailDestinations(),
           ),
         ),
-        bottomNavigationBar: NavigationBarTheme(
-          data: NavigationBarThemeData(
-            iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
-              (Set<WidgetState> states) => states.contains(WidgetState.selected)
-                  ? const IconThemeData(color: Colors.white)
-                  : const IconThemeData(),
+      ),
+    );
+  }
+
+  /// Phone navigation: the Material 3 bottom bar, unchanged.
+  Widget _buildBar(BuildContext context, Color kPrimaryColor) {
+    return NavigationBarTheme(
+      data: NavigationBarThemeData(
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
+          (Set<WidgetState> states) => states.contains(WidgetState.selected)
+              ? const IconThemeData(color: Colors.white)
+              : const IconThemeData(),
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: kGetDefaultGradient(context),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
             ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: kGetDefaultGradient(context),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: NavigationBar(
-              // 1. Make the NavigationBar's own background transparent
-              backgroundColor: Colors.transparent,
-              // 2. Remove the default shadow to use your custom one from the Container
-              elevation: 0,
-              onDestinationSelected: _onTap,
-              selectedIndex: navigationShell.currentIndex,
-              indicatorColor: kPrimaryColor.withAlpha(230),
-              destinations: kBottomDestinations,
-              labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                final style = TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                );
-                if (states.contains(WidgetState.selected)) {
-                  return style.copyWith(
-                    color: kPrimaryColor,
-                    fontWeight: FontWeight.w700,
-                  );
-                }
-                return style;
-              }),
-            ),
-          ),
+          ],
+        ),
+        child: NavigationBar(
+          // 1. Make the NavigationBar's own background transparent
+          backgroundColor: Colors.transparent,
+          // 2. Remove the default shadow to use your custom one from the Container
+          elevation: 0,
+          onDestinationSelected: _onTap,
+          selectedIndex: navigationShell.currentIndex,
+          indicatorColor: kPrimaryColor.withAlpha(230),
+          destinations: buildBarDestinations(),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final style = TextStyle(fontSize: 12, fontWeight: FontWeight.w500);
+            if (states.contains(WidgetState.selected)) {
+              return style.copyWith(
+                color: kPrimaryColor,
+                fontWeight: FontWeight.w700,
+              );
+            }
+            return style;
+          }),
         ),
       ),
     );

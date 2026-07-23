@@ -10,6 +10,7 @@ import 'package:quotely_flutter_app/riverpods/all_author_data_provider.dart';
 import 'package:quotely_flutter_app/util/pagination_seed.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../constants/responsive.dart';
 import '../../dtos/author_dto.dart';
 
 class AuthorList extends ConsumerStatefulWidget {
@@ -138,59 +139,71 @@ class _AuthorListState extends ConsumerState<AuthorList> {
       ),
     );
 
+    // The Expanded parent bounds this — no screen-fraction sizing needed.
     return Expanded(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.87,
-        width: double.infinity,
-        child: RefreshIndicator.adaptive(
-          onRefresh: _refreshAuthors,
-          child: quoteProvider.when(
-            skipLoadingOnRefresh: false,
-            data: (data) {
-              final authorsFromDb = data.authors;
-              if (authorsFromDb.length < pageSize) {
-                hasMoreData = false;
+      child: RefreshIndicator.adaptive(
+        onRefresh: _refreshAuthors,
+        child: quoteProvider.when(
+          skipLoadingOnRefresh: false,
+          data: (data) {
+            final authorsFromDb = data.authors;
+            if (authorsFromDb.length < pageSize) {
+              hasMoreData = false;
+            }
+            for (var author in authorsFromDb) {
+              if (!authors.any((n) => n.id == author.id)) {
+                authors.add(author);
               }
-              for (var author in authorsFromDb) {
-                if (!authors.any((n) => n.id == author.id)) {
-                  authors.add(author);
-                }
-              }
-              _maybeSetSpotlight();
-              if (authors.isEmpty) return _buildEmpty(context);
-              return _buildList(showTrailingSkeleton: hasMoreData);
-            },
-            error: (error, stackTrace) => Center(
-              child: SomethingWentWrong(onRetryPressed: _refreshAuthors),
-            ),
-            loading: () {
-              if (authors.isEmpty || refetching) return _buildInitialSkeleton();
-              return _buildList(showTrailingSkeleton: true);
-            },
+            }
+            _maybeSetSpotlight();
+            if (authors.isEmpty) return _buildEmpty(context);
+            return _buildList(showTrailingSkeleton: hasMoreData);
+          },
+          error: (error, stackTrace) => Center(
+            child: SomethingWentWrong(onRetryPressed: _refreshAuthors),
           ),
+          loading: () {
+            if (authors.isEmpty || refetching) return _buildInitialSkeleton();
+            return _buildList(showTrailingSkeleton: true);
+          },
         ),
       ),
     );
   }
 
   Widget _buildEmpty(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.7,
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.hourglass_empty_outlined, size: 80),
-            SizedBox(height: 10),
-            Text(
-              'No Author Found',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+    // Scrollable so pull-to-refresh still works on the empty state.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: constraints.maxHeight,
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.hourglass_empty_outlined, size: 80),
+                SizedBox(height: 10),
+                Text(
+                  'No Author Found',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
+
+  /// One column on phones, two on tablets. Fixed row extent keeps the grid
+  /// rows the same compact height as the old list rows.
+  SliverGridDelegate _gridDelegate(int columns) =>
+      SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
+        mainAxisExtent: 96,
+        crossAxisSpacing: columns > 1 ? 12 : 0,
+      );
 
   /// The spotlight header + the de-duped premium author list. The spotlight
   /// author is omitted from the rows (avoids a repeat and a duplicate Hero tag).
@@ -200,50 +213,67 @@ class _AuthorListState extends ConsumerState<AuthorList> {
         ? authors.where((a) => a.id != _spotlight!.id).toList()
         : authors;
 
-    final headerCount = showSpotlight ? 1 : 0;
     final trailingCount = showTrailingSkeleton ? 1 : 0;
+    final columns = isTablet(context) ? 2 : 1;
 
-    return ListView.builder(
+    return CustomScrollView(
       controller: authorScrollController,
-      itemCount: headerCount + rows.length + trailingCount,
-      itemBuilder: (context, index) {
-        if (showSpotlight && index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AuthorSpotlightCard(author: _spotlight!),
-                const Padding(
-                  padding: EdgeInsets.only(top: 18, left: 4, bottom: 2),
-                  child: Text(
-                    'Browse all',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+      slivers: [
+        if (showSpotlight)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AuthorSpotlightCard(author: _spotlight!),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 18, left: 4, bottom: 2),
+                    child: Text(
+                      'Browse all',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          );
-        }
-        final i = index - headerCount;
-        if (i == rows.length) {
-          return Skeletonizer(child: const SingleAuthorViewSkeletor());
-        }
-        return SingleAuthorView(index: i, author: rows[i]);
-      },
+          ),
+        SliverGrid(
+          gridDelegate: _gridDelegate(columns),
+          delegate: SliverChildBuilderDelegate((context, i) {
+            if (i >= rows.length) {
+              return Skeletonizer(child: const SingleAuthorViewSkeletor());
+            }
+            return SingleAuthorView(index: i, author: rows[i]);
+          }, childCount: rows.length + trailingCount),
+        ),
+      ],
     );
   }
 
   Widget _buildInitialSkeleton() {
+    final columns = isTablet(context) ? 2 : 1;
     return Skeletonizer(
-      child: ListView(
-        children: [
-          if (!_isSearching) ...[
-            const AuthorSpotlightCardSkeleton(),
-            const SizedBox(height: 18),
-          ],
-          for (var i = 0; i < 8; i++) const SingleAuthorViewSkeletor(),
+      child: CustomScrollView(
+        slivers: [
+          if (!_isSearching)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 18),
+                child: AuthorSpotlightCardSkeleton(),
+              ),
+            ),
+          SliverGrid(
+            gridDelegate: _gridDelegate(columns),
+            delegate: SliverChildBuilderDelegate(
+              (context, i) => const SingleAuthorViewSkeletor(),
+              childCount: 8,
+            ),
+          ),
         ],
       ),
     );

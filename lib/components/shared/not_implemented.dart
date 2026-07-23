@@ -7,7 +7,7 @@ class NotImplemented extends StatelessWidget {
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
     return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.2,
+      height: 160,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,

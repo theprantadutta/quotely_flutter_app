@@ -11,6 +11,7 @@ import 'package:quotely_flutter_app/services/http_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/layouts/main_layout.dart';
+import '../constants/responsive.dart';
 import '../constants/urls.dart';
 import '../dtos/ai_fact_response_dto.dart';
 import '../dtos/quote_response_dto.dart';
@@ -209,7 +210,7 @@ class _SettingsDownloadEverythingScreenState
       title: 'Download Everything',
       body: ConstrainedBox(
         constraints: BoxConstraints(
-          minHeight: MediaQuery.sizeOf(context).height * 0.78,
+          minHeight: cappedHeight(context, 0.78, max: 640),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),

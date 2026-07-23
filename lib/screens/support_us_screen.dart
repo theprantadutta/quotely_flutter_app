@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../components/layouts/main_layout.dart';
 import '../components/shared/dark_gradient_background.dart';
+import '../constants/responsive.dart';
 
 /// Numeric Apple App Store ID for Quotely, assigned by App Store Connect once
 /// the app record is created. Update this before shipping the iOS build so the
@@ -191,7 +192,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
       ),
       body: Stack(
         children: [
-          DarkGradientBackground(),
+          const Positioned.fill(child: DarkGradientBackground()),
           _loading
               ? Center(
                   child: Column(
@@ -203,98 +204,103 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                     ],
                   ),
                 )
-              : CustomScrollView(
-                  slivers: [
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 10),
-                            ShaderMask(
-                              shaderCallback: (bounds) => LinearGradient(
-                                colors: [
-                                  theme.colorScheme.primary,
-                                  theme.colorScheme.secondary,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ).createShader(bounds),
-                              child: const Icon(
-                                Icons.volunteer_activism,
-                                size: 80,
-                                color: Colors.white,
+              // Gradient stays full-bleed; content is capped and centered on
+              // tablets like every other pushed screen.
+              : ResponsiveCenter(
+                  child: CustomScrollView(
+                    slivers: [
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 10),
+                              ShaderMask(
+                                shaderCallback: (bounds) => LinearGradient(
+                                  colors: [
+                                    theme.colorScheme.primary,
+                                    theme.colorScheme.secondary,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ).createShader(bounds),
+                                child: const Icon(
+                                  Icons.volunteer_activism,
+                                  size: 80,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              'Support Our Journey',
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
+                              const SizedBox(height: 20),
+                              Text(
+                                'Support Our Journey',
+                                style: theme.textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Quotely is a passion project. Your support helps us dedicate more time to new features and keep the app free for everyone.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
+                              const SizedBox(height: 10),
+                              Text(
+                                'Quotely is a passion project. Your support helps us dedicate more time to new features and keep the app free for everyone.',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 30),
-                          ],
+                              const SizedBox(height: 30),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate([
-                          _buildSectionHeader(context, "Show Your Support"),
-                          if (supportProduct != null)
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            _buildSectionHeader(context, "Show Your Support"),
+                            if (supportProduct != null)
+                              _buildSupportTile(
+                                context: context,
+                                icon: Icons.favorite_rounded,
+                                iconColor: Colors.pink.shade400,
+                                title: supportProduct.title,
+                                subtitle:
+                                    '${supportProduct.description} (${supportProduct.price})',
+                                onTap: () => _buyProduct(supportProduct),
+                              ),
+                            if (coffeeProduct != null)
+                              _buildSupportTile(
+                                context: context,
+                                icon: Icons.coffee_rounded,
+                                iconColor: Colors.brown.shade400,
+                                title: coffeeProduct.title,
+                                subtitle:
+                                    '${coffeeProduct.description} (${coffeeProduct.price})',
+                                onTap: () => _buyProduct(coffeeProduct),
+                              ),
+                            const SizedBox(height: 20),
+                            _buildSectionHeader(context, "Other Ways to Help"),
                             _buildSupportTile(
                               context: context,
-                              icon: Icons.favorite_rounded,
-                              iconColor: Colors.pink.shade400,
-                              title: supportProduct.title,
-                              subtitle:
-                                  '${supportProduct.description} (${supportProduct.price})',
-                              onTap: () => _buyProduct(supportProduct),
+                              icon: Icons.share_rounded,
+                              iconColor: theme.colorScheme.primary,
+                              title: 'Share the App',
+                              subtitle: 'Help the community grow by sharing.',
+                              onTap: () => _shareApp(context),
                             ),
-                          if (coffeeProduct != null)
                             _buildSupportTile(
                               context: context,
-                              icon: Icons.coffee_rounded,
-                              iconColor: Colors.brown.shade400,
-                              title: coffeeProduct.title,
+                              icon: Icons.restore_rounded,
+                              iconColor: theme.colorScheme.secondary,
+                              title: 'Restore Purchases',
                               subtitle:
-                                  '${coffeeProduct.description} (${coffeeProduct.price})',
-                              onTap: () => _buyProduct(coffeeProduct),
+                                  'Already supported us? Restore it here.',
+                              onTap: _restorePurchases,
                             ),
-                          const SizedBox(height: 20),
-                          _buildSectionHeader(context, "Other Ways to Help"),
-                          _buildSupportTile(
-                            context: context,
-                            icon: Icons.share_rounded,
-                            iconColor: theme.colorScheme.primary,
-                            title: 'Share the App',
-                            subtitle: 'Help the community grow by sharing.',
-                            onTap: () => _shareApp(context),
-                          ),
-                          _buildSupportTile(
-                            context: context,
-                            icon: Icons.restore_rounded,
-                            iconColor: theme.colorScheme.secondary,
-                            title: 'Restore Purchases',
-                            subtitle: 'Already supported us? Restore it here.',
-                            onTap: _restorePurchases,
-                          ),
-                        ]),
+                          ]),
+                        ),
                       ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                  ],
+                      const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                    ],
+                  ),
                 ),
         ],
       ),

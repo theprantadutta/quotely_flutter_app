@@ -14,8 +14,8 @@ class _DarkThemeState extends State<DarkTheme> {
   Widget build(BuildContext context) {
     final kPrimaryColor = Theme.of(context).primaryColor;
     return Container(
-      height: MediaQuery.sizeOf(context).height * 0.07,
-      padding: const EdgeInsets.symmetric(horizontal: 15),
+      constraints: const BoxConstraints(minHeight: 56),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
       decoration: BoxDecoration(
         color: kPrimaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
