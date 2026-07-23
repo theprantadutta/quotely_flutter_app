@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' 
 
-version: 1.4.1+15
+version: 2.0.0+16
 
 environment:
   sdk: ^3.8.0
@@ -32,7 +32,7 @@ dependencies:
   flutter_dotenv: ^6.0.0
   firebase_analytics: ^12.4.2
   firebase_core: ^4.2.1
-  firebase_core_platform_interface: ^7.0.1
+  firebase_core_platform_interface: ^8.0.0
   firebase_crashlytics: ^5.0.5
   firebase_messaging: ^16.0.4
   flutter_local_notifications: ^22.0.0-dev.3
@@ -51,7 +51,7 @@ dependencies:
   talker_dio_logger: ^5.1.1
   talker_riverpod_logger: ^5.1.1
   share_plus: ^13.1.0
-  in_app_update: ^4.2.3
+  in_app_update: ^5.0.0
   flutter_markdown_plus: ^1.0.3
   in_app_purchase: ^3.2.3
   smooth_page_indicator: ^2.0.1
