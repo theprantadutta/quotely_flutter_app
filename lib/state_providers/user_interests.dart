@@ -16,6 +16,11 @@ class UserInterests extends _$UserInterests {
   /// users can select as many as they like.
   static const int minInterests = 10;
 
+  /// How many interests the picker's "Choose for me" option selects. Slightly
+  /// above [minInterests] so an auto-picked feed has some variety instead of
+  /// sitting exactly on the floor.
+  static const int autoPickCount = 12;
+
   Future<void>? _loadFuture;
 
   @override

@@ -68,7 +68,11 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     if (!mounted) return;
     _appliedInterests = List.of(ref.read(userInterestsProvider));
     await _fetchFacts();
-    _initialLoadDone = true;
+    if (!mounted) return;
+    // setState, not a bare assignment: when the first page legitimately comes
+    // back empty this is the only thing that changes, and without a rebuild the
+    // screen would sit on the skeleton instead of showing the empty state.
+    setState(() => _initialLoadDone = true);
   }
 
   Future<void> _fetchFacts() async {
@@ -208,6 +212,12 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   }
 
   Widget _buildContent() {
+    // See HomeScreen._buildContent: the first load awaits saved interests
+    // before fetching, so there is a window with nothing in flight and nothing
+    // arrived. Treating it as loading keeps a cold first launch from rendering
+    // "No facts found" before the first fetch has started.
+    final initialLoading = !_initialLoadDone && !hasError;
+
     if (hasError && aiFacts.isEmpty) {
       return Center(
         child: SomethingWentWrong(
@@ -217,7 +227,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       );
     }
 
-    if (aiFacts.isEmpty && !isLoadingMore) {
+    if (aiFacts.isEmpty && !isLoadingMore && !initialLoading) {
       return SomethingWentWrong(
         title: 'No facts found.',
         onRetryPressed: () {
@@ -233,7 +243,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     return VerticalContentCarousel(
       items: [for (final fact in aiFacts) contentItemFromFact(fact)],
       actions: _contentActions,
-      isLoadingMore: isLoadingMore,
+      isLoadingMore: isLoadingMore || initialLoading,
       hasMoreData: hasMoreData,
     );
   }

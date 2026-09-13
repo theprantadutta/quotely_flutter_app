@@ -87,6 +87,25 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
     });
   }
 
+  /// Selects the most popular interests on the user's behalf. [interestOptions]
+  /// is already ordered by popularity and interleaves quote tags with fact
+  /// categories, so taking from the top yields a sensible mix of both without
+  /// hand-curating a default list that would drift as content changes.
+  Future<void> _autoPick() async {
+    if (_saving) return;
+    final options = ref.read(interestOptionsProvider).value ?? const <String>[];
+    if (options.length < UserInterests.minInterests) return;
+    setState(() {
+      _selected
+        ..clear()
+        ..addAll(options.take(UserInterests.autoPickCount));
+    });
+    // Onboarding: the whole point is not having to choose, so go straight
+    // through. From Settings the user opened this deliberately, so leave the
+    // selection on screen for them to review and save themselves.
+    if (!widget.isEditing) await _save();
+  }
+
   Future<void> _save() async {
     if (_selected.length < UserInterests.minInterests || _saving) return;
     setState(() => _saving = true);
@@ -255,6 +274,12 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                 count: _selected.length,
                 saving: _saving,
                 onSave: _save,
+                onAutoPick: _autoPick,
+                // Hidden when the vocabulary failed to load or is too small to
+                // satisfy the minimum, so the action can never be a dead tap.
+                canAutoPick:
+                    (optionsAsync.value?.length ?? 0) >=
+                    UserInterests.minInterests,
                 isEditing: widget.isEditing,
               ),
             ],
@@ -325,13 +350,17 @@ class _BottomBar extends StatelessWidget {
   final int count;
   final bool saving;
   final bool isEditing;
+  final bool canAutoPick;
   final VoidCallback onSave;
+  final VoidCallback onAutoPick;
 
   const _BottomBar({
     required this.count,
     required this.saving,
     required this.isEditing,
+    required this.canAutoPick,
     required this.onSave,
+    required this.onAutoPick,
   });
 
   @override
@@ -350,46 +379,73 @@ class _BottomBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Count on its own line; below the minimum, a second line nudges the
-          // user toward it (there's no upper limit once met).
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '$count selected',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+          // Offered only while the user is short of the minimum — once they've
+          // picked enough they're clearly curating, and the shortcut would just
+          // be a button that discards their choices.
+          if (canAutoPick && !hasMin)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: saving ? null : onAutoPick,
+                icon: const Icon(Icons.auto_awesome, size: 18),
+                label: Text(
+                  isEditing ? 'Choose for me' : 'Choose for me & continue',
                 ),
-                if (!hasMin)
-                  Text(
-                    'Pick at least $min',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
-                    ),
-                  ),
-              ],
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          FilledButton(
-            onPressed: enabled ? onSave : null,
-            child: saving
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(isEditing ? 'Save' : 'Continue'),
+          Row(
+            children: [
+              // Count on its own line; below the minimum, a second line nudges the
+              // user toward it (there's no upper limit once met).
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$count selected',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
+                    ),
+                    if (!hasMin)
+                      Text(
+                        'Pick at least $min',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.55,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              FilledButton(
+                onPressed: enabled ? onSave : null,
+                child: saving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(isEditing ? 'Save' : 'Continue'),
+              ),
+            ],
           ),
         ],
       ),

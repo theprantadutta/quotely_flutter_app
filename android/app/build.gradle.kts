@@ -50,6 +50,11 @@ android {
         versionName = flutter.versionName
 
         multiDexEnabled = true
+
+        // Required by flutter_inapp_purchase (7.1.14+). openiap-google ships
+        // 'play' and 'amazon' product flavors; without this the Play variant
+        // cannot be resolved and the build fails on a missing dimension.
+        missingDimensionStrategy("platform", "play")
     }
 
     signingConfigs {

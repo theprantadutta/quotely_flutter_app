@@ -267,7 +267,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!mounted) return;
     _appliedInterests = List.of(ref.read(userInterestsProvider));
     await _fetchQuotes();
-    _initialLoadDone = true;
+    if (!mounted) return;
+    // setState, not a bare assignment: when the first page legitimately comes
+    // back empty this is the only thing that changes, and without a rebuild the
+    // screen would sit on the skeleton instead of showing the empty state.
+    setState(() => _initialLoadDone = true);
   }
 
   Future<void> _fetchQuotes() async {
@@ -437,6 +441,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildContent() {
+    // The first load awaits saved interests before it fetches anything, so
+    // there is a window where nothing is in flight and nothing has arrived
+    // yet. That window is longest on a cold first launch, when the prefs read
+    // actually hits disk. Treat it as loading: without this, Case 2 below sees
+    // an empty list with isLoadingMore still false and renders "No quotes
+    // found" before the first fetch has even started.
+    final initialLoading = !_initialLoadDone && !hasError;
+
     // Case 1: Initial load resulted in an error
     if (hasError && quotes.isEmpty) {
       return Center(
@@ -454,7 +466,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     // Case 2: No quotes found (e.g., for a specific filter)
-    if (quotes.isEmpty && !isLoadingMore) {
+    if (quotes.isEmpty && !isLoadingMore && !initialLoading) {
       return SomethingWentWrong(
         title: "No quotes found.",
         onRetryPressed: () {
@@ -472,7 +484,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return VerticalContentCarousel(
       items: [for (final quote in quotes) contentItemFromQuote(quote)],
       actions: _contentActions,
-      isLoadingMore: isLoadingMore,
+      // The carousel renders its skeleton for an empty list that is still
+      // loading, which covers the pre-fetch window described above.
+      isLoadingMore: isLoadingMore || initialLoading,
       hasMoreData: hasMoreData,
     );
   }

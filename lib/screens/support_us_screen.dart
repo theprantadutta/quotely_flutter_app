@@ -4,19 +4,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
 import 'package:quotely_flutter_app/constants/selectors.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/layouts/main_layout.dart';
 import '../components/shared/dark_gradient_background.dart';
 import '../constants/responsive.dart';
+import '../constants/shared_preference_keys.dart';
 
-/// Numeric Apple App Store ID for Quotely, assigned by App Store Connect once
-/// the app record is created. Update this before shipping the iOS build so the
-/// in-app "Share the App" link points at the live App Store listing.
-// TODO(appstore): replace with the real App Store ID from App Store Connect.
-const String kAppStoreId = '0000000000';
+/// Numeric Apple App Store ID for Quotely, from App Store Connect. Used to
+/// build the "Share the App" link on iOS. The URL is deliberately built without
+/// a locale segment so it redirects to each recipient's own storefront.
+const String kAppStoreId = '6778280010';
 
 class SupportUsScreen extends StatefulWidget {
   static const kRouteName = '/support-us';
@@ -27,121 +28,197 @@ class SupportUsScreen extends StatefulWidget {
 }
 
 class _SupportUsScreenState extends State<SupportUsScreen> {
-  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
-  late StreamSubscription<List<PurchaseDetails>> _subscription;
+  final FlutterInappPurchase _iap = FlutterInappPurchase.instance;
+  StreamSubscription<Purchase>? _purchaseUpdated;
+  StreamSubscription<PurchaseError>? _purchaseError;
 
   // The IDs for our in-app products. These must match exactly the product IDs
   // configured in both App Store Connect (iOS) and the Play Console (Android).
-  final Set<String> _productIds = {'support_the_dev_1', 'buy_me_a_coffee_1'};
+  static const String _supportSku = 'support_the_dev_1';
+  static const String _coffeeSku = 'buy_me_a_coffee_1';
+  static const List<String> _productIds = [_supportSku, _coffeeSku];
 
-  List<ProductDetails> _products = [];
+  List<Product> _products = [];
   bool _loading = true;
+
+  /// These products are non-consumable: one donation per user, ever. Once this
+  /// is true the donation tiles are hidden so we stop asking.
+  bool _isSupporter = false;
+
   String _statusMessage = 'Loading support options...';
 
   @override
   void initState() {
     super.initState();
-    final Stream<List<PurchaseDetails>> purchaseUpdated =
-        _inAppPurchase.purchaseStream;
-    // Listen to the stream for purchase updates
-    _subscription = purchaseUpdated.listen(
-      (purchaseDetailsList) {
-        _listenToPurchaseUpdated(purchaseDetailsList);
-      },
-      onDone: () {
-        _subscription.cancel();
-      },
-      onError: (error) {
-        setState(() {
-          _statusMessage = 'An error occurred: $error';
-          _loading = false;
-        });
-      },
-    );
-
-    _initializeIAP();
+    _startIap();
   }
 
   @override
   void dispose() {
-    _subscription.cancel();
+    _purchaseUpdated?.cancel();
+    _purchaseError?.cancel();
+    // Releases the billing connection. Failures on teardown are not actionable.
+    _iap.endConnection().catchError((_) => false);
     super.dispose();
   }
 
-  Future<void> _initializeIAP() async {
-    final bool isAvailable = await _inAppPurchase.isAvailable();
-    if (!isAvailable) {
+  Future<void> _startIap() async {
+    // Listeners must be attached before any purchase call: requestPurchase is
+    // event-based and its return value is NOT the outcome.
+    _purchaseUpdated = _iap.purchaseUpdatedListener.listen(_onPurchase);
+    _purchaseError = _iap.purchaseErrorListener.listen(_onPurchaseError);
+
+    // Show the supporter state we already know about before the store answers.
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getBool(kIsSupporterKey) ?? false;
+    if (mounted && cached) {
+      setState(() => _isSupporter = true);
+    }
+
+    try {
+      await _iap.initConnection();
+    } catch (_) {
+      if (!mounted) return;
       setState(() {
         _statusMessage = 'In-app purchases are not available on this device.';
         _loading = false;
       });
       return;
     }
-    // Load the product details from the store
+
     await _loadProducts();
+    await _syncSupporterFromStore();
   }
 
   Future<void> _loadProducts() async {
-    final ProductDetailsResponse response = await _inAppPurchase
-        .queryProductDetails(_productIds);
-    if (response.notFoundIDs.isNotEmpty) {
-      _statusMessage = 'Products not found. Check your Play Console setup.';
-    }
-    setState(() {
-      _products = response.productDetails;
-      _loading = false;
-    });
-  }
-
-  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
-    for (var purchaseDetails in purchaseDetailsList) {
-      if (purchaseDetails.status == PurchaseStatus.pending) {
-        // Show pending UI if needed
-      } else {
-        if (purchaseDetails.status == PurchaseStatus.error) {
-          // Handle error
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Purchase failed. Please try again.')),
-          );
-        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
-            purchaseDetails.status == PurchaseStatus.restored) {
-          // Handle successful purchase
-          _handleSuccessfulPurchase(purchaseDetails);
+    try {
+      final products = await _iap.fetchProducts<Product>(
+        skus: _productIds,
+        type: ProductQueryType.InApp,
+      );
+      if (!mounted) return;
+      setState(() {
+        _products = products;
+        _loading = false;
+        if (products.isEmpty) {
+          _statusMessage = 'Products not found. Check your store setup.';
         }
-        if (purchaseDetails.pendingCompletePurchase) {
-          _inAppPurchase.completePurchase(purchaseDetails);
-        }
-      }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _statusMessage = 'Could not load support options: $e';
+        _loading = false;
+      });
     }
   }
 
-  void _handleSuccessfulPurchase(PurchaseDetails purchaseDetails) {
-    // Here you can save a flag to SharedPreferences that the user is a supporter
-    // e.g., `prefs.setBool('is_supporter', true);`
+  /// Non-consumables stay owned, so the store still reports them as available
+  /// purchases. This is what restores supporter state after a reinstall.
+  Future<void> _syncSupporterFromStore() async {
+    try {
+      final purchases = await _iap.getAvailablePurchases();
+      final owned = purchases.any((p) => _productIds.contains(p.productId));
+      if (owned) await _markSupporter();
+    } catch (_) {
+      // Non-fatal: the cached flag still applies.
+    }
+  }
+
+  Future<void> _markSupporter() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(kIsSupporterKey, true);
+    if (mounted) setState(() => _isSupporter = true);
+  }
+
+  Future<void> _onPurchase(Purchase purchase) async {
+    // A pending purchase (slow card, parental approval) is NOT a completed one
+    // and must grant nothing until it comes back as Purchased.
+    if (purchase.purchaseState == PurchaseState.Pending) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your payment is still processing.')),
+      );
+      return;
+    }
+    if (purchase.purchaseState != PurchaseState.Purchased) return;
+
+    await _markSupporter();
+
+    // Must be finalized or Google auto-refunds after 3 days and iOS replays the
+    // transaction on every launch. isConsumable: false acknowledges without
+    // consuming, which is what keeps these one-per-user.
+    try {
+      await _iap.finishTransaction(purchase: purchase, isConsumable: false);
+    } catch (_) {
+      // Already finished, or the store will replay it; the flag is set anyway.
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Thank you for your generous support!')),
     );
   }
 
-  void _buyProduct(ProductDetails productDetails) {
-    final PurchaseParam purchaseParam = PurchaseParam(
-      productDetails: productDetails,
-    );
-    // Opens the platform's native purchase sheet (App Store / Google Play).
-    _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
+  void _onPurchaseError(PurchaseError error) {
+    if (!mounted) return;
+
+    // Backing out of the sheet is not a failure; saying nothing is correct.
+    if (error.code == ErrorCode.UserCancelled) return;
+
+    // Expected on a second attempt, since these are non-consumable. Treat it as
+    // confirmation they already supported us rather than as an error.
+    if (error.code == ErrorCode.AlreadyOwned) {
+      _markSupporter();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You have already supported us. Thank you!'),
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(getUserFriendlyErrorMessage(error))));
   }
 
-  /// Restores previously bought non-consumable products. Apple requires a
-  /// visible "Restore Purchases" action for any app that sells non-consumables
-  /// (App Store Review Guideline 3.1.1), so this must stay in the UI.
+  Future<void> _buyProduct(Product product) async {
+    try {
+      // Outcome arrives on the listeners above, not from this call.
+      await _iap.requestPurchase(
+        RequestPurchaseProps.inApp((
+          apple: RequestPurchaseIosProps(sku: product.id),
+          google: RequestPurchaseAndroidProps(skus: [product.id]),
+        )),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not start the purchase: $e')),
+      );
+    }
+  }
+
+  /// Apple requires a visible "Restore Purchases" action for any app selling
+  /// non-consumables (App Store Review Guideline 3.1.1), so this must stay.
   Future<void> _restorePurchases() async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Restoring your purchases...')),
     );
     try {
-      // Restored items are delivered through the same purchaseStream listener,
-      // which handles them via PurchaseStatus.restored above.
-      await _inAppPurchase.restorePurchases();
+      await _iap.restorePurchases();
+      await _syncSupporterFromStore();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isSupporter
+                ? 'Your support has been restored. Thank you!'
+                : 'No previous support found on this account.',
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -169,13 +246,21 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Find our specific products from the loaded list
-    final ProductDetails? supportProduct = _products
-        .cast<ProductDetails?>()
-        .firstWhere((p) => p?.id == 'support_the_dev_1', orElse: () => null);
-    final ProductDetails? coffeeProduct = _products
-        .cast<ProductDetails?>()
-        .firstWhere((p) => p?.id == 'buy_me_a_coffee_1', orElse: () => null);
+    // Find our specific products from the loaded list. Hidden entirely once the
+    // user has donated - these are non-consumable, so there is nothing left to
+    // buy and asking again would only produce an "already owned" error.
+    final Product? supportProduct = _isSupporter
+        ? null
+        : _products.cast<Product?>().firstWhere(
+            (p) => p?.id == _supportSku,
+            orElse: () => null,
+          );
+    final Product? coffeeProduct = _isSupporter
+        ? null
+        : _products.cast<Product?>().firstWhere(
+            (p) => p?.id == _coffeeSku,
+            orElse: () => null,
+          );
     final kPrimaryColor = Theme.of(context).primaryColor;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
@@ -255,7 +340,22 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
-                            _buildSectionHeader(context, "Show Your Support"),
+                            _buildSectionHeader(
+                              context,
+                              _isSupporter
+                                  ? "You Are a Supporter"
+                                  : "Show Your Support",
+                            ),
+                            if (_isSupporter)
+                              _buildSupportTile(
+                                context: context,
+                                icon: Icons.verified_rounded,
+                                iconColor: Colors.green.shade400,
+                                title: "Purchase verified",
+                                subtitle:
+                                    "Thank you! Your support keeps Quotely free for everyone.",
+                                onTap: () {},
+                              ),
                             if (supportProduct != null)
                               _buildSupportTile(
                                 context: context,
@@ -263,7 +363,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                                 iconColor: Colors.pink.shade400,
                                 title: supportProduct.title,
                                 subtitle:
-                                    '${supportProduct.description} (${supportProduct.price})',
+                                    '${supportProduct.description} (${supportProduct.displayPrice})',
                                 onTap: () => _buyProduct(supportProduct),
                               ),
                             if (coffeeProduct != null)
@@ -273,7 +373,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                                 iconColor: Colors.brown.shade400,
                                 title: coffeeProduct.title,
                                 subtitle:
-                                    '${coffeeProduct.description} (${coffeeProduct.price})',
+                                    '${coffeeProduct.description} (${coffeeProduct.displayPrice})',
                                 onTap: () => _buyProduct(coffeeProduct),
                               ),
                             const SizedBox(height: 20),
@@ -286,15 +386,21 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                               subtitle: 'Help the community grow by sharing.',
                               onTap: () => _shareApp(context),
                             ),
-                            _buildSupportTile(
-                              context: context,
-                              icon: Icons.restore_rounded,
-                              iconColor: theme.colorScheme.secondary,
-                              title: 'Restore Purchases',
-                              subtitle:
-                                  'Already supported us? Restore it here.',
-                              onTap: _restorePurchases,
-                            ),
+                            // Hidden once we already know they support us -
+                            // there is nothing left to restore, and the tile
+                            // would just repeat what the verified tile above
+                            // already says. Still shown to everyone else, which
+                            // is who Apple Guideline 3.1.1 requires it for.
+                            if (!_isSupporter)
+                              _buildSupportTile(
+                                context: context,
+                                icon: Icons.restore_rounded,
+                                iconColor: theme.colorScheme.secondary,
+                                title: 'Restore Purchases',
+                                subtitle:
+                                    'Already supported us? Restore it here.',
+                                onTap: _restorePurchases,
+                              ),
                           ]),
                         ),
                       ),

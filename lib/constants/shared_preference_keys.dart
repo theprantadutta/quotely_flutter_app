@@ -49,3 +49,8 @@ const kNotificationsInitializedKey = 'notifications_preferences_initialized';
 /// Whether the user has been shown the post-interests notification permission +
 /// preferences screen. Gates that screen the same way onboarding/interests do.
 const kHasSeenNotificationPrompt = 'has-seen-notification-prompt';
+
+/// Set once the user has donated. The donation products are non-consumable, so
+/// a user can only ever buy one; this hides the donation tiles afterwards so we
+/// don't ask again. Restored from the store on open too, for reinstalls.
+const kIsSupporterKey = 'is-supporter';
