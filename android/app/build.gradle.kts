@@ -19,15 +19,24 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.pranta.quotely"
-    compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    // permission_handler_android 14.1.0 requires consumers to compile against
+    // API 37; the build fails at :app:checkDebugAarMetadata below that. This is
+    // independent of targetSdk/minSdk, which still track flutter.* - raising
+    // compileSdk only allows newer APIs, it does not opt into new runtime
+    // behaviour or drop device support.
+    compileSdk = 37
+    // Pinned rather than flutter.ndkVersion (28.2.13676358 on Flutter 3.47.1).
+    // Note this no longer auto-tracks the Flutter version - revisit on upgrade.
+    ndkVersion = "30.0.14904198"
 
     compileOptions {
         // Flag to enable support for the new language APIs
         isCoreLibraryDesugaringEnabled = true
-        // Sets Java compatibility to Java 8
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        // Java 17, matching the other apps in this repo. javac warns that
+        // "source/target value 8 is obsolete and will be removed in a future
+        // release"; desugaring stays on so minSdk 24 devices keep working.
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     defaultConfig {
@@ -61,7 +70,7 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 

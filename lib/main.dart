@@ -11,9 +11,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:material_ui/material_ui.dart' as material_ui;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
@@ -328,6 +330,19 @@ class _QuotelyAppState extends State<QuotelyApp> {
     return MaterialApp.router(
       title: 'Quotely',
       routerConfig: AppNavigation.router,
+      // Two sets of delegates on purpose. The first three satisfy
+      // package:flutter/material.dart, which this app is written against; the
+      // spread satisfies material_ui's own MaterialLocalizations type, which is
+      // a DIFFERENT Dart type that flutter_localizations cannot provide.
+      // motion_toast and go_router have migrated to material_ui, so without the
+      // spread their widgets throw "No MaterialLocalizations found" at runtime -
+      // and the crash surfaces far from the cause.
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        ...material_ui.GlobalMaterialLocalizations.delegates,
+      ],
       theme: FlexThemeData.light(
         scheme: _flexScheme,
         useMaterial3: true,

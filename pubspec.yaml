@@ -11,18 +11,28 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # Direct dependency on purpose. Material/Cupertino are being decoupled from
+  # the framework into flutter.dev packages, and material_ui declares its OWN
+  # MaterialLocalizations - a different Dart type from the one in
+  # package:flutter/material.dart, which flutter_localizations cannot satisfy.
+  # motion_toast and go_router have already migrated and pull it in
+  # transitively, so its delegates must be registered in main.dart or any
+  # widget of theirs that needs localizations throws at runtime.
+  material_ui: ^1.2.0
   cupertino_icons: ^1.0.8
   flex_color_scheme: ^8.0.2
   google_fonts: ^8.1.0
   shared_preferences: ^2.5.3
-  go_router: ^17.0.0
+  go_router: ^18.0.1
   animate_do: ^5.1.0
   flutter_riverpod: ^3.0.3
   riverpod_annotation: ^4.0.3-dev.2
   dio: ^5.7.0
   json_annotation: ^4.9.0
   json_serializable: ^6.8.0
-  skeletonizer: ^2.0.1
+  skeletonizer: ^3.0.0
   loading_animation_widget: ^1.3.0
   flutter_displaymode: ^0.7.0
   intl: ^0.20.1
@@ -38,7 +48,7 @@ dependencies:
   device_info_plus: ^13.1.0
   motion_toast: ^2.11.0
   url_launcher: ^6.3.1
-  permission_handler: ^12.0.0+1
+  permission_handler: ^13.0.2
   drift: ^2.26.0
   drift_flutter: ^0.3.0
   get_it: ^9.1.1
@@ -52,7 +62,7 @@ dependencies:
   in_app_update: ^5.0.0
   flutter_markdown_plus: ^1.0.3
   in_app_purchase: ^3.2.3
-  smooth_page_indicator: ^2.0.1
+  smooth_page_indicator: ^3.0.0
   font_awesome_flutter: ^11.0.0
   async_queue: ^3.0.0
 
