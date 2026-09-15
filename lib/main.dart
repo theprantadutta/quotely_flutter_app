@@ -17,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:material_ui/material_ui.dart' as material_ui;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
@@ -42,6 +43,19 @@ void main() async {
   );
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  // Edge-to-edge: content draws under the (transparent) status and navigation
+  // bars, with SafeArea on each screen handling the inset padding. The native
+  // opt-in lives in MainActivity; this is the Flutter-side half, and it keeps
+  // us off SystemUiMode.manual, which routes through the deprecated
+  // setStatusBarColor path that Play Console also flags.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+    ),
+  );
   // Phones are portrait-only; tablets/iPads may rotate freely. No BuildContext
   // exists yet, so read the device class straight from the engine view.
   await _lockOrientationForDeviceClass(widgetsBinding);
@@ -330,6 +344,22 @@ class _QuotelyAppState extends State<QuotelyApp> {
     return MaterialApp.router(
       title: 'Quotely',
       routerConfig: AppNavigation.router,
+      // skeletonizer 3.0.0 resolves its light/dark effect from
+      // MediaQuery.platformBrightnessOf(context) - the OS theme - where 2.1.3
+      // used Theme.of(context).brightness. Quotely has its own in-app theme
+      // switcher, so on any phone whose system theme differs from the app's the
+      // skeletons inverted: ShimmerEffect.dark() (#3A3A3A) bars while the app
+      // was in light mode, and the light effect's near-white image placeholders
+      // while the app was in dark mode.
+      //
+      // Pinning brightness to the app's own theme restores the 2.x behaviour
+      // for every Skeletonizer in the app at once, rather than passing an
+      // effect to each of the call sites individually. Placed in builder so it
+      // sits below MaterialApp's theme and above every route.
+      builder: (context, child) => SkeletonizerConfig(
+        data: SkeletonizerConfigData(brightness: Theme.of(context).brightness),
+        child: child ?? const SizedBox.shrink(),
+      ),
       // Two sets of delegates on purpose. The first three satisfy
       // package:flutter/material.dart, which this app is written against; the
       // spread satisfies material_ui's own MaterialLocalizations type, which is

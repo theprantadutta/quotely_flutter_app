@@ -17,6 +17,7 @@ import '../../components/home_screen/ios_update_banner.dart';
 import '../../components/shared/something_went_wrong.dart';
 import '../../constants/colors.dart';
 import '../../constants/responsive.dart';
+import '../../constants/selectors.dart';
 import '../../constants/shared_preference_keys.dart';
 import '../../state_providers/user_interests.dart';
 import '../../main.dart';
@@ -39,7 +40,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int quotePageNumber = 1;
-  int quotePageSize = 10;
+  int quotePageSize = kHomeQuotePageSize;
   bool hasMoreData = true;
   bool hasError = false;
   bool isLoadingMore = false;

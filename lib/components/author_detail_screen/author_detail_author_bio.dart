@@ -214,7 +214,13 @@ class AuthorDetailAuthorBioSkeletor extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(radius: 52, backgroundColor: Colors.grey.shade300),
+                // Theme-derived, not Colors.grey.shade300: that is a fixed light
+                // grey, so the avatar placeholder read as a near-white disc in
+                // dark mode while looking fine in light.
+                CircleAvatar(
+                  radius: 52,
+                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'Abraham Lincoln',

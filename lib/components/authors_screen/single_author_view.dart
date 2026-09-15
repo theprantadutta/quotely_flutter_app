@@ -149,7 +149,13 @@ class SingleAuthorViewSkeletor extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CircleAvatar(radius: 29, backgroundColor: Colors.grey.shade300),
+            // Theme-derived, not Colors.grey.shade300: that is a fixed light
+            // grey, so the avatar placeholder read as a near-white disc in
+            // dark mode while looking fine in light.
+            CircleAvatar(
+              radius: 29,
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(

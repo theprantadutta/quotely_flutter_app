@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,9 @@ import 'package:go_router/go_router.dart';
 
 import '../components/shared/something_went_wrong.dart';
 import '../constants/responsive.dart';
+import '../constants/selectors.dart';
+import '../riverpods/all_quote_data_provider.dart';
+import '../util/pagination_seed.dart';
 import '../riverpods/interest_options_provider.dart';
 import '../state_providers/user_interests.dart';
 import 'notifications_onboarding_screen.dart';
@@ -106,10 +111,45 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
     if (!widget.isEditing) await _save();
   }
 
+  /// Warms Home's first page of quotes while the user is still on the
+  /// notification primer, so Home has content the moment it mounts instead of
+  /// showing its skeleton.
+  ///
+  /// Interests are only known once the picker is saved, which is why this runs
+  /// here rather than during onboarding - prefetching earlier would fetch
+  /// unfiltered quotes that Home would discard and refetch anyway.
+  ///
+  /// The argument list must match what Home passes EXACTLY. fetchAllQuotes is a
+  /// family keyed on the record (pageNumber, pageSize, tags, seed), and Dart
+  /// records compare fields with ==, which for a List is identity, not
+  /// contents. So this deliberately reads the list back out of
+  /// userInterestsProvider rather than using _selected.toList(): Home reads the
+  /// same provider and therefore the same List instance. Passing an equal-but-
+  /// separate copy would key a different provider and silently prefetch
+  /// nothing. PaginationSeed.current is stable for the session, so the seed
+  /// matches too.
+  void _prefetchFirstQuotePage() {
+    final interests = ref.read(userInterestsProvider);
+    // ignore(): not awaited, and a failure here must not surface. This is a
+    // pure optimisation - Home runs its own fetch with real error handling if
+    // this has not landed by the time it mounts.
+    ref
+        .read(
+          fetchAllQuotesProvider(
+            1,
+            kHomeQuotePageSize,
+            interests,
+            PaginationSeed.current,
+          ).future,
+        )
+        .ignore();
+  }
+
   Future<void> _save() async {
     if (_selected.length < UserInterests.minInterests || _saving) return;
     setState(() => _saving = true);
     await ref.read(userInterestsProvider.notifier).save(_selected.toList());
+    _prefetchFirstQuotePage();
     if (!mounted) return;
     if (widget.isEditing) {
       context.pop();

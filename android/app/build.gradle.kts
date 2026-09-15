@@ -69,6 +69,21 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            // Play Console flagged release 17: "Optimized resource shrinking
+            // isn't enabled". The app had no minification at all - this block
+            // set only the signing config - so R8 was running in its
+            // pass-through mode and neither shrinking code nor resources.
+            //
+            // proguard-android-optimize.txt is the optimizing variant of the
+            // default rules and honours @Keep, which is what lets the Flutter
+            // engine's JNI entry points survive without any rules of our own.
+            // See proguard-rules.pro for the few app-specific keeps.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
@@ -81,6 +96,11 @@ kotlin {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // WindowCompat.enableEdgeToEdge(Window) in MainActivity needs core 1.16+.
+    // It already resolves transitively; pinning keeps the compile classpath
+    // from ever drifting below the API we call.
+    implementation("androidx.core:core:1.18.0")
 
     implementation("androidx.window:window:1.3.0")
     // For Java-friendly APIs to register and unregister callbacks

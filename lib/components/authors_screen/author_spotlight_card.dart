@@ -189,7 +189,13 @@ class AuthorSpotlightCardSkeleton extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              CircleAvatar(radius: 41, backgroundColor: Colors.grey.shade300),
+              // Theme-derived, not Colors.grey.shade300: that is a fixed light
+              // grey, so the avatar placeholder read as a near-white disc in
+              // dark mode while looking fine in light.
+              CircleAvatar(
+                radius: 41,
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+              ),
               const SizedBox(width: 18),
               Expanded(
                 child: Column(

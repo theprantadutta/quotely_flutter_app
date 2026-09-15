@@ -22,6 +22,10 @@ dependencies:
   # widget of theirs that needs localizations throws at runtime.
   material_ui: ^1.2.0
   cupertino_icons: ^1.0.8
+  # Author avatars. Replaces Image.network, which decoded the full
+  # source bitmap (Wikipedia photos run to 2000px+) to paint a circle a
+  # few dozen pixels wide. Play Console flagged that as a memory issue.
+  cached_network_image: ^3.4.1
   flex_color_scheme: ^8.0.2
   google_fonts: ^8.1.0
   shared_preferences: ^2.5.3

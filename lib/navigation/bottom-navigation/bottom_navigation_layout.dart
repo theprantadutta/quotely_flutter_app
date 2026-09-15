@@ -160,25 +160,35 @@ class BottomNavigationLayout extends StatelessWidget {
             ),
           ],
         ),
-        child: NavigationBar(
-          // 1. Make the NavigationBar's own background transparent
-          backgroundColor: Colors.transparent,
-          // 2. Remove the default shadow to use your custom one from the Container
-          elevation: 0,
-          onDestinationSelected: _onTap,
-          selectedIndex: navigationShell.currentIndex,
-          indicatorColor: kPrimaryColor.withAlpha(230),
-          destinations: buildBarDestinations(),
-          labelTextStyle: WidgetStateProperty.resolveWith((states) {
-            final style = TextStyle(fontSize: 12, fontWeight: FontWeight.w500);
-            if (states.contains(WidgetState.selected)) {
-              return style.copyWith(
-                color: kPrimaryColor,
-                fontWeight: FontWeight.w700,
+        // top: false so the gradient still bleeds to the very bottom of the
+        // screen under edge-to-edge, while the bar's own content is inset
+        // above the system navigation bar instead of sitting underneath it.
+        // The tablet NavigationRail path already had its own SafeArea.
+        child: SafeArea(
+          top: false,
+          child: NavigationBar(
+            // 1. Make the NavigationBar's own background transparent
+            backgroundColor: Colors.transparent,
+            // 2. Remove the default shadow to use your custom one from the Container
+            elevation: 0,
+            onDestinationSelected: _onTap,
+            selectedIndex: navigationShell.currentIndex,
+            indicatorColor: kPrimaryColor.withAlpha(230),
+            destinations: buildBarDestinations(),
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              final style = TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               );
-            }
-            return style;
-          }),
+              if (states.contains(WidgetState.selected)) {
+                return style.copyWith(
+                  color: kPrimaryColor,
+                  fontWeight: FontWeight.w700,
+                );
+              }
+              return style;
+            }),
+          ),
         ),
       ),
     );

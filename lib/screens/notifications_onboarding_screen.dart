@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
@@ -65,41 +67,67 @@ class _NotificationsOnboardingScreenState
     setState(() => _saving = true);
 
     final prefs = _prefs ?? await SharedPreferences.getInstance();
-    final service = NotificationService();
     final anySelected = _values.values.any((v) => v);
+    final selection = Map<String, bool>.from(_values);
 
-    // Persist + sync each type's topic subscription to its toggle. A full sync
-    // (subscribe on / unsubscribe off) so existing users who turn something off
-    // here are actually unsubscribed.
-    for (final type in kNotificationTypes) {
-      final enabled = _values[type.prefKey] ?? true;
-      await prefs.setBool(type.prefKey, enabled);
-      if (enabled) {
-        await service.subscribeToTopic(type.topic);
-      } else {
-        await service.unsubscribeFromTopic(type.topic);
-      }
-    }
-
-    // Master switch + the umbrella "all" topic, mirroring Settings semantics.
-    await prefs.setBool(kNotificationEnabled, anySelected);
-    if (anySelected) {
-      await service.subscribeToTopic(kNotificationAllTopic);
-    } else {
-      await service.unsubscribeFromTopic(kNotificationAllTopic);
-    }
-
-    // Mark prefs seeded so Home's startup job won't reset them, and mark this
-    // primer as seen so it isn't shown again.
-    await prefs.setBool(kNotificationsInitializedKey, true);
-    await prefs.setBool(kHasSeenNotificationPrompt, true);
-
+    // The OS dialog first, so the user acts on it immediately instead of
+    // watching a spinner while topic subscriptions run.
     if (requestPermission) {
       await PushNotifications.requestPermissions();
     }
 
+    // Local prefs stay awaited. They are fast (no network) and two of them gate
+    // routing: kHasSeenNotificationPrompt stops the router sending the user
+    // back here, and kNotificationsInitializedKey stops Home's startup job
+    // re-seeding and clobbering these choices. Deferring those risked the
+    // screen reappearing if the app died in the next second.
+    for (final type in kNotificationTypes) {
+      await prefs.setBool(type.prefKey, selection[type.prefKey] ?? true);
+    }
+    await prefs.setBool(kNotificationEnabled, anySelected);
+    await prefs.setBool(kNotificationsInitializedKey, true);
+    await prefs.setBool(kHasSeenNotificationPrompt, true);
+
+    // The slow half - one FCM round trip per topic, nine in total - runs
+    // detached. Nothing on Home reads the subscription result, so waiting for
+    // it bought the user nothing but a spinner. Deliberately not tied to this
+    // widget: it has to outlive the navigation on the next line.
+    unawaited(_syncTopics(selection, anySelected));
+
     if (!mounted) return;
     context.go(HomeScreen.kRouteName);
+  }
+
+  /// Syncs every topic subscription to its toggle (subscribe on, unsubscribe
+  /// off, so a user turning something off here is actually unsubscribed).
+  ///
+  /// Static and argument-only on purpose: this keeps running after the screen
+  /// is gone, so it must not touch State, context or mounted. Failures are
+  /// swallowed - Settings performs the same sync and will repair any topic that
+  /// did not take.
+  static Future<void> _syncTopics(
+    Map<String, bool> selection,
+    bool anySelected,
+  ) async {
+    final service = NotificationService();
+    try {
+      for (final type in kNotificationTypes) {
+        final enabled = selection[type.prefKey] ?? true;
+        if (enabled) {
+          await service.subscribeToTopic(type.topic);
+        } else {
+          await service.unsubscribeFromTopic(type.topic);
+        }
+      }
+      // Master switch + the umbrella "all" topic, mirroring Settings semantics.
+      if (anySelected) {
+        await service.subscribeToTopic(kNotificationAllTopic);
+      } else {
+        await service.unsubscribeFromTopic(kNotificationAllTopic);
+      }
+    } catch (_) {
+      // Offline, or FCM not ready. Settings re-syncs these.
+    }
   }
 
   @override

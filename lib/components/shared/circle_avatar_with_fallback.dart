@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// Circular avatar that shows the network image when available, otherwise a
@@ -74,6 +75,11 @@ class CircleAvatarWithFallback extends StatelessWidget {
     );
   }
 
+  /// Target decode size in real device pixels. Rounded up so the bitmap is
+  /// never smaller than the circle it fills.
+  int _decodePixels(BuildContext context) =>
+      (radius * 2 * MediaQuery.devicePixelRatioOf(context)).ceil();
+
   @override
   Widget build(BuildContext context) {
     final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
@@ -82,19 +88,24 @@ class CircleAvatarWithFallback extends StatelessWidget {
       tag: name,
       child: hasImage
           ? ClipOval(
-              child: Image.network(
-                imageUrl!,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl!,
                 width: radius * 2,
                 height: radius * 2,
                 fit: BoxFit.cover,
-                headers: _imageHeaders,
+                httpHeaders: _imageHeaders,
+                // Decode to the size actually drawn rather than the size the
+                // source happens to be. Author photos are backfilled from
+                // Wikipedia and run to 2000px+, which Image.network decoded in
+                // full to paint a circle this wide - a ~100x memory difference
+                // per avatar, and the authors list holds many at once.
+                // Multiplied by devicePixelRatio so the circle stays sharp.
+                memCacheWidth: _decodePixels(context),
+                memCacheHeight: _decodePixels(context),
                 // Show the monogram until the photo is ready (no grey flash)…
-                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                  if (wasSynchronouslyLoaded || frame != null) return child;
-                  return _monogram();
-                },
+                placeholder: (context, url) => _monogram(),
                 // …and keep it if the photo fails (e.g. 429/404).
-                errorBuilder: (context, error, stackTrace) => _monogram(),
+                errorWidget: (context, url, error) => _monogram(),
               ),
             )
           : _monogram(),

@@ -30,3 +30,11 @@ SystemUiOverlayStyle getDefaultSystemUiStyle(bool isDarkTheme) {
         : Brightness.light, // For iOS (dark icons)
   );
 }
+
+/// Quotes per page on the Home carousel.
+///
+/// Shared with the interests picker's prefetch: that warms
+/// fetchAllQuotesProvider with this exact page size, and the provider is keyed
+/// by its arguments, so a mismatch here would silently warm a different
+/// instance and Home would refetch from scratch.
+const int kHomeQuotePageSize = 10;
