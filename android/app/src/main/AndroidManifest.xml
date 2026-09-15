@@ -37,6 +37,46 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Play Billing's proxy activities, re-declared to add two attributes
+             the library does not set. Crashlytics 8101c07c307416da1819dc7553864c1b:
+             ProxyBillingActivity.onCreate throwing NullPointerException on
+             PendingIntent.getIntentSender(), 4 users on 2.1.0, and the same crash
+             on billing 8.0.0 for 1.2.0-2.0.0 with 19 users. It predates the
+             flutter_inapp_purchase migration; moving to 9.1.0 neither caused nor
+             fixed it.
+
+             The activity reads the purchase PendingIntent out of the intent that
+             started it. When the system recreates it from a restored task - after
+             the process was killed while the Play sheet was up - the extras are
+             gone and onCreate dereferences null. The giveaway here is the timing:
+             the last breadcrumb is a screen_view over six hours before the crash,
+             so nobody was tapping donate; the system was rebuilding a task.
+
+             The two fixes usually prescribed for this are already in place and
+             were checked in the 9.1.0 AAR before adding anything here: it declares
+             the <queries> entry for the Play Store, so package visibility on
+             Android 11+ is handled, and it sets configChanges for orientation and
+             keyboard, so rotation does not recreate it. Neither covers process
+             death, which is what this is - every reported event is Android 11.
+
+             finishOnTaskLaunch makes the system finish a stale instance when the
+             task is next launched instead of recreating it. A purchase interrupted
+             that way is cancelled rather than crashing, which is the outcome we
+             want: the user is returning from the launcher, not mid-flow, so no
+             result is being waited on. excludeFromRecents keeps it from being
+             offered as something to return to at all.
+
+             Neither attribute is declared by the library, so these merge without
+             tools:replace. Same fix as ai_persona. -->
+        <activity
+            android:name="com.android.billingclient.api.ProxyBillingActivity"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true" />
+        <activity
+            android:name="com.android.billingclient.api.ProxyBillingActivityV2"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
