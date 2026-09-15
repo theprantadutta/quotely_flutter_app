@@ -75,6 +75,22 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     setState(() => _initialLoadDone = true);
   }
 
+  /// Pull-to-refresh. Mirrors HomeScreen._refreshQuotes: reset the loaded
+  /// pages, invalidate the cached provider, refetch page one. The global
+  /// pagination seed is left alone so this does not reshuffle other screens.
+  Future<void> _refreshFacts() async {
+    if (!mounted) return;
+    setState(() {
+      factPageNumber = 1;
+      aiFacts = [];
+      hasMoreData = true;
+      hasError = false;
+      isLoadingMore = false;
+    });
+    ref.invalidate(fetchAllFactsProvider);
+    await _fetchFacts();
+  }
+
   Future<void> _fetchFacts() async {
     debugPrint('Fetching Ai Facts...');
     if (!hasMoreData || isLoadingMore) return;
@@ -202,8 +218,6 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
               },
               allSelectedCategories: allSelectedCategory,
             ),
-            // The carousel consumes vertical drags, so refresh lives in the
-            // top bar instead of a RefreshIndicator.
             Expanded(child: _buildContent()),
           ],
         ),
@@ -240,11 +254,14 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       );
     }
 
-    return VerticalContentCarousel(
-      items: [for (final fact in aiFacts) contentItemFromFact(fact)],
-      actions: _contentActions,
-      isLoadingMore: isLoadingMore || initialLoading,
-      hasMoreData: hasMoreData,
+    return RefreshIndicator.adaptive(
+      onRefresh: _refreshFacts,
+      child: VerticalContentCarousel(
+        items: [for (final fact in aiFacts) contentItemFromFact(fact)],
+        actions: _contentActions,
+        isLoadingMore: isLoadingMore || initialLoading,
+        hasMoreData: hasMoreData,
+      ),
     );
   }
 }

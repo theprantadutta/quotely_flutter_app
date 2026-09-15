@@ -180,6 +180,16 @@ class _VerticalContentCarouselState extends State<VerticalContentCarousel>
               key: const PageStorageKey('vertical_content_carousel'),
               controller: controller,
               scrollDirection: Axis.vertical,
+              // PageScrollPhysics keeps the snapping; AlwaysScrollable makes
+              // the view report an overscroll even when there is nothing to
+              // scroll to. A RefreshIndicator drives itself entirely off
+              // ScrollStart + Overscroll notifications, so without this a drag
+              // down on the first card is swallowed by the PageView and the
+              // indicator never appears - which is why pull-to-refresh worked
+              // on the authors list (a plain CustomScrollView) but not here.
+              physics: const PageScrollPhysics().applyTo(
+                const AlwaysScrollableScrollPhysics(),
+              ),
               onPageChanged: _onPageChanged,
               itemCount: itemCount,
               itemBuilder: (context, index) {

@@ -275,6 +275,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     setState(() => _initialLoadDone = true);
   }
 
+  /// Pull-to-refresh. Same reset the filter chips perform: drop the loaded
+  /// pages, invalidate the cached provider so the next read actually hits the
+  /// service, and fetch page one again.
+  ///
+  /// The seed is deliberately left alone. PaginationSeed.current is global and
+  /// keys every paginated provider in the app, so refreshing it here would
+  /// reshuffle the facts and authors lists too.
+  Future<void> _refreshQuotes() async {
+    if (!mounted) return;
+    setState(() {
+      quotePageNumber = 1;
+      quotes = [];
+      hasMoreData = true;
+      hasError = false;
+      isLoadingMore = false;
+    });
+    ref.invalidate(fetchAllQuotesProvider);
+    await _fetchQuotes();
+  }
+
   Future<void> _fetchQuotes() async {
     if (!hasMoreData || isLoadingMore) return;
 
@@ -432,8 +452,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 },
               ),
             ],
-            // The carousel consumes vertical drags, so refresh lives in the
-            // top bar instead of a RefreshIndicator.
             Expanded(child: _buildContent()),
           ],
         ),
@@ -482,13 +500,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Case 3: Content (the carousel renders its own skeleton while the
     // initial page loads)
-    return VerticalContentCarousel(
-      items: [for (final quote in quotes) contentItemFromQuote(quote)],
-      actions: _contentActions,
-      // The carousel renders its skeleton for an empty list that is still
-      // loading, which covers the pre-fetch window described above.
-      isLoadingMore: isLoadingMore || initialLoading,
-      hasMoreData: hasMoreData,
+    return RefreshIndicator.adaptive(
+      onRefresh: _refreshQuotes,
+      child: VerticalContentCarousel(
+        items: [for (final quote in quotes) contentItemFromQuote(quote)],
+        actions: _contentActions,
+        // The carousel renders its skeleton for an empty list that is still
+        // loading, which covers the pre-fetch window described above.
+        isLoadingMore: isLoadingMore || initialLoading,
+        hasMoreData: hasMoreData,
+      ),
     );
   }
 }
