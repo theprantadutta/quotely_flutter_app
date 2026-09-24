@@ -1,40 +1,7 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
-import 'colors.dart';
-
-// const kDefaultFlexTheme = FlexScheme.deepPurple;
-const kDefaultFlexTheme = FlexScheme.bahamaBlue;
-
-LinearGradient kGetDefaultGradient(BuildContext context) => LinearGradient(
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-  stops: const [0.1, 0.9],
-  colors: [
-    Theme.of(context).primaryColor.withValues(alpha: 0.1),
-    kHelperColor.withValues(alpha: 0.1),
-  ],
-);
-
-SystemUiOverlayStyle getDefaultSystemUiStyle(bool isDarkTheme) {
-  return SystemUiOverlayStyle(
-    // Status bar color
-    statusBarColor: Colors.transparent,
-    // Status bar brightness (optional)
-    statusBarIconBrightness: isDarkTheme
-        ? Brightness.light
-        : Brightness.dark, // For Android (dark icons)
-    statusBarBrightness: isDarkTheme
-        ? Brightness.dark
-        : Brightness.light, // For iOS (dark icons)
-  );
-}
-
-/// Quotes per page on the Home carousel.
+/// Quotes per page on the Today feed.
 ///
 /// Shared with the interests picker's prefetch: that warms
 /// fetchAllQuotesProvider with this exact page size, and the provider is keyed
 /// by its arguments, so a mismatch here would silently warm a different
-/// instance and Home would refetch from scratch.
+/// instance and Today would refetch from scratch.
 const int kHomeQuotePageSize = 10;

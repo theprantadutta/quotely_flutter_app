@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'dart:ui' show FlutterView;
 
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,20 +11,17 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:material_ui/material_ui.dart' as material_ui;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
-import 'constants/selectors.dart';
-import 'constants/shared_preference_keys.dart';
 import 'firebase_options.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
+import 'theme/app_theme.dart';
 
 Talker? talker;
 
@@ -71,6 +66,11 @@ void main() async {
   PushNotifications.init();
   await dotenv.load();
   initServiceLocator();
+  // Read (and migrate) appearance before the first frame so the app never
+  // flashes in the wrong theme or accent.
+  Appearance.bootstrap = await AppearanceSettings.load(
+    await SharedPreferences.getInstance(),
+  );
   runApp(
     ProviderScope(
       observers: [TalkerRiverpodObserver(talker: talker!)],
@@ -105,176 +105,29 @@ Future<void> _lockOrientationForDeviceClass(WidgetsBinding binding) async {
   await apply(view);
 }
 
-class QuotelyApp extends StatefulWidget {
+class QuotelyApp extends ConsumerStatefulWidget {
   const QuotelyApp({super.key});
 
   @override
-  State<QuotelyApp> createState() => _QuotelyAppState();
-
-  //https://gist.github.com/ben-xx/10000ed3bf44e0143cf0fe7ac5648254
-  // ignore: library_private_types_in_public_api
-  static _QuotelyAppState of(BuildContext context) =>
-      context.findAncestorStateOfType<_QuotelyAppState>()!;
+  ConsumerState<QuotelyApp> createState() => _QuotelyAppState();
 }
 
-class _QuotelyAppState extends State<QuotelyApp> {
-  ThemeMode _themeMode = ThemeMode.light;
-  FlexScheme _flexScheme = kDefaultFlexTheme;
-  ThemeMode get themeMode => _themeMode;
-  bool _isBiometricEnabled = false;
-  bool _isGridView = true;
-  SharedPreferences? _sharedPreferences;
-  String _fontFamily = 'Fira Code';
-  final analytics = getIt.get<FirebaseAnalytics>();
-
-  /// This is needed for components that may have a different theme data
-  bool get isDarkMode => _themeMode == ThemeMode.dark;
-  FlexScheme get flexScheme => _flexScheme;
-  String get fontFamily => _fontFamily;
-  bool get isBiometricEnabled => _isBiometricEnabled;
-  bool get isGridView => _isGridView;
-
+class _QuotelyAppState extends ConsumerState<QuotelyApp> {
   Future<void> checkForAppUpdate() async {
     // In-app updates go through the Play Store, so they're Android-only.
     if (!Platform.isAndroid) return;
-
-    debugPrint('Running checkForAppUpdate...');
-
-    // A check to ensure the widget is still mounted before showing dialogs.
     if (!mounted) return;
 
     try {
-      // Check for an app update directly against the Google Play Store.
-      debugPrint("Checking for update via in_app_update package...");
       final AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
-
-      // If an update is available...
       if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
-        debugPrint("Update available. Starting flexible update flow.");
-
-        // Start a user-friendly flexible update.
-        // This downloads the update in the background while the user can still use the app.
+        // Flexible: downloads in the background while the app stays usable,
+        // then prompts for the restart that installs it.
         await InAppUpdate.startFlexibleUpdate();
-
-        // Once the download is complete, this prompts the user to restart the
-        // app to complete the installation.
         await InAppUpdate.completeFlexibleUpdate();
-
-        debugPrint("Flexible update flow completed.");
-      } else {
-        debugPrint("No update available.");
       }
     } catch (e) {
       debugPrint('Something went wrong during the update check: $e');
-    }
-  }
-
-  void changeFontFamily(String newFontFamily) {
-    setState(() {
-      _fontFamily = newFontFamily;
-      _sharedPreferences?.setString(kFontFamilyKey, newFontFamily);
-    });
-    analytics.logEvent(
-      name: 'font_family_changed',
-      parameters: {'font_family': newFontFamily},
-    );
-  }
-
-  void toggleGridViewEnabled() {
-    setState(() {
-      _isGridView = !_isGridView;
-      _sharedPreferences?.setBool(kIsGridViewKey, _isGridView);
-    });
-    // Added for Firebase Analytics
-    analytics.logEvent(
-      name: 'view_mode_toggled',
-      parameters: {'is_grid_view': _isGridView ? 'true' : 'false'},
-    );
-  }
-
-  void changeBiometricEnabledEnabled(bool isBiometricEnabled) {
-    setState(() {
-      _isBiometricEnabled = isBiometricEnabled;
-      _sharedPreferences?.setBool(kBiometricKey, isBiometricEnabled);
-    });
-    // Added for Firebase Analytics
-    analytics.logEvent(
-      name: 'biometric_toggle_changed',
-      parameters: {
-        'is_biometric_enabled': isBiometricEnabled ? 'true' : 'false',
-      },
-    );
-  }
-
-  void changeFlexScheme(FlexScheme flexScheme) {
-    setState(() {
-      _flexScheme = flexScheme;
-      _sharedPreferences?.setString(kFlexSchemeKey, flexScheme.name);
-    });
-    // Added for Firebase Analytics
-    analytics.logEvent(
-      name: 'color_scheme_changed',
-      parameters: {'flex_scheme': flexScheme.name},
-    );
-  }
-
-  void changeTheme(ThemeMode themeMode) {
-    setState(() {
-      _themeMode = themeMode;
-      _sharedPreferences?.setString(kThemeModeKey, themeMode.name);
-    });
-    // Added for Firebase Analytics
-    analytics.logEvent(
-      name: 'theme_changed',
-      parameters: {'theme_mode': themeMode.name},
-    );
-  }
-
-  void initializeSharedPreferences() async {
-    _sharedPreferences = await SharedPreferences.getInstance();
-    if (!mounted) return;
-
-    // --- load the saved font family ---
-    final savedFont = _sharedPreferences?.getString(kFontFamilyKey);
-    if (savedFont != null) {
-      setState(() => _fontFamily = savedFont);
-    }
-
-    // Grid View
-    final isGridView = _sharedPreferences?.getBool(kIsGridViewKey);
-    if (isGridView != null) {
-      setState(() => _isGridView = isGridView);
-    }
-
-    // Drop the retired painted-view-mode preference (Home & Facts now have
-    // a single carousel view).
-    await _sharedPreferences?.remove(kLegacyContentViewModeKey);
-
-    // Theme Mode (Light/System/Dark)
-    final themeModeName = _sharedPreferences?.getString(kThemeModeKey);
-    if (themeModeName != null) {
-      final themeMode = ThemeMode.values.firstWhere(
-        (e) => e.name == themeModeName,
-        orElse: () =>
-            ThemeMode.light, // Default to light if saved value is invalid
-      );
-      setState(() => _themeMode = themeMode);
-    }
-
-    // Color Scheme
-    final flexSchemeName = _sharedPreferences?.getString(kFlexSchemeKey);
-    if (flexSchemeName != null) {
-      final flexScheme = FlexScheme.values.firstWhere(
-        (e) => e.name == flexSchemeName,
-        orElse: () => kDefaultFlexTheme, // Use your default theme
-      );
-      setState(() => _flexScheme = flexScheme);
-    }
-
-    // Biometric
-    final isFingerPrintEnabled = _sharedPreferences?.getBool(kBiometricKey);
-    if (isFingerPrintEnabled != null) {
-      setState(() => _isBiometricEnabled = isFingerPrintEnabled);
     }
   }
 
@@ -298,92 +151,50 @@ class _QuotelyAppState extends State<QuotelyApp> {
                 b.refreshRate.compareTo(a.refreshRate),
           );
 
-    final DisplayMode mostOptimalMode = sameResolution.isNotEmpty
-        ? sameResolution.first
-        : active;
-
-    await FlutterDisplayMode.setPreferredMode(mostOptimalMode);
-  }
-
-  /// Resets all appearance and layout settings to their original default values.
-  Future<void> resetAllSettings() async {
-    // 1. Update the state to reflect the default values immediately.
-    setState(() {
-      _themeMode = ThemeMode.light;
-      _flexScheme = kDefaultFlexTheme; // Your defined default theme
-      _fontFamily = 'Fira Code';
-      _isGridView = true;
-      _isBiometricEnabled = false; // Assuming false is the default
-    });
-
-    // 2. Log a single analytics event for this action.
-    analytics.logEvent(name: 'settings_reset_to_default');
-
-    // 3. Remove the saved preferences so the app uses defaults on next launch.
-    // We do this after updating the state for a snappy UI response.
-    await _sharedPreferences?.remove(kThemeModeKey);
-    await _sharedPreferences?.remove(kFlexSchemeKey);
-    await _sharedPreferences?.remove(kFontFamilyKey);
-    await _sharedPreferences?.remove(kIsGridViewKey);
-    await _sharedPreferences?.remove(kBiometricKey);
+    await FlutterDisplayMode.setPreferredMode(
+      sameResolution.isNotEmpty ? sameResolution.first : active,
+    );
   }
 
   @override
   void initState() {
     super.initState();
     setOptimalDisplayMode();
-    initializeSharedPreferences();
-    // Use addPostFrameCallback to ensure context is available for the dialog
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      checkForAppUpdate();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => checkForAppUpdate());
   }
 
   @override
   Widget build(BuildContext context) {
+    final appearance = ref.watch(appearanceProvider);
     return MaterialApp.router(
       title: 'Quotely',
       routerConfig: AppNavigation.router,
-      // skeletonizer 3.0.0 resolves its light/dark effect from
-      // MediaQuery.platformBrightnessOf(context) - the OS theme - where 2.1.3
-      // used Theme.of(context).brightness. Quotely has its own in-app theme
-      // switcher, so on any phone whose system theme differs from the app's the
-      // skeletons inverted: ShimmerEffect.dark() (#3A3A3A) bars while the app
-      // was in light mode, and the light effect's near-white image placeholders
-      // while the app was in dark mode.
-      //
-      // Pinning brightness to the app's own theme restores the 2.x behaviour
-      // for every Skeletonizer in the app at once, rather than passing an
-      // effect to each of the call sites individually. Placed in builder so it
-      // sits below MaterialApp's theme and above every route.
-      builder: (context, child) => SkeletonizerConfig(
-        data: SkeletonizerConfigData(brightness: Theme.of(context).brightness),
-        child: child ?? const SizedBox.shrink(),
+      // System text size is honoured but clamped so the thread layout (fixed
+      // 42px buttons, 34px avatars) never breaks at extreme settings.
+      builder: (context, child) => MediaQuery.withClampedTextScaling(
+        minScaleFactor: 0.85,
+        maxScaleFactor: 1.4,
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: quotelyOverlayStyle(context.q),
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
       // Two sets of delegates on purpose. The first three satisfy
       // package:flutter/material.dart, which this app is written against; the
       // spread satisfies material_ui's own MaterialLocalizations type, which is
       // a DIFFERENT Dart type that flutter_localizations cannot provide.
-      // motion_toast and go_router have migrated to material_ui, so without the
-      // spread their widgets throw "No MaterialLocalizations found" at runtime -
-      // and the crash surfaces far from the cause.
+      // go_router has migrated to material_ui, so without the spread its
+      // widgets throw "No MaterialLocalizations found" at runtime - and the
+      // crash surfaces far from the cause.
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         ...material_ui.GlobalMaterialLocalizations.delegates,
       ],
-      theme: FlexThemeData.light(
-        scheme: _flexScheme,
-        useMaterial3: true,
-        fontFamily: GoogleFonts.getFont(_fontFamily).fontFamily,
-      ),
-      darkTheme: FlexThemeData.dark(
-        scheme: _flexScheme,
-        useMaterial3: true,
-        fontFamily: GoogleFonts.getFont(_fontFamily).fontFamily,
-      ).copyWith(brightness: Brightness.dark),
-      themeMode: _themeMode,
+      theme: buildQuotelyTheme(Brightness.light, appearance),
+      darkTheme: buildQuotelyTheme(Brightness.dark, appearance),
+      themeMode: appearance.themeMode,
       debugShowCheckedModeBanner: false,
     );
   }

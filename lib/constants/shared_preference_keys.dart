@@ -54,3 +54,56 @@ const kHasSeenNotificationPrompt = 'has-seen-notification-prompt';
 /// a user can only ever buy one; this hides the donation tiles afterwards so we
 /// don't ask again. Restored from the store on open too, for reinstalls.
 const kIsSupporterKey = 'is-supporter';
+
+// --- Thread redesign -------------------------------------------------------
+
+/// Appearance (replaces the flex-scheme / Google-font / grid prefs above,
+/// which are migrated once and then removed; see AppearanceSettings.load).
+const kAppearanceThemeKey = 'appearance-theme-mode';
+const kAppearanceAccentKey = 'appearance-accent';
+const kAppearanceQuoteScaleKey = 'appearance-quote-scale';
+const kAppearanceReadingFontKey = 'appearance-reading-font';
+const kAppearanceLayoutKey = 'appearance-layout';
+const kAppearanceMigratedKey = 'appearance-migrated-v1';
+
+/// Interests → SCREEN picks (movie, tv, anime, game, cartoon). Kept apart from
+/// [kInterestsKey] because those strings filter quote tags and fact
+/// categories, and "Movies" is already a fact category.
+const kScreenInterestsKey = 'screen-interests';
+
+/// Scenes: spoiler shield (default on), followed title ids + slugs, and the
+/// per-title "watched up to episode N" setting (JSON map titleId -> N).
+const kSpoilerShieldKey = 'spoiler-shield-enabled';
+const kFollowedTitlesKey = 'followed-title-ids';
+const kFollowedTitleSlugsKey = 'followed-title-slugs';
+const kWatchedUpToKey = 'watched-up-to-episode';
+
+/// Authors the user follows (slugs). Local only; powers the People stories.
+const kFollowedAuthorsKey = 'followed-author-slugs';
+
+/// Recently opened people, newest first (JSON list of {kind,id,name,image}).
+const kRecentPeopleKey = 'recent-people';
+
+/// Daily activity log for the streak card: JSON map yyyy-MM-dd ->
+/// {"q": quotesViewed, "s": scenesViewed, "f": factsViewed}.
+const kActivityLogKey = 'activity-log';
+
+/// Optional nickname; its initial fills the You avatar on Today.
+const kNicknameKey = 'user-nickname';
+
+/// Notifications added by the redesign.
+const kNotificationFridayNightLines = 'notification-friday-night-lines';
+const kNotificationFollowedTitles = 'notification-followed-titles';
+
+/// Quiet hours, minutes after midnight. Foreground notifications that arrive
+/// inside the window are not shown.
+const kQuietHoursEnabledKey = 'quiet-hours-enabled';
+const kQuietHoursStartKey = 'quiet-hours-start';
+const kQuietHoursEndKey = 'quiet-hours-end';
+
+/// Offline library: only download over Wi-Fi, and per-pack saved counts.
+const kWifiOnlyKey = 'offline-wifi-only';
+const kOfflinePackCountPrefix = 'offline-pack-count-';
+
+/// Facts game: answers today (JSON {date, answered, correct}).
+const kFactsGameProgressKey = 'facts-game-progress';
