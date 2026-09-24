@@ -86,6 +86,13 @@ class MediaTitleDto {
 
   static String _typeOut(MediaType type) => type.name;
 
+  /// First genre, capitalised ("science fiction" arrives lowercase).
+  String? get primaryGenre {
+    if (genres.isEmpty || genres.first.trim().isEmpty) return null;
+    final g = genres.first.trim();
+    return g[0].toUpperCase() + g.substring(1);
+  }
+
   /// "1999 – present", "2008 – 2013" or "1994". Only series run on.
   String get yearsLabel {
     if (yearStart == null) return '';

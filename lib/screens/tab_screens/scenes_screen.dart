@@ -293,8 +293,7 @@ class _SceneOfTheDayCard extends ConsumerWidget {
         .watch(titleDetailProvider(scene.titleId))
         .value
         ?.title
-        .genres
-        .firstOrNull;
+        .primaryGenre;
     return Pressable(
       pressedScale: 0.985,
       onTap: () => openSender(context, message),

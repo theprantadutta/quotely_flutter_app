@@ -387,7 +387,7 @@ class _Hero extends ConsumerWidget {
     );
     final meta = [
       title.yearsLabel,
-      if (title.genres.isNotEmpty) title.genres.first,
+      ?title.primaryGenre,
     ].where((s) => s.isNotEmpty).join(' · ');
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
