@@ -1,15 +1,19 @@
-import 'dart:math' as math;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quotely_flutter_app/constants/responsive.dart';
-import 'package:quotely_flutter_app/screens/interests_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+import '../components/thread/thread.dart';
+import '../dtos/media_title_dto.dart';
+import '../dtos/quote_dto.dart';
+import '../dtos/scene_quote_dto.dart';
+import '../navigation/routes.dart';
+
+/// Welcome: three pages, each a live mini-thread that builds itself.
 class OnboardingScreen extends StatefulWidget {
-  static const kRouteName = '/onboarding';
+  static const kRouteName = Routes.onboarding;
   const OnboardingScreen({super.key});
 
   @override
@@ -17,173 +21,295 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final _pageController = PageController();
-  bool _isLastPage = false;
+  final _pages = PageController();
+  int _page = 0;
+  Timer? _auto;
+  bool _touched = false;
+
+  static const _copy = [
+    (
+      'Wisdom, one message at a time.',
+      'Quotes from thinkers, films, shows and anime, delivered like a conversation.',
+    ),
+    (
+      'Every screen has a line worth keeping.',
+      'Movies, TV, anime and games, with a spoiler shield that has your back.',
+    ),
+    (
+      'A message a day, right on time.',
+      'Quote of the day, Friday night lines and a weird fact on Wednesdays. You choose.',
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
     FlutterNativeSplash.remove();
+    // Gently show the other pages until the user takes over.
+    _auto = Timer.periodic(const Duration(seconds: 6), (_) {
+      if (_touched || !_pages.hasClients) return;
+      final next = (_page + 1) % _copy.length;
+      _pages.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _auto?.cancel();
+    _pages.dispose();
     super.dispose();
   }
 
-  // Marks onboarding complete and sends the user to the interest picker
-  // (which is required before entering the app).
-  void _finishOnboarding() async {
+  // Marks onboarding complete and moves on to the interest picker.
+  Future<void> _finish() async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool('hasSeenOnboarding', true);
     await preferences.setBool('onboardingShown', true);
-
-    if (mounted) {
-      // pushReplacement so the user can't swipe back into onboarding.
-      context.pushReplacement(InterestsScreen.kRouteName);
-    }
+    if (mounted) context.pushReplacement(Routes.interests);
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    final t = context.q;
+    final copy = _copy[_page];
     return Scaffold(
-      body: Stack(
-        children: [
-          // The PageView that contains the onboarding slides
-          PageView(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                // The last page has index 2 (0, 1, 2)
-                _isLastPage = (index == 2);
-              });
-            },
+      backgroundColor: t.bg,
+      body: SafeArea(
+        child: ThreadColumn(
+          child: Column(
             children: [
-              _buildOnboardingPage(
-                theme: theme,
-                imagePath: 'assets/onboarding/onboarding_1.png',
-                title: 'Welcome to Quotely!',
-                subtitle: 'Your daily dose of inspiration and wisdom awaits.',
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 4, 12, 0),
+                  child: QTextButton(label: 'Skip', onPressed: _finish),
+                ),
               ),
-              _buildOnboardingPage(
-                theme: theme,
-                imagePath: 'assets/onboarding/onboarding_2.png',
-                title: 'Discover Endless Inspiration',
-                subtitle:
-                    'Explore thousands of timeless quotes and fascinating AI facts.',
+              Expanded(
+                child: Listener(
+                  onPointerDown: (_) => _touched = true,
+                  child: PageView(
+                    controller: _pages,
+                    onPageChanged: (i) => setState(() => _page = i),
+                    children: const [
+                      _MiniThread(page: 0),
+                      _MiniThread(page: 1),
+                      _MiniThread(page: 2),
+                    ],
+                  ),
+                ),
               ),
-              _buildOnboardingPage(
-                theme: theme,
-                imagePath: 'assets/onboarding/onboarding_3.png',
-                title: 'Get Inspired Daily',
-                subtitle:
-                    'Receive custom notifications and save your favorite moments.',
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: Column(
+                        key: ValueKey(_page),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              copy.$1,
+                              style: context.qt.displayOnboarding,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            copy.$2,
+                            style: context.qt.body.copyWith(fontSize: 15),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Semantics(
+                      label: 'Page ${_page + 1} of ${_copy.length}',
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < _copy.length; i++) ...[
+                            if (i > 0) const SizedBox(width: 6),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 220),
+                              width: i == _page ? 22 : 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: i == _page ? t.acc : t.line,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    PrimaryButton(label: 'Get started', onPressed: _finish),
+                  ],
+                ),
               ),
             ],
           ),
-
-          // The bottom navigation controls (dots and buttons), kept within
-          // the readable-width column on tablets.
-          Positioned(
-            bottom: 30.0,
-            left: 20.0,
-            right: 20.0,
-            child: ResponsiveCenter(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // The "SKIP" button
-                  TextButton(
-                    onPressed: _finishOnboarding,
-                    child: const Text(
-                      'SKIP',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  // The animated dot indicator
-                  SmoothPageIndicator(
-                    controller: _pageController,
-                    count: 3,
-                    effect: WormEffect(
-                      spacing: 16,
-                      dotColor: Colors.black26,
-                      activeDotColor: theme.colorScheme.primary,
-                    ),
-                    onDotClicked: (index) => _pageController.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeIn,
-                    ),
-                  ),
-
-                  // The "NEXT" or "GET STARTED" button
-                  TextButton(
-                    onPressed: _isLastPage
-                        ? _finishOnboarding
-                        : () => _pageController.nextPage(
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeIn,
-                          ),
-                    child: Text(
-                      _isLastPage ? 'DONE' : 'NEXT',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
 
-  // A reusable helper widget for building each page to keep the code clean
-  Widget _buildOnboardingPage({
-    required ThemeData theme,
-    required String imagePath,
-    required String title,
-    required String subtitle,
-  }) {
-    return ResponsiveCenter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Shrinks on short (tablet landscape) viewports instead of
-            // overflowing the page.
-            Image.asset(
-              imagePath,
-              height: math.min(300, MediaQuery.sizeOf(context).height * 0.35),
+SceneQuoteDto _scene(
+  String line,
+  String character,
+  String title,
+  MediaType type,
+  int year,
+) {
+  final d = DateTime.utc(2026);
+  return SceneQuoteDto(
+    id: 'onboarding-$character',
+    content: line,
+    titleId: 'onboarding',
+    titleName: title,
+    titleType: type,
+    titleYear: year,
+    characterId: character,
+    characterName: character,
+    tags: const [],
+    dateAdded: d,
+    dateModified: d,
+  );
+}
+
+QuoteDto _quote(String text, String author) {
+  final d = DateTime.utc(2026);
+  return QuoteDto(
+    id: 'onboarding-$author',
+    author: author,
+    content: text,
+    tags: const [],
+    authorSlug: '',
+    length: text.length,
+    dateAdded: d,
+    dateModified: d,
+  );
+}
+
+/// A static demo thread. Not interactive: taps would lead into the app
+/// before onboarding is done.
+class _MiniThread extends StatelessWidget {
+  final int page;
+  const _MiniThread({required this.page});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = switch (page) {
+      0 => <Widget>[
+        MessageBubble(
+          message: ThreadMessage.fromQuote(
+            _quote(
+              'It always seems impossible until it’s done.',
+              'Nelson Mandela',
             ),
-            const SizedBox(height: 40),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+          ),
+          showSender: false,
+          trackView: false,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 24),
+          child: MessageBubble(
+            message: ThreadMessage.fromScene(
+              _scene(
+                'Just keep swimming.',
+                'Dory',
+                'Finding Nemo',
+                MediaType.movie,
+                2003,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            showSender: false,
+            trackView: false,
+          ),
+        ),
+        const SystemPill('True or false? Today’s weird law is in'),
+      ],
+      1 => <Widget>[
+        MessageBubble(
+          message: ThreadMessage.fromScene(
+            _scene(
+              'Do or do not. There is no try.',
+              'Yoda',
+              'The Empire Strikes Back',
+              MediaType.movie,
+              1980,
+            ),
+          ),
+          trackView: false,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 24),
+          child: MessageBubble(
+            message: ThreadMessage.fromScene(
+              _scene(
+                'I’m going to be King of the Pirates!',
+                'Luffy',
+                'One Piece',
+                MediaType.anime,
+                1999,
               ),
             ),
-          ],
+            trackView: false,
+          ),
+        ),
+        const SystemPill('Spoiler shield on', icon: Icons.shield_rounded),
+      ],
+      _ => <Widget>[
+        const TimeDivider('8:00 AM · Quote of the day'),
+        MessageBubble(
+          message: ThreadMessage.fromQuote(
+            _quote('Well done is better than well said.', 'Benjamin Franklin'),
+          ),
+          trackView: false,
+        ),
+        const TimeDivider('7:00 PM · Friday night lines'),
+        MessageBubble(
+          message: ThreadMessage.fromScene(
+            _scene(
+              'Life moves pretty fast.',
+              'Ferris Bueller',
+              'Ferris Bueller’s Day Off',
+              MediaType.movie,
+              1986,
+            ),
+          ),
+          trackView: false,
+        ),
+      ],
+    };
+    return IgnorePointer(
+      child: Center(
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < items.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Entrance(
+                    index: i + 1,
+                    stagger: const Duration(milliseconds: 380),
+                    child: items[i],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,23 +1,36 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../components/content_carousel/content_item.dart';
-import '../../components/content_carousel/content_mappers.dart';
-import '../../components/content_carousel/vertical_content_carousel.dart';
-import '../../components/facts_screen/facts_screen_filter_list.dart';
-import '../../components/shared/something_went_wrong.dart';
-import '../../components/shared/top_navigation_bar.dart';
+import '../../components/thread/thread.dart';
+import '../../constants/shared_preference_keys.dart';
 import '../../dtos/ai_fact_dto.dart';
+import '../../navigation/routes.dart';
+import '../../riverpods/all_facts_categories_data_provider.dart';
 import '../../riverpods/all_facts_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
 import '../../state_providers/user_interests.dart';
 import '../../util/pagination_seed.dart';
 
-class FactsScreen extends ConsumerStatefulWidget {
-  static const kRouteName = '/facts';
+/// Forces Play on even before any fact has a false variant. Off: Play shows
+/// up by itself once the backend's GenerateFactFalseVariantsJob has filled
+/// them in (a "True" only game would always be "True").
+const bool kFactsGameEnabled = false;
 
+/// Questions per day in Play.
+const int kFactsPerDay = 10;
+
+enum _FactsMode { play, browse }
+
+class FactsScreen extends ConsumerStatefulWidget {
+  static const kRouteName = Routes.facts;
   const FactsScreen({super.key});
 
   @override
@@ -25,242 +38,519 @@ class FactsScreen extends ConsumerStatefulWidget {
 }
 
 class _FactsScreenState extends ConsumerState<FactsScreen> {
-  int factPageNumber = 1;
-  int factPageSize = 10;
-  bool hasMoreData = true;
-  bool hasError = false;
-  bool isLoadingMore = false;
-  List<AiFactDto> aiFacts = [];
+  final analytics = getIt.get<FirebaseAnalytics>();
+  final _scroll = ScrollController();
+  final _random = Random();
 
-  List<String> allSelectedCategory = [];
-  List<String> allSelectedProvider = [];
+  _FactsMode _mode = _FactsMode.browse;
+  bool _userPickedMode = false;
+  String? _category;
 
-  /// Set when the user's saved interests match no fact categories (e.g. they
-  /// only picked quote tags). We then drop the interest filter and show all
-  /// facts instead of leaving the screen empty. Reset whenever the base
-  /// filter changes (chips toggled or interests edited).
-  bool _ignoreInterestsForFacts = false;
-
-  /// Interests last used as the base filter — guards the interests listener
-  /// against redundant refetches (see build()).
+  int _page = 1;
+  bool _hasMore = true;
+  bool _loading = false;
+  bool _error = false;
+  final List<AiFactDto> _facts = [];
+  bool _ignoreInterests = false;
+  bool _initialLoadDone = false;
   List<String> _appliedInterests = const [];
 
-  /// Set once the first interest-aware fetch has run; until then the listener
-  /// must not act (the initial load owns the first fetch).
-  bool _initialLoadDone = false;
-
-  final analytics = getIt.get<FirebaseAnalytics>();
-
-  late final ContentActions _contentActions;
+  // Play state
+  int _answered = 0;
+  int _correct = 0;
+  int _deckIndex = 0;
+  bool _showingFalse = false;
+  bool? _lastAnswerRight;
 
   @override
   void initState() {
     super.initState();
-    _contentActions = buildFactContentActions(onLastItemReached: _fetchFacts);
-    _loadInitialFacts();
+    _scroll.addListener(() {
+      final p = _scroll.position;
+      if (p.pixels > p.maxScrollExtent - 500) _fetch();
+    });
+    _loadProgress();
+    _loadInitial();
   }
 
-  /// First load: wait for saved interests so the very first fetch is already
-  /// filtered correctly — avoids fetching unfiltered, then resetting and
-  /// refetching (which flashed the skeleton and raced the loading guard).
-  Future<void> _loadInitialFacts() async {
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadInitial() async {
     await ref.read(userInterestsProvider.notifier).ready;
     if (!mounted) return;
     _appliedInterests = List.of(ref.read(userInterestsProvider));
-    await _fetchFacts();
-    if (!mounted) return;
-    // setState, not a bare assignment: when the first page legitimately comes
-    // back empty this is the only thing that changes, and without a rebuild the
-    // screen would sit on the skeleton instead of showing the empty state.
-    setState(() => _initialLoadDone = true);
+    await _fetch();
+    if (mounted) setState(() => _initialLoadDone = true);
   }
 
-  /// Pull-to-refresh. Mirrors HomeScreen._refreshQuotes: reset the loaded
-  /// pages, invalidate the cached provider, refetch page one. The global
-  /// pagination seed is left alone so this does not reshuffle other screens.
-  Future<void> _refreshFacts() async {
-    if (!mounted) return;
+  // --- Daily progress --------------------------------------------------------
+
+  String get _today => DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+  Future<void> _loadProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(kFactsGameProgressKey);
+    if (raw == null) return;
+    final j = json.decode(raw) as Map<String, dynamic>;
+    if (j['date'] != _today || !mounted) return;
     setState(() {
-      factPageNumber = 1;
-      aiFacts = [];
-      hasMoreData = true;
-      hasError = false;
-      isLoadingMore = false;
+      _answered = j['answered'] as int? ?? 0;
+      _correct = j['correct'] as int? ?? 0;
     });
-    ref.invalidate(fetchAllFactsProvider);
-    await _fetchFacts();
   }
 
-  Future<void> _fetchFacts() async {
-    debugPrint('Fetching Ai Facts...');
-    if (!hasMoreData || isLoadingMore) return;
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      kFactsGameProgressKey,
+      json.encode({'date': _today, 'answered': _answered, 'correct': _correct}),
+    );
+  }
 
-    if (!mounted) return;
+  // --- Data -----------------------------------------------------------------
 
-    // Analytics parity with the quotes screen
-    if (factPageNumber > 1) {
+  Future<void> _fetch() async {
+    if (_loading || !_hasMore) return;
+    if (_page > 1) {
       analytics.logEvent(
         name: 'facts_paginated',
-        parameters: {'page_number': factPageNumber},
+        parameters: {'page_number': _page},
       );
     }
-
     setState(() {
-      isLoadingMore = true;
-      hasError = false;
+      _loading = true;
+      _error = false;
     });
-
     try {
-      // Base filter: when no chips are selected, fall back to the user's
-      // saved interests. Tapping chips narrows within that base for the visit.
       final interests = ref.read(userInterestsProvider);
-      final effectiveCategories = allSelectedCategory.isNotEmpty
-          ? allSelectedCategory
-          : (_ignoreInterestsForFacts ? const <String>[] : interests);
-      var newFacts = await ref.read(
+      final categories = _category != null
+          ? [_category!]
+          : (_ignoreInterests ? const <String>[] : interests);
+      var res = await ref.read(
         fetchAllFactsProvider(
-          factPageNumber,
-          factPageSize,
-          effectiveCategories,
-          allSelectedProvider,
+          _page,
+          10,
+          categories,
+          const [],
           PaginationSeed.current,
         ).future,
       );
-
-      // Interests can be quote tags that match no fact category, which would
-      // leave the screen empty even though facts exist. If the very first
-      // interest-filtered page comes back empty, drop the filter and show all
-      // facts for the rest of the session.
-      if (newFacts.aiFacts.isEmpty &&
-          factPageNumber == 1 &&
-          allSelectedCategory.isEmpty &&
-          effectiveCategories.isNotEmpty) {
-        _ignoreInterestsForFacts = true;
-        newFacts = await ref.read(
+      if (res.aiFacts.isEmpty &&
+          _page == 1 &&
+          _category == null &&
+          categories.isNotEmpty) {
+        _ignoreInterests = true;
+        res = await ref.read(
           fetchAllFactsProvider(
-            factPageNumber,
-            factPageSize,
-            const <String>[],
-            allSelectedProvider,
+            1,
+            10,
+            const [],
+            const [],
             PaginationSeed.current,
           ).future,
         );
       }
-
+      if (!mounted) return;
       setState(() {
-        hasMoreData = newFacts.aiFacts.length == 10;
-        factPageNumber++;
-        aiFacts.addAll(newFacts.aiFacts);
-        isLoadingMore = false;
+        _hasMore = res.aiFacts.length == 10;
+        _page++;
+        _facts.addAll(
+          res.aiFacts.where((f) => !_facts.any((x) => x.id == f.id)),
+        );
+        // Switch to Play the first time playable facts show up, unless the
+        // user already chose a mode.
+        if (!_userPickedMode && _gameAvailable) _mode = _FactsMode.play;
+        _shuffleCurrent();
       });
     } catch (e) {
       if (kDebugMode) print(e);
-      if (mounted) {
-        setState(() {
-          hasError = true;
-          isLoadingMore = false;
-        });
-      }
+      if (mounted) setState(() => _error = true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(fetchAllFactsProvider);
+    setState(() {
+      _facts.clear();
+      _page = 1;
+      _hasMore = true;
+      _deckIndex = 0;
+      _lastAnswerRight = null;
+    });
+    await _fetch();
+  }
+
+  void _setCategory(String? c) {
+    setState(() {
+      _category = c;
+      _facts.clear();
+      _page = 1;
+      _hasMore = true;
+      _deckIndex = 0;
+      _lastAnswerRight = null;
+      _ignoreInterests = false;
+    });
+    ref.invalidate(fetchAllFactsProvider);
+    _fetch();
+  }
+
+  List<AiFactDto> get _deck => [
+    for (final f in _facts)
+      if ((f.falseVariant ?? '').trim().isNotEmpty) f,
+  ];
+
+  bool get _gameAvailable => kFactsGameEnabled || _deck.isNotEmpty;
+
+  AiFactDto? get _current {
+    final deck = kFactsGameEnabled && _deck.isEmpty ? _facts : _deck;
+    if (_deckIndex >= deck.length) return null;
+    return deck[_deckIndex];
+  }
+
+  /// Decide once per question whether the true or false statement is shown.
+  void _shuffleCurrent() {
+    final f = _current;
+    _showingFalse =
+        f != null &&
+        (f.falseVariant ?? '').trim().isNotEmpty &&
+        _random.nextBool();
+  }
+
+  void _answer(bool saidTrue) {
+    if (_lastAnswerRight != null) return;
+    final right = saidTrue != _showingFalse;
+    HapticFeedback.lightImpact();
+    setState(() {
+      _lastAnswerRight = right;
+      _answered++;
+      if (right) _correct++;
+    });
+    _saveProgress();
+    analytics.logEvent(
+      name: 'facts_game_answered',
+      parameters: {
+        'correct': right.toString(),
+        'category': _current?.aiFactCategory ?? '',
+      },
+    );
+  }
+
+  void _next() {
+    setState(() {
+      _deckIndex++;
+      _lastAnswerRight = null;
+      _shuffleCurrent();
+    });
+    if (_deckIndex >= _deck.length - 2) _fetch();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Re-fetch from the top when the user's interests actually change (e.g.
-    // edited in Settings). Compare by CONTENT — Dart lists use reference
-    // equality, so a plain `previous == next` would re-fire endlessly and the
-    // screen would never settle. Track what we've applied so we act once.
     ref.listen(userInterestsProvider, (previous, next) {
-      // The initial load owns the first fetch; ignore until it's done.
-      if (!_initialLoadDone) return;
-      if (listEquals(_appliedInterests, next)) return;
+      if (!_initialLoadDone || listEquals(_appliedInterests, next)) return;
       _appliedInterests = List.of(next);
-      // Chips override interests for the current visit, so only the base
-      // (no chips selected) view needs to refetch when interests change.
-      if (allSelectedCategory.isNotEmpty) return;
-      setState(() {
-        factPageNumber = 1;
-        aiFacts = [];
-        hasMoreData = true;
-        // Re-evaluate the new interests against the fact categories.
-        _ignoreInterestsForFacts = false;
-      });
-      ref.invalidate(fetchAllFactsProvider);
-      _fetchFacts();
+      if (_category != null) return;
+      _refresh();
     });
 
+    final categories =
+        ref.watch(fetchAllFactsCategoriesProvider).value ?? const <String>[];
+    final play = _mode == _FactsMode.play && _gameAvailable;
+    final subtitle = play
+        ? '${min(_answered, kFactsPerDay)} of $kFactsPerDay today · $_correct right so far'
+        : 'Strange, true and worth knowing';
+
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      bottom: false,
+      child: ThreadColumn(
         child: Column(
           children: [
-            const TopNavigationBar(
-              title: 'Facts',
-              icon: Icons.lightbulb_rounded,
+            ScreenHeader(
+              title: play ? 'True or false?' : 'Facts',
+              subtitle: subtitle,
+              actions: [
+                if (_gameAvailable)
+                  MiniSegmented<_FactsMode>(
+                    options: const [
+                      ChipOption(_FactsMode.play, 'Play'),
+                      ChipOption(_FactsMode.browse, 'Browse'),
+                    ],
+                    value: _mode,
+                    onChanged: (m) => setState(() {
+                      _mode = m;
+                      _userPickedMode = true;
+                    }),
+                  ),
+              ],
             ),
-            FactsScreenFilterList(
-              onSelectedCategoryChange: (category) async {
-                setState(() {
-                  if (allSelectedCategory.contains(category)) {
-                    allSelectedCategory.remove(category);
-                  } else {
-                    allSelectedCategory.add(category);
-                  }
-                  factPageNumber = 1;
-                  aiFacts = [];
-                  hasMoreData = true;
-                  // Removing the last chip falls back to interests, so
-                  // re-evaluate them against the fact categories.
-                  _ignoreInterestsForFacts = false;
-                });
-                ref.invalidate(fetchAllFactsProvider);
-                await _fetchFacts();
-              },
-              allSelectedCategories: allSelectedCategory,
+            if (categories.isNotEmpty)
+              FilterChips<String?>(
+                options: [
+                  const ChipOption(null, 'All'),
+                  for (final c in categories)
+                    if (c.isNotEmpty) ChipOption(c, c),
+                ],
+                isSelected: (c) => c == _category,
+                onSelected: _setCategory,
+              ),
+            const SizedBox(height: 6),
+            Expanded(
+              child: RefreshIndicator.adaptive(
+                onRefresh: _refresh,
+                child: play ? _buildPlay() : _buildBrowse(),
+              ),
             ),
-            Expanded(child: _buildContent()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent() {
-    // See HomeScreen._buildContent: the first load awaits saved interests
-    // before fetching, so there is a window with nothing in flight and nothing
-    // arrived. Treating it as loading keeps a cold first launch from rendering
-    // "No facts found" before the first fetch has started.
-    final initialLoading = !_initialLoadDone && !hasError;
+  Widget _buildBrowse() {
+    return CustomScrollView(
+      controller: _scroll,
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          sliver: SliverList.separated(
+            itemCount: _facts.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 14),
+            itemBuilder: (context, i) => Entrance(
+              key: ValueKey(_facts[i].id),
+              index: i % 8,
+              child: MessageBubble(
+                message: ThreadMessage.fromFact(_facts[i]),
+                senderLabel: 'Quotely · ${_facts[i].aiFactCategory}',
+                showReactions: true,
+              ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(child: _footer()),
+      ],
+    );
+  }
 
-    if (hasError && aiFacts.isEmpty) {
-      return Center(
-        child: SomethingWentWrong(
-          title: 'Failed to get Facts.',
-          onRetryPressed: _fetchFacts,
+  Widget _footer() {
+    if (_error && _facts.isEmpty) {
+      return ErrorBubble(message: 'Failed to get facts.', onRetry: _fetch);
+    }
+    if (_loading || !_initialLoadDone) {
+      return _facts.isEmpty
+          ? const Padding(
+              padding: EdgeInsets.all(16),
+              child: ThreadSkeleton(count: 3),
+            )
+          : const LoadMoreIndicator();
+    }
+    if (_facts.isEmpty) {
+      return EmptyState(
+        pill: 'No facts found',
+        action: SecondaryButton(
+          label: 'Try again',
+          expand: false,
+          onPressed: _refresh,
         ),
       );
     }
+    return const SizedBox(height: 24);
+  }
 
-    if (aiFacts.isEmpty && !isLoadingMore && !initialLoading) {
-      return SomethingWentWrong(
-        title: 'No facts found.',
-        onRetryPressed: () {
-          setState(() {
-            hasError = false;
-            hasMoreData = true;
-          });
-          _fetchFacts();
-        },
-      );
-    }
+  Widget _buildPlay() {
+    final t = context.q;
+    final fact = _current;
+    return ListView(
+      controller: _scroll,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        SegmentedProgress(
+          total: kFactsPerDay,
+          done: min(_answered, kFactsPerDay),
+        ),
+        const SizedBox(height: 14),
+        if (fact == null)
+          _loading ? const ThreadSkeleton(count: 1) : _footer()
+        else ...[
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: t.surf,
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SoftPill(fact.aiFactCategory),
+                const SizedBox(height: 14),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _showingFalse ? fact.falseVariant! : fact.content,
+                    style: context.qt.quoteFact,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (_lastAnswerRight == null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PrimaryButton(
+                          label: 'True',
+                          height: 52,
+                          onPressed: () => _answer(true),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: SecondaryButton(
+                          label: 'False',
+                          onPressed: () => _answer(false),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  PrimaryButton(
+                    label:
+                        _answered >= kFactsPerDay &&
+                            _answered % kFactsPerDay == 0
+                        ? 'Keep playing'
+                        : 'Next',
+                    height: 52,
+                    icon: Icons.arrow_forward_rounded,
+                    onPressed: _next,
+                  ),
+              ],
+            ),
+          ),
+          if (_lastAnswerRight != null) ...[
+            const SizedBox(height: 14),
+            Entrance(
+              child: _AnswerCard(
+                fact: fact,
+                right: _lastAnswerRight!,
+                wasFalse: _showingFalse,
+              ),
+            ),
+          ],
+          if (_answered == kFactsPerDay && _lastAnswerRight != null) ...[
+            const SizedBox(height: 16),
+            SystemPill(
+              'That’s today’s $kFactsPerDay. $_correct right — see you tomorrow!',
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+}
 
-    return RefreshIndicator.adaptive(
-      onRefresh: _refreshFacts,
-      child: VerticalContentCarousel(
-        items: [for (final fact in aiFacts) contentItemFromFact(fact)],
-        actions: _contentActions,
-        isLoadingMore: isLoadingMore || initialLoading,
-        hasMoreData: hasMoreData,
+class _AnswerCard extends ConsumerWidget {
+  final AiFactDto fact;
+  final bool right;
+  final bool wasFalse;
+
+  const _AnswerCard({
+    required this.fact,
+    required this.right,
+    required this.wasFalse,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.q;
+    final message = ThreadMessage.fromFact(fact);
+    final saved = watchIsSaved(ref, message);
+    final verdict = wasFalse ? 'False' : 'True';
+    final headline = right
+        ? '✓ $verdict. You got it.'
+        : '✗ Actually, that’s ${verdict.toLowerCase()}.';
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+        decoration: BoxDecoration(
+          color: t.accSoft,
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              headline,
+              style: context.qt.chip.copyWith(
+                color: t.accInk,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (wasFalse)
+              Text(
+                'The real fact:',
+                style: context.qt.label.copyWith(color: t.accInk),
+              ),
+            Text(
+              fact.content,
+              style: context.qt.quoteCompact.copyWith(
+                fontSize: 16 * context.qt.quoteScale,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                HitTarget(
+                  semanticLabel: saved ? 'Remove from saved' : 'Save',
+                  onTap: () => toggleSaved(ref, message),
+                  child: Row(
+                    children: [
+                      Icon(
+                        saved
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        size: 18,
+                        color: t.accInk,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        saved ? 'Saved' : 'Save',
+                        style: context.qt.chip.copyWith(
+                          color: t.accInk,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 18),
+                HitTarget(
+                  semanticLabel: 'Share',
+                  onTap: () => shareMessage(message),
+                  child: Row(
+                    children: [
+                      Icon(kShareIcon, size: 18, color: t.accInk),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Share',
+                        style: context.qt.chip.copyWith(
+                          color: t.accInk,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

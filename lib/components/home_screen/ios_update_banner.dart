@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../riverpods/application_info_provider.dart';
+import '../thread/thread.dart';
 import '../../util/version_compare.dart';
 
 /// iOS-only "update available" banner shown at the top of the home screen.
@@ -62,69 +63,28 @@ class _IosUpdateBannerState extends ConsumerState<IosUpdateBanner> {
       return const SizedBox.shrink();
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-
+    // A system message in the thread, like every other notice in Thread.
     return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Material(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => _openAppStore(appStoreUrl),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.system_update_alt_rounded,
-                  size: 20,
-                  color: colorScheme.onPrimaryContainer,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Update available',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13.5,
-                          color: colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                      Text(
-                        'Version $latestVersion is on the App Store',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onPrimaryContainer.withValues(
-                            alpha: 0.8,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => _openAppStore(appStoreUrl),
-                  child: const Text('Update'),
-                ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: colorScheme.onPrimaryContainer.withValues(
-                      alpha: 0.7,
-                    ),
-                  ),
-                  onPressed: () => setState(() => _dismissed = true),
-                ),
-              ],
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: SystemPill(
+              'Version $latestVersion is on the App Store · Update',
+              icon: Icons.system_update_alt_rounded,
+              onTap: () => _openAppStore(appStoreUrl),
             ),
           ),
-        ),
+          CircleIconButton(
+            icon: Icons.close_rounded,
+            semanticLabel: 'Dismiss update notice',
+            size: 30,
+            background: Colors.transparent,
+            foreground: context.q.mute,
+            onTap: () => setState(() => _dismissed = true),
+          ),
+        ],
       ),
     );
   }

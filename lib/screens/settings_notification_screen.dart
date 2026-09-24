@@ -1,23 +1,20 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quotely_flutter_app/components/layouts/main_layout.dart';
-import 'package:quotely_flutter_app/components/notifications_screen/notification_toggles_section.dart';
-import 'package:quotely_flutter_app/constants/notification_keys.dart';
-import 'package:quotely_flutter_app/screens/daily_inspiration_screen.dart';
-import 'package:quotely_flutter_app/screens/motivation_monday_screen.dart';
-import 'package:quotely_flutter_app/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../components/notifications_screen/notification_screen_layout.dart';
+import '../components/thread/thread.dart';
+import '../constants/notification_types.dart';
 import '../constants/shared_preference_keys.dart';
-import 'daily_brain_food_screen.dart';
-import 'fact_of_the_day_screen.dart';
-import 'quote_of_the_day_screen.dart';
-import 'weird_fact_wednesday_screen.dart';
+import '../navigation/routes.dart';
+import '../services/notification_service.dart';
+
+String formatMinutes(BuildContext context, int minutes) =>
+    MaterialLocalizations.of(
+      context,
+    ).formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60));
 
 class SettingsNotificationScreen extends StatefulWidget {
-  static const kRouteName = '/settings-notification';
+  static const kRouteName = Routes.notifications;
   const SettingsNotificationScreen({super.key});
 
   @override
@@ -26,246 +23,247 @@ class SettingsNotificationScreen extends StatefulWidget {
 }
 
 class _SettingsNotificationState extends State<SettingsNotificationScreen> {
-  final Map<String, bool> _notifications = {
+  final Map<String, bool> _values = {
     kNotificationEnabled: true,
-    kNotificationMotivation: true,
-    kNotificationDailyInspiration: true,
-    kNotificationQuoteOfTheDay: true,
-
-    // Fact Notifications
-    kNotificationFactOfTheDay: true,
-    kNotificationDailyBrainFood: true,
-    kNotificationWeirdFactWednesday: true,
+    for (final t in kNotificationTypes) t.prefKey: true,
   };
-
-  SharedPreferences? _sharedPreferences;
+  SharedPreferences? _prefs;
+  bool _quietEnabled = true;
+  int _quietStart = NotificationService.defaultQuietStart;
+  int _quietEnd = NotificationService.defaultQuietEnd;
 
   @override
   void initState() {
     super.initState();
-    _initializeSharedPreferences();
+    _load();
   }
 
-  Future<void> _initializeSharedPreferences() async {
-    _sharedPreferences = await SharedPreferences.getInstance();
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final quiet = await NotificationService.quietHours();
+    if (!mounted) return;
     setState(() {
-      _notifications.forEach((key, _) {
-        _notifications[key] =
-            _sharedPreferences?.getBool(key) ?? _notifications[key]!;
-      });
+      _prefs = prefs;
+      for (final key in _values.keys.toList()) {
+        _values[key] = prefs.getBool(key) ?? true;
+      }
+      _quietEnabled = quiet.enabled;
+      _quietStart = quiet.start;
+      _quietEnd = quiet.end;
     });
   }
 
-  Future<void> _onNotificationSwitched(
-    String key,
-    String topic,
-    bool value,
-  ) async {
+  /// Same semantics as before: the master switch flips every preference and
+  /// (un)subscribes every topic; a single row (un)subscribes its own topic.
+  Future<void> _set(String key, bool value) async {
     final service = NotificationService();
-
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     if (key == kNotificationEnabled) {
-      setState(() {
-        _notifications.forEach((notificationKey, _) {
-          _notifications[notificationKey] = value;
-        });
-      });
-      await _sharedPreferences?.setBool(kNotificationEnabled, value);
-
-      if (value) {
-        await service.subscribeToAllTopic();
-      } else {
-        await service.unsubscribeFromAllTopic();
+      setState(() => _values.updateAll((_, _) => value));
+      for (final k in _values.keys) {
+        await prefs.setBool(k, value);
       }
-
-      for (final notificationKey in _notifications.keys) {
-        await _sharedPreferences?.setBool(notificationKey, value);
+      try {
+        value
+            ? await service.subscribeToAllTopic()
+            : await service.unsubscribeFromAllTopic();
+      } catch (_) {}
+      return;
+    }
+    setState(() => _values[key] = value);
+    await prefs.setBool(key, value);
+    final type = kNotificationTypes.firstWhere((t) => t.prefKey == key);
+    try {
+      if (type.topic != null) {
+        value
+            ? await service.subscribeToTopic(type.topic!)
+            : await service.unsubscribeFromTopic(type.topic!);
+      } else if (key == kNotificationFollowedTitles) {
+        await service.syncFollowedTitleTopics(value);
       }
-    } else {
-      setState(() {
-        _notifications[key] = value;
-      });
-      await _sharedPreferences?.setBool(key, value);
-
-      if (value) {
-        await service.subscribeToTopic(topic);
-      } else {
-        await service.unsubscribeFromTopic(topic);
-      }
+    } catch (_) {
+      // Offline or FCM not ready; the next launch re-subscribes enabled ones.
     }
   }
 
-  void gotoAScreen(BuildContext context, String route) {
-    try {
-      Future.delayed(Duration.zero, () async {
-        // ignore: use_build_context_synchronously
-        context.push(route);
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Something Went Wrong when going to screen: $route');
-        print(e);
-      }
-    }
+  Future<void> _editQuietHours() async {
+    await showQSheet(
+      context,
+      builder: (sheet) => StatefulBuilder(
+        builder: (sheet, setSheet) {
+          Future<void> pick(bool start) async {
+            final current = start ? _quietStart : _quietEnd;
+            final picked = await showTimePicker(
+              context: sheet,
+              initialTime: TimeOfDay(hour: current ~/ 60, minute: current % 60),
+            );
+            if (picked == null) return;
+            final minutes = picked.hour * 60 + picked.minute;
+            setState(() => start ? _quietStart = minutes : _quietEnd = minutes);
+            setSheet(() {});
+            await _prefs?.setInt(
+              start ? kQuietHoursStartKey : kQuietHoursEndKey,
+              minutes,
+            );
+          }
+
+          return QSheetFrame(
+            title: 'Quiet hours',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'We won’t show notifications on this device during these hours.',
+                  style: sheet.qt.body,
+                ),
+                const SizedBox(height: 12),
+                GroupedList(
+                  color: sheet.q.bg,
+                  children: [
+                    GroupedRow(
+                      title: 'Quiet hours',
+                      trailing: QToggle(
+                        value: _quietEnabled,
+                        semanticLabel: 'Quiet hours',
+                        onChanged: (v) {
+                          setState(() => _quietEnabled = v);
+                          setSheet(() {});
+                          _prefs?.setBool(kQuietHoursEnabledKey, v);
+                        },
+                      ),
+                    ),
+                    GroupedRow(
+                      title: 'From',
+                      trailing: Text(
+                        formatMinutes(sheet, _quietStart),
+                        style: sheet.qt.rowTitle.copyWith(
+                          color: sheet.q.accInk,
+                        ),
+                      ),
+                      onTap: () => pick(true),
+                    ),
+                    GroupedRow(
+                      title: 'To',
+                      trailing: Text(
+                        formatMinutes(sheet, _quietEnd),
+                        style: sheet.qt.rowTitle.copyWith(
+                          color: sheet.q.accInk,
+                        ),
+                      ),
+                      onTap: () => pick(false),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                PrimaryButton(
+                  label: 'Done',
+                  onPressed: () => Navigator.of(sheet).pop(),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool areNotificationsEnabled = _notifications[kNotificationEnabled]!;
-    return MainLayout(
+    final t = context.q;
+    final master = _values[kNotificationEnabled] ?? true;
+    final quiet = _quietEnabled
+        ? 'Quiet hours ${formatMinutes(context, _quietStart)} – ${formatMinutes(context, _quietEnd)}'
+        : 'Quiet hours off';
+    return ThreadPage(
       title: 'Notifications',
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-        child: Column(
-          children: [
-            // --- 1. The Standalone Master Switch ---
-            _buildMasterSwitchContainer(
-              child: SwitchListTile(
-                title: const Text(
-                  'Enable All Notifications',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                subtitle: Text(
-                  'This is the main switch for all alerts from Quotely.',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+            decoration: BoxDecoration(
+              color: t.accSoft,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    hint: 'Edit quiet hours',
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _editQuietHours,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'All notifications',
+                            style: context.qt.rowTitle.copyWith(
+                              fontSize: 17,
+                              color: t.accInk,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$quiet ›',
+                            style: context.qt.meta.copyWith(
+                              color: t.accInk,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                value: _notifications[kNotificationEnabled]!,
-                onChanged: (value) => _onNotificationSwitched(
-                  kNotificationEnabled,
-                  kNotificationAllTopic,
-                  value,
-                ),
-                contentPadding: const EdgeInsets.only(
-                  left: 16,
-                  right: 8,
-                  top: 8,
-                  bottom: 8,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // --- 3 & 4. Per-type toggles (shared with the onboarding primer
-            // so both screens always show the same set, styled identically) ---
-            NotificationTogglesSection(
-              values: _notifications,
-              enabled: areNotificationsEnabled,
-              onChanged: (type, value) =>
-                  _onNotificationSwitched(type.prefKey, type.topic, value),
-            ),
-
-            const SizedBox(height: 32),
-
-            // --- 2. Manage Content (Quotes & Facts Navigation) ---
-            _buildSectionHeader(context, "Manage Notification Content"),
-            const SizedBox(height: 8),
-            _buildSectionContainer(
-              children: [
-                NotificationScreenLayout(
-                  iconData: Icons.tips_and_updates_outlined,
-                  title: 'Quote of the Day',
-                  description: 'View the featured daily quote',
-                  onTap: () =>
-                      gotoAScreen(context, QuoteOfTheDayScreen.kRouteName),
-                ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                NotificationScreenLayout(
-                  iconData: Icons.lightbulb_outline_rounded,
-                  title: 'Daily Inspiration',
-                  description: 'Catch up on inspiration alerts',
-                  onTap: () =>
-                      gotoAScreen(context, DailyInspirationScreen.kRouteName),
-                ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                NotificationScreenLayout(
-                  iconData: Icons.calendar_month_outlined,
-                  title: 'Monday Motivation',
-                  description: 'Review past motivation alerts',
-                  onTap: () =>
-                      gotoAScreen(context, MotivationMondayScreen.kRouteName),
-                ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                NotificationScreenLayout(
-                  iconData: Icons.fact_check_outlined,
-                  title: 'Fact of the Day',
-                  description: 'View the featured daily fact',
-                  onTap: () {
-                    gotoAScreen(context, FactOfTheDayScreen.kRouteName);
-                  },
-                ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                NotificationScreenLayout(
-                  iconData: Icons.psychology_outlined,
-                  title: 'Daily Brain Food',
-                  description: 'Catch up on interesting tidbits',
-                  onTap: () {
-                    gotoAScreen(context, DailyBrainFoodScreen.kRouteName);
-                  },
-                ),
-                const Divider(height: 1, indent: 20, endIndent: 20),
-                NotificationScreenLayout(
-                  iconData: Icons.interests_outlined,
-                  title: 'Weird Fact Wednesday',
-                  description: 'Review past weird facts',
-                  onTap: () {
-                    gotoAScreen(context, WeirdFactWednesdayScreen.kRouteName);
-                  },
+                QToggle(
+                  value: master,
+                  large: true,
+                  semanticLabel: 'All notifications',
+                  onChanged: (v) => _set(kNotificationEnabled, v),
                 ),
               ],
             ),
-
-            const SizedBox(height: 32),
+          ),
+          for (final group in NotificationGroup.values) ...[
+            const SizedBox(height: 18),
+            SectionOverline(group.label),
+            IgnorePointer(
+              ignoring: !master,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 180),
+                opacity: master ? 1 : 0.5,
+                child: GroupedList(
+                  children: [
+                    for (final type in notificationTypesIn(group))
+                      GroupedRow(
+                        title: type.title,
+                        description: type.schedule,
+                        isNew: type.isNew,
+                        trailing: QToggle(
+                          value: _values[type.prefKey] ?? true,
+                          semanticLabel: type.title,
+                          onChanged: (v) => _set(type.prefKey, v),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // Helper widgets for the new design
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Text(
-      title.toUpperCase(),
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-        letterSpacing: 1.2,
-      ),
-    );
-  }
-
-  Widget _buildMasterSwitchContainer({required Widget child}) {
-    final theme = Theme.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
-        border: Border.all(
-          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-        ),
-      ),
-      // Transparent Material above the container's colour so the tile's ink
-      // ripple is visible (and Flutter doesn't warn it may be hidden).
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Material(type: MaterialType.transparency, child: child),
-      ),
-    );
-  }
-
-  Widget _buildSectionContainer({required List<Widget> children}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Material(
-          type: MaterialType.transparency,
-          child: Column(children: children),
-        ),
+          const SizedBox(height: 18),
+          GroupedList(
+            children: [
+              GroupedRow(
+                title: 'See past messages',
+                description: 'Everything we’ve sent you',
+                chevron: true,
+                onTap: () => context.push(Routes.pastMessages),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

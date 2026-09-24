@@ -1,27 +1,26 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../components/shared/something_went_wrong.dart';
-import '../constants/responsive.dart';
+import '../components/thread/thread.dart';
 import '../constants/selectors.dart';
+import '../dtos/media_title_dto.dart';
+import '../navigation/routes.dart';
+import '../riverpods/all_facts_categories_data_provider.dart';
 import '../riverpods/all_quote_data_provider.dart';
-import '../util/pagination_seed.dart';
 import '../riverpods/interest_options_provider.dart';
+import '../state_providers/scene_state.dart';
 import '../state_providers/user_interests.dart';
-import 'notifications_onboarding_screen.dart';
+import '../util/pagination_seed.dart';
 
-/// Post-onboarding interest picker. The user selects at least
-/// [UserInterests.minInterests] topics (no upper limit) that become the base
-/// filter for the Home & Facts screens.
+/// "What should we talk about?" Quote topics, SCREEN types and fact
+/// categories. At least [UserInterests.minInterests] picks in total.
 ///
-/// [isEditing] is true when reached from Settings (saving pops back); false
-/// during onboarding (saving enters the app).
+/// [isEditing]: reached from You (saving pops back) rather than onboarding
+/// (saving continues to the notification primer).
 class InterestsScreen extends ConsumerStatefulWidget {
-  static const kRouteName = '/interests';
+  static const kRouteName = Routes.interests;
 
   final bool isEditing;
 
@@ -32,107 +31,73 @@ class InterestsScreen extends ConsumerStatefulWidget {
 }
 
 class _InterestsScreenState extends ConsumerState<InterestsScreen> {
-  /// How many chips to render initially and to add each time the user scrolls
-  /// near the bottom. The full vocabulary lives in memory; we reveal it in
-  /// batches so a Wrap never has to build hundreds of chips at once.
-  static const int _batchSize = 80;
+  static const _quoteBatch = 24;
+  static const _factBatch = 16;
 
   final _selected = <String>{};
-  final _searchController = TextEditingController();
-  final _scrollController = ScrollController();
+  final _screen = <MediaType>{};
+  final _search = TextEditingController();
   String _query = '';
-  bool _initializedFromSaved = false;
+  int _quotesShown = _quoteBatch;
+  int _factsShown = _factBatch;
+  bool _seeded = false;
   bool _saving = false;
-
-  /// Number of chips currently revealed from the filtered list.
-  int _visibleCount = _batchSize;
-
-  /// Size of the current filtered list — cached from build() so the scroll
-  /// listener knows whether there's more to reveal.
-  int _filteredCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // The router can land here directly on a fresh launch (onboarding done
-    // but no interests saved yet). Only Onboarding and Home remove the native
-    // splash, so without this the app would stay hidden behind it forever.
+    // The router can land here directly on a fresh launch; only onboarding
+    // and Today remove the native splash otherwise.
     FlutterNativeSplash.remove();
-    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _searchController.dispose();
+    _search.dispose();
     super.dispose();
   }
 
-  /// Reveal the next batch as the user nears the bottom of the list.
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 320 &&
-        _visibleCount < _filteredCount) {
-      setState(() => _visibleCount += _batchSize);
-    }
-  }
+  int get _count => _selected.length + _screen.length;
 
-  /// Reset the reveal window to the top — used when the search query changes so
-  /// results start from the first match.
-  void _resetReveal() => _visibleCount = _batchSize;
+  /// Fact categories are the ones the facts API reports. The baked-in
+  /// vocabulary covers a cold offline start: categories are Title Case,
+  /// quote tags are lowercase.
+  bool _isFactCategory(String option, Set<String> known) =>
+      known.contains(option.toLowerCase()) ||
+      (known.isEmpty &&
+          option.isNotEmpty &&
+          option[0] == option[0].toUpperCase() &&
+          option[0] != option[0].toLowerCase());
 
-  void _toggle(String option) {
-    setState(() {
-      if (_selected.contains(option)) {
-        _selected.remove(option);
-      } else {
-        _selected.add(option);
-      }
-    });
-  }
+  void _toggle(String option) => setState(() {
+    _selected.contains(option)
+        ? _selected.remove(option)
+        : _selected.add(option);
+  });
 
-  /// Selects the most popular interests on the user's behalf. [interestOptions]
-  /// is already ordered by popularity and interleaves quote tags with fact
-  /// categories, so taking from the top yields a sensible mix of both without
-  /// hand-curating a default list that would drift as content changes.
+  void _toggleScreen(MediaType type) => setState(() {
+    _screen.contains(type) ? _screen.remove(type) : _screen.add(type);
+  });
+
   Future<void> _autoPick() async {
     if (_saving) return;
     final options = ref.read(interestOptionsProvider).value ?? const <String>[];
-    if (options.length < UserInterests.minInterests) return;
     setState(() {
       _selected
         ..clear()
         ..addAll(options.take(UserInterests.autoPickCount));
+      _screen
+        ..clear()
+        ..addAll(const [MediaType.movie, MediaType.tv, MediaType.anime]);
     });
-    // Onboarding: the whole point is not having to choose, so go straight
-    // through. From Settings the user opened this deliberately, so leave the
-    // selection on screen for them to review and save themselves.
     if (!widget.isEditing) await _save();
   }
 
-  /// Warms Home's first page of quotes while the user is still on the
-  /// notification primer, so Home has content the moment it mounts instead of
-  /// showing its skeleton.
-  ///
-  /// Interests are only known once the picker is saved, which is why this runs
-  /// here rather than during onboarding - prefetching earlier would fetch
-  /// unfiltered quotes that Home would discard and refetch anyway.
-  ///
-  /// The argument list must match what Home passes EXACTLY. fetchAllQuotes is a
-  /// family keyed on the record (pageNumber, pageSize, tags, seed), and Dart
-  /// records compare fields with ==, which for a List is identity, not
-  /// contents. So this deliberately reads the list back out of
-  /// userInterestsProvider rather than using _selected.toList(): Home reads the
-  /// same provider and therefore the same List instance. Passing an equal-but-
-  /// separate copy would key a different provider and silently prefetch
-  /// nothing. PaginationSeed.current is stable for the session, so the seed
-  /// matches too.
+  /// Warms Today's first page while the user reads the notification primer.
+  /// Must read the list back out of userInterestsProvider: provider families
+  /// are keyed by ==, which for a List is identity (see git history).
   void _prefetchFirstQuotePage() {
     final interests = ref.read(userInterestsProvider);
-    // ignore(): not awaited, and a failure here must not surface. This is a
-    // pure optimisation - Home runs its own fetch with real error handling if
-    // this has not landed by the time it mounts.
     ref
         .read(
           fetchAllQuotesProvider(
@@ -146,348 +111,227 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
   }
 
   Future<void> _save() async {
-    if (_selected.length < UserInterests.minInterests || _saving) return;
+    if (_count < UserInterests.minInterests || _saving) return;
     setState(() => _saving = true);
+    await ref.read(screenInterestsProvider.notifier).save(_screen.toList());
     await ref.read(userInterestsProvider.notifier).save(_selected.toList());
     _prefetchFirstQuotePage();
     if (!mounted) return;
     if (widget.isEditing) {
       context.pop();
     } else {
-      // First-run flow: hand off to the notification primer before Home.
-      context.go(NotificationsOnboardingScreen.kRouteName);
+      context.go(Routes.notificationsOnboarding);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final optionsAsync = ref.watch(interestOptionsProvider);
+    final t = context.q;
+    final options =
+        ref.watch(interestOptionsProvider).value ?? const <String>[];
+    final categories = {
+      for (final c
+          in ref.watch(fetchAllFactsCategoriesProvider).value ??
+              const <String>[])
+        c.toLowerCase(),
+    };
 
-    // Seed the selection from saved interests once (edit mode, or returning
-    // users re-running the picker).
-    if (!_initializedFromSaved) {
-      final saved = ref.read(userInterestsProvider);
-      if (saved.isNotEmpty) _selected.addAll(saved);
-      _initializedFromSaved = true;
+    if (!_seeded) {
+      _seeded = true;
+      _selected.addAll(ref.read(userInterestsProvider));
+      _screen.addAll(ref.read(screenInterestsProvider));
     }
 
+    final q = _query.toLowerCase();
+    bool matches(String s) => q.isEmpty || s.toLowerCase().contains(q);
+    final quoteTags = <String>[];
+    final factCats = <String>[];
+    for (final o in options) {
+      if (!matches(o)) continue;
+      (_isFactCategory(o, categories) ? factCats : quoteTags).add(o);
+    }
+    // Selected ones always stay visible, even past the reveal window.
+    List<String> window(List<String> all, int shown) => [
+      ...all.take(shown),
+      ...all.skip(shown).where(_selected.contains),
+    ];
+    final screenTypes = MediaType.values
+        .where((m) => matches(m.interestLabel))
+        .toList();
+
+    Widget chips(List<String> list) => Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final o in list)
+          InterestChip(
+            label: o[0].toUpperCase() + o.substring(1),
+            selected: _selected.contains(o),
+            onTap: () => _toggle(o),
+          ),
+      ],
+    );
+
+    Widget more(int total, int shown, VoidCallback onTap) => total > shown
+        ? Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: QTextButton(
+              label: 'Show ${(total - shown).clamp(0, 40)} more',
+              color: t.accInk,
+              onPressed: onTap,
+            ),
+          )
+        : const SizedBox.shrink();
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.isEditing ? 'Your Interests' : 'Pick your interests',
-        ),
-        automaticallyImplyLeading: widget.isEditing,
-      ),
+      backgroundColor: t.bg,
       body: SafeArea(
-        child: ResponsiveCenter(
+        child: ThreadColumn(
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              if (widget.isEditing) const PushHeader(),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    widget.isEditing ? 0 : 24,
+                    20,
+                    20,
+                  ),
                   children: [
-                    Text(
-                      'Choose topics you love. We\'ll tailor your quotes and '
-                      'facts to them — pick at least ${UserInterests.minInterests}.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.7,
+                    if (!widget.isEditing)
+                      Text(
+                        'Step 2 of 3',
+                        style: context.qt.label.copyWith(
+                          color: t.accInk,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
+                    const SizedBox(height: 6),
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        widget.isEditing
+                            ? 'Your interests'
+                            : 'What should we talk about?',
+                        style: context.qt.titleScreen,
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Pick at least ${UserInterests.minInterests}. You can change this anytime.',
+                      style: context.qt.body.copyWith(fontSize: 15),
+                    ),
+                    const SizedBox(height: 14),
                     TextField(
-                      controller: _searchController,
+                      controller: _search,
                       onChanged: (v) => setState(() {
                         _query = v.trim();
-                        _resetReveal();
+                        _quotesShown = _quoteBatch;
+                        _factsShown = _factBatch;
                       }),
+                      style: context.qt.chip.copyWith(fontSize: 14),
                       decoration: InputDecoration(
-                        isDense: true,
-                        hintText: 'Search interests',
-                        prefixIcon: const Icon(Icons.search, size: 20),
+                        fillColor: t.surf,
+                        hintText: 'Search topics',
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 18,
+                          color: t.mute,
+                        ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: optionsAsync.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => Center(
-                    child: SomethingWentWrong(
-                      title: 'Failed to load interests.',
-                      onRetryPressed: () =>
-                          ref.invalidate(interestOptionsProvider),
-                    ),
-                  ),
-                  data: (options) {
-                    // Both services fall back to local data and return empty
-                    // lists when the API is unreachable on a fresh install, so
-                    // an empty vocabulary means the fetch failed — offer a
-                    // retry instead of a dead end the user can't save from.
-                    if (options.isEmpty) {
-                      return Center(
-                        child: SomethingWentWrong(
-                          title: 'Failed to load interests.',
-                          onRetryPressed: () =>
-                              ref.invalidate(interestOptionsProvider),
-                        ),
-                      );
-                    }
-                    final q = _query.toLowerCase();
-                    final filtered = q.isEmpty
-                        ? options
-                        : options
-                              .where((o) => o.toLowerCase().contains(q))
-                              .toList();
-                    if (filtered.isEmpty) {
-                      return const Center(
-                        child: Text('No matching interests.'),
-                      );
-                    }
-                    // The whole vocabulary is already in memory, but a Wrap
-                    // builds every child eagerly and there can be hundreds —
-                    // building them all at once janks the main thread. So we
-                    // reveal them in batches, growing the window as the user
-                    // scrolls (see _onScroll). Natural order is preserved so
-                    // tapping a chip toggles it in place instead of jumping.
-                    _filteredCount = filtered.length;
-                    final visible = _visibleCount.clamp(0, filtered.length);
-                    final base = filtered.take(visible).toList();
-                    final baseSet = base.toSet();
-                    // Keep any selected items that haven't been scrolled into
-                    // view yet (e.g. interests seeded from a previous save in
-                    // edit mode) visible and removable.
-                    final hiddenSelected = filtered
-                        .where(
-                          (o) => _selected.contains(o) && !baseSet.contains(o),
-                        )
-                        .toList();
-                    final shown = [...base, ...hiddenSelected];
-                    final hasMore = visible < filtered.length;
-                    return SingleChildScrollView(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    if (quoteTags.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      const SectionOverline('Quotes'),
+                      chips(window(quoteTags, _quotesShown)),
+                      more(
+                        quoteTags.length,
+                        _quotesShown,
+                        () => setState(() => _quotesShown += 40),
+                      ),
+                    ],
+                    if (screenTypes.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      const SectionOverline('Screen', trailing: NewBadge()),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              for (final option in shown)
-                                _InterestChip(
-                                  label: option,
-                                  selected: _selected.contains(option),
-                                  onTap: () => _toggle(option),
-                                ),
-                            ],
-                          ),
-                          if (hasMore)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 20, bottom: 4),
-                              child: Center(
-                                child: SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              ),
+                          for (final m in screenTypes)
+                            InterestChip(
+                              label: m.interestLabel,
+                              selected: _screen.contains(m),
+                              onTap: () => _toggleScreen(m),
                             ),
                         ],
                       ),
-                    );
-                  },
-                ),
-              ),
-              _BottomBar(
-                count: _selected.length,
-                saving: _saving,
-                onSave: _save,
-                onAutoPick: _autoPick,
-                // Hidden when the vocabulary failed to load or is too small to
-                // satisfy the minimum, so the action can never be a dead tap.
-                canAutoPick:
-                    (optionsAsync.value?.length ?? 0) >=
-                    UserInterests.minInterests,
-                isEditing: widget.isEditing,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InterestChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _InterestChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          color: selected
-              ? primary.withValues(alpha: 0.14)
-              : theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.5,
-                ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected
-                ? primary
-                : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (selected) ...[
-              Icon(Icons.check, size: 15, color: primary),
-              const SizedBox(width: 5),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: selected ? primary : theme.colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomBar extends StatelessWidget {
-  final int count;
-  final bool saving;
-  final bool isEditing;
-  final bool canAutoPick;
-  final VoidCallback onSave;
-  final VoidCallback onAutoPick;
-
-  const _BottomBar({
-    required this.count,
-    required this.saving,
-    required this.isEditing,
-    required this.canAutoPick,
-    required this.onSave,
-    required this.onAutoPick,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const min = UserInterests.minInterests;
-    final hasMin = count >= min;
-    final enabled = hasMin && !saving;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Offered only while the user is short of the minimum — once they've
-          // picked enough they're clearly curating, and the shortcut would just
-          // be a button that discards their choices.
-          if (canAutoPick && !hasMin)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: saving ? null : onAutoPick,
-                icon: const Icon(Icons.auto_awesome, size: 18),
-                label: Text(
-                  isEditing ? 'Choose for me' : 'Choose for me & continue',
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
-            ),
-          Row(
-            children: [
-              // Count on its own line; below the minimum, a second line nudges the
-              // user toward it (there's no upper limit once met).
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$count selected',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.7,
-                        ),
+                    ],
+                    if (factCats.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      const SectionOverline('Facts'),
+                      chips(window(factCats, _factsShown)),
+                      more(
+                        factCats.length,
+                        _factsShown,
+                        () => setState(() => _factsShown += 40),
                       ),
-                    ),
-                    if (!hasMin)
-                      Text(
-                        'Pick at least $min',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.55,
-                          ),
-                        ),
+                    ],
+                    if (options.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 24),
+                        child: ThreadSkeleton(count: 1),
                       ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              FilledButton(
-                onPressed: enabled ? onSave : null,
-                child: saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(isEditing ? 'Save' : 'Continue'),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child:
+                          _count < UserInterests.minInterests &&
+                              options.isNotEmpty
+                          ? QTextButton(
+                              label: widget.isEditing
+                                  ? 'Choose for me'
+                                  : 'Choose for me',
+                              color: t.accInk,
+                              onPressed: _autoPick,
+                            )
+                          : Text(
+                              '$_count picked',
+                              style: context.qt.chip.copyWith(
+                                fontSize: 14,
+                                color: t.mute,
+                              ),
+                            ),
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 190),
+                      child: PrimaryButton(
+                        label: widget.isEditing ? 'Save' : 'Continue',
+                        loading: _saving,
+                        onPressed: _count >= UserInterests.minInterests
+                            ? _save
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

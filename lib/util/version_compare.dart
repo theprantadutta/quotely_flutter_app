@@ -13,10 +13,9 @@ bool isNewerVersion({required String current, required String latest}) {
 
   final currentParts = parse(current);
   final latestParts = parse(latest);
-  final length =
-      currentParts.length > latestParts.length
-          ? currentParts.length
-          : latestParts.length;
+  final length = currentParts.length > latestParts.length
+      ? currentParts.length
+      : latestParts.length;
 
   for (var i = 0; i < length; i++) {
     final currentPart = i < currentParts.length ? currentParts[i] : 0;

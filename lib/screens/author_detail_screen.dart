@@ -1,99 +1,301 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quotely_flutter_app/components/author_detail_screen/author_detail_author_bio.dart';
-import 'package:quotely_flutter_app/components/author_detail_screen/author_detail_author_quotes.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../components/layouts/main_layout.dart';
-import '../components/shared/something_went_wrong.dart';
-import '../constants/responsive.dart';
+import '../components/thread/thread.dart';
+import '../dtos/author_dto.dart';
+import '../dtos/quote_dto.dart';
+import '../navigation/routes.dart';
+import '../riverpods/all_quotes_by_author_provider.dart';
 import '../riverpods/get_author_detail_provider.dart';
+import '../state_providers/recent_people.dart';
+import '../state_providers/scene_state.dart';
+import '../util/pagination_seed.dart';
 
-class AuthorDetailScreen extends ConsumerWidget {
-  static const kRouteName = '/author-detail';
+class AuthorDetailScreen extends ConsumerStatefulWidget {
+  static const kRouteName = Routes.authorBase;
 
   final String authorSlug;
 
   const AuthorDetailScreen({super.key, required this.authorSlug});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authorProvider = ref.watch(fetchAuthorDetailProvider(authorSlug));
-    final title = authorProvider.asData?.value?.name ?? 'Author';
-    // Tablet landscape: bio on the left, quote carousel on the right, both
-    // filling the viewport. Everything else keeps the scrolling column.
-    final splitPanes = isTabletLandscape(context);
+  ConsumerState<AuthorDetailScreen> createState() => _AuthorDetailScreenState();
+}
 
-    return MainLayout(
-      title: title,
-      scrollable: !splitPanes,
-      maxWidth: splitPanes ? kMaxShellWidth : kMaxContentWidth,
-      body: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-          child: authorProvider.when(
-            data: (author) {
-              if (author == null) return _buildError(context);
-              if (splitPanes) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            AuthorProfileHeader(author: author),
-                            if (author.bio.isNotEmpty) ...[
-                              const SizedBox(height: 16),
-                              AuthorAboutCard(author: author),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      flex: 3,
-                      child: AuthorDetailAuthorQuotes(
-                        author: author,
-                        expand: true,
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return Column(
-                children: [
-                  AuthorProfileHeader(author: author),
-                  if (author.bio.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    AuthorAboutCard(author: author),
-                  ],
-                  const SizedBox(height: 22),
-                  AuthorDetailAuthorQuotes(author: author),
-                ],
-              );
-            },
-            error: (err, stack) => _buildError(context),
-            // In the non-scrolling split layout the skeleton needs its own
-            // scroll view so it can't overflow the bounded viewport.
-            loading: () => splitPanes
-                ? const SingleChildScrollView(
-                    child: AuthorDetailAuthorBioSkeletor(),
-                  )
-                : const AuthorDetailAuthorBioSkeletor(),
+class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
+  final _scroll = ScrollController();
+  final List<QuoteDto> _quotes = [];
+  int _page = 1;
+  bool _loading = false;
+  bool _hasMore = true;
+  bool _error = false;
+  bool _recorded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(() {
+      final p = _scroll.position;
+      if (p.pixels > p.maxScrollExtent - 500) _fetch();
+    });
+    _fetch();
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetch() async {
+    if (_loading || !_hasMore) return;
+    setState(() {
+      _loading = true;
+      _error = false;
+    });
+    try {
+      final res = await ref.read(
+        fetchAllQuotesByAuthorProvider(
+          widget.authorSlug,
+          _page,
+          10,
+          PaginationSeed.current,
+        ).future,
+      );
+      if (!mounted) return;
+      setState(() {
+        _hasMore = res.quotes.length == 10;
+        _page++;
+        _quotes.addAll(
+          res.quotes.where((q) => !_quotes.any((x) => x.id == q.id)),
+        );
+      });
+    } catch (e) {
+      if (kDebugMode) print(e);
+      if (mounted) setState(() => _error = true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _record(AuthorDto a) {
+    if (_recorded) return;
+    _recorded = true;
+    Future.microtask(
+      () => ref
+          .read(recentPeopleProvider.notifier)
+          .add(
+            RecentPerson(
+              kind: PersonKind.author,
+              id: a.slug,
+              name: a.name,
+              imageUrl: a.imageUrl,
+            ),
           ),
-        ),
-      ),
     );
   }
 
-  Widget _buildError(BuildContext context) {
-    return SizedBox(
-      height: cappedHeight(context, 0.8, max: 600),
-      child: const Center(
-        child: SomethingWentWrong(title: 'Failed to get Author Detail'),
+  @override
+  Widget build(BuildContext context) {
+    final async = ref.watch(fetchAuthorDetailProvider(widget.authorSlug));
+    final author = async.value;
+    if (author != null) _record(author);
+
+    return ThreadPage(
+      trailing: author == null
+          ? null
+          : CircleIconButton(
+              icon: kShareIcon,
+              semanticLabel: 'Share ${author.name}',
+              onTap: () => SharePlus.instance.share(
+                ShareParams(
+                  text: 'Quotes by ${author.name}, on Quotely',
+                  sharePositionOrigin: const Rect.fromLTRB(0, 0, 1, 1),
+                ),
+              ),
+            ),
+      body: async.isLoading && author == null
+          ? const Padding(
+              padding: EdgeInsets.all(16),
+              child: ThreadSkeleton(count: 3),
+            )
+          : author == null
+          ? ErrorBubble(
+              message: 'Failed to get author detail.',
+              onRetry: () =>
+                  ref.invalidate(fetchAuthorDetailProvider(widget.authorSlug)),
+            )
+          : CustomScrollView(
+              controller: _scroll,
+              slivers: [
+                SliverToBoxAdapter(child: _Profile(author: author)),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 22, bottom: 12),
+                    child: TimeDivider('Most loved'),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList.separated(
+                    itemCount: _quotes.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, i) => Entrance(
+                      key: ValueKey(_quotes[i].id),
+                      index: i % 8,
+                      child: MessageBubble(
+                        message: ThreadMessage.fromQuote(_quotes[i]),
+                        variant: BubbleVariant.compact,
+                        showSender: false,
+                        avatarSize: 30,
+                      ),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _error && _quotes.isEmpty
+                      ? ErrorBubble(
+                          message: 'Failed to get quotes.',
+                          onRetry: _fetch,
+                        )
+                      : _loading
+                      ? const LoadMoreIndicator()
+                      : _quotes.isEmpty
+                      ? EmptyState(pill: 'No quotes by ${author.name} yet')
+                      : const SizedBox(height: 32),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _Profile extends ConsumerWidget {
+  final AuthorDto author;
+  const _Profile({required this.author});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.q;
+    final following = ref.watch(
+      followedAuthorsProvider.select((s) => s.contains(author.slug)),
+    );
+    Widget pill(
+      String text, {
+      bool filled = false,
+      VoidCallback? onTap,
+      IconData? icon,
+    }) {
+      final child = Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: filled ? t.acc : t.surf,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              style: context.qt.chip.copyWith(
+                fontWeight: FontWeight.w800,
+                color: filled ? t.onAcc : t.ink,
+              ),
+            ),
+            if (icon != null) ...[
+              const SizedBox(width: 4),
+              Icon(icon, size: 14, color: filled ? t.onAcc : t.ink),
+            ],
+          ],
+        ),
+      );
+      return onTap == null
+          ? child
+          : Semantics(
+              button: true,
+              label: text,
+              excludeSemantics: true,
+              child: Pressable(onTap: onTap, child: child),
+            );
+    }
+
+    final link = author.link.trim();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+      child: Column(
+        children: [
+          QAvatar(
+            name: author.name,
+            imageUrl: author.imageUrl,
+            size: 88,
+            heroTag: author.slug,
+          ),
+          const SizedBox(height: 14),
+          Semantics(
+            header: true,
+            child: Text(
+              author.name,
+              textAlign: TextAlign.center,
+              style: context.qt.titlePush,
+            ),
+          ),
+          if (author.description.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              author.description,
+              textAlign: TextAlign.center,
+              style: context.qt.meta,
+            ),
+          ],
+          const SizedBox(height: 14),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              Semantics(
+                toggled: following,
+                child: pill(
+                  following ? '✓ Following' : 'Follow',
+                  filled: !following,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ref
+                        .read(followedAuthorsProvider.notifier)
+                        .toggle(author.slug);
+                  },
+                ),
+              ),
+              pill('${author.quoteCount} quotes'),
+              if (link.isNotEmpty)
+                pill(
+                  'Wiki',
+                  icon: Icons.north_east_rounded,
+                  onTap: () async {
+                    final uri = Uri.tryParse(link);
+                    if (uri != null) {
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                ),
+            ],
+          ),
+          if (author.bio.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(
+              author.bio,
+              textAlign: TextAlign.center,
+              style: context.qt.body.copyWith(height: 1.5),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -5,21 +5,18 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../components/notifications_screen/notification_toggles_section.dart';
+import '../components/thread/thread.dart';
 import '../constants/notification_keys.dart';
 import '../constants/notification_types.dart';
-import '../constants/responsive.dart';
 import '../constants/shared_preference_keys.dart';
+import '../navigation/routes.dart';
 import '../notifications/push_notification.dart';
 import '../services/notification_service.dart';
-import 'tab_screens/home_screen.dart';
 
-/// Post-interests notification primer. Explains the daily quote/fact alerts,
-/// lets the user choose which kinds they want (all on by default), and requests
-/// the OS notification permission — so permission is asked here once, with
-/// context, instead of silently from the Home screen.
+/// "When should we text you?" Choose notification kinds (all on by
+/// default), then ask the OS for permission with that context.
 class NotificationsOnboardingScreen extends StatefulWidget {
-  static const kRouteName = '/notifications-onboarding';
+  static const kRouteName = Routes.notificationsOnboarding;
 
   const NotificationsOnboardingScreen({super.key});
 
@@ -30,7 +27,6 @@ class NotificationsOnboardingScreen extends StatefulWidget {
 
 class _NotificationsOnboardingScreenState
     extends State<NotificationsOnboardingScreen> {
-  /// prefKey -> on/off. Seeded from storage, defaulting to all-on.
   final Map<String, bool> _values = {
     for (final type in kNotificationTypes) type.prefKey: true,
   };
@@ -41,8 +37,7 @@ class _NotificationsOnboardingScreenState
   @override
   void initState() {
     super.initState();
-    // This screen can be the launch destination (existing users on update, or a
-    // returning user who hasn't passed it yet), so it must clear the splash.
+    // Can be the launch destination, so it must clear the splash.
     FlutterNativeSplash.remove();
     _load();
   }
@@ -58,29 +53,18 @@ class _NotificationsOnboardingScreenState
     });
   }
 
-  void _onChanged(NotificationType type, bool value) {
-    setState(() => _values[type.prefKey] = value);
-  }
-
   Future<void> _complete({required bool requestPermission}) async {
     if (_saving) return;
     setState(() => _saving = true);
 
     final prefs = _prefs ?? await SharedPreferences.getInstance();
-    final anySelected = _values.values.any((v) => v);
     final selection = Map<String, bool>.from(_values);
+    final anySelected = selection.values.any((v) => v);
 
-    // The OS dialog first, so the user acts on it immediately instead of
-    // watching a spinner while topic subscriptions run.
-    if (requestPermission) {
-      await PushNotifications.requestPermissions();
-    }
+    // The OS dialog first, so the user acts on it immediately.
+    if (requestPermission) await PushNotifications.requestPermissions();
 
-    // Local prefs stay awaited. They are fast (no network) and two of them gate
-    // routing: kHasSeenNotificationPrompt stops the router sending the user
-    // back here, and kNotificationsInitializedKey stops Home's startup job
-    // re-seeding and clobbering these choices. Deferring those risked the
-    // screen reappearing if the app died in the next second.
+    // Awaited: two of these gate routing (see the router's redirect).
     for (final type in kNotificationTypes) {
       await prefs.setBool(type.prefKey, selection[type.prefKey] ?? true);
     }
@@ -88,23 +72,15 @@ class _NotificationsOnboardingScreenState
     await prefs.setBool(kNotificationsInitializedKey, true);
     await prefs.setBool(kHasSeenNotificationPrompt, true);
 
-    // The slow half - one FCM round trip per topic, nine in total - runs
-    // detached. Nothing on Home reads the subscription result, so waiting for
-    // it bought the user nothing but a spinner. Deliberately not tied to this
-    // widget: it has to outlive the navigation on the next line.
+    // One FCM round trip per topic: detached, it outlives this screen.
     unawaited(_syncTopics(selection, anySelected));
 
     if (!mounted) return;
-    context.go(HomeScreen.kRouteName);
+    context.go(Routes.today);
   }
 
-  /// Syncs every topic subscription to its toggle (subscribe on, unsubscribe
-  /// off, so a user turning something off here is actually unsubscribed).
-  ///
-  /// Static and argument-only on purpose: this keeps running after the screen
-  /// is gone, so it must not touch State, context or mounted. Failures are
-  /// swallowed - Settings performs the same sync and will repair any topic that
-  /// did not take.
+  /// Subscribes on, unsubscribes off. Static and argument-only because it
+  /// runs after the screen is gone. Failures are repaired on next launch.
   static Future<void> _syncTopics(
     Map<String, bool> selection,
     bool anySelected,
@@ -112,76 +88,87 @@ class _NotificationsOnboardingScreenState
     final service = NotificationService();
     try {
       for (final type in kNotificationTypes) {
+        if (type.topic == null) continue;
         final enabled = selection[type.prefKey] ?? true;
-        if (enabled) {
-          await service.subscribeToTopic(type.topic);
-        } else {
-          await service.unsubscribeFromTopic(type.topic);
-        }
+        enabled
+            ? await service.subscribeToTopic(type.topic!)
+            : await service.unsubscribeFromTopic(type.topic!);
       }
-      // Master switch + the umbrella "all" topic, mirroring Settings semantics.
-      if (anySelected) {
-        await service.subscribeToTopic(kNotificationAllTopic);
-      } else {
-        await service.unsubscribeFromTopic(kNotificationAllTopic);
-      }
-    } catch (_) {
-      // Offline, or FCM not ready. Settings re-syncs these.
-    }
+      anySelected
+          ? await service.subscribeToTopic(kNotificationAllTopic)
+          : await service.unsubscribeFromTopic(kNotificationAllTopic);
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final t = context.q;
+    final types = kNotificationTypes.where((t) => t.inPrimer).toList();
     return Scaffold(
+      backgroundColor: t.bg,
       body: SafeArea(
-        child: ResponsiveCenter(
+        child: ThreadColumn(
           child: Column(
             children: [
               Expanded(
-                child: SingleChildScrollView(
+                child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _Header(theme: theme),
-                      const SizedBox(height: 28),
-                      NotificationTogglesSection(
-                        values: _values,
-                        onChanged: _onChanged,
+                  children: [
+                    Text(
+                      'Step 3 of 3',
+                      style: context.qt.label.copyWith(
+                        color: t.accInk,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline_rounded,
-                            size: 18,
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.6,
+                    ),
+                    const SizedBox(height: 6),
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        'When should we text you?',
+                        style: context.qt.titleScreen,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const _PreviewNotification(),
+                    const SizedBox(height: 16),
+                    GroupedList(
+                      children: [
+                        for (final type in types)
+                          GroupedRow(
+                            title: type.title,
+                            description: type.primerDescription,
+                            isNew: type.isNew,
+                            trailing: QToggle(
+                              value: _values[type.prefKey] ?? true,
+                              semanticLabel: type.title,
+                              onChanged: (v) =>
+                                  setState(() => _values[type.prefKey] = v),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Not sure? Keep them on — you can change these '
-                              'anytime in Settings.',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: 0.6,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              _BottomBar(
-                saving: _saving,
-                onAllow: () => _complete(requestPermission: true),
-                onSkip: () => _complete(requestPermission: false),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                child: Column(
+                  children: [
+                    PrimaryButton(
+                      label: 'Allow notifications',
+                      loading: _saving,
+                      onPressed: () => _complete(requestPermission: true),
+                    ),
+                    const SizedBox(height: 4),
+                    QTextButton(
+                      label: 'Not now',
+                      onPressed: _saving
+                          ? null
+                          : () => _complete(requestPermission: false),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -191,94 +178,65 @@ class _NotificationsOnboardingScreenState
   }
 }
 
-class _Header extends StatelessWidget {
-  final ThemeData theme;
-
-  const _Header({required this.theme});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(
-            Icons.notifications_active_rounded,
-            color: theme.colorScheme.primary,
-            size: 30,
-          ),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          'Stay inspired',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Get a daily quote and a fascinating fact delivered right to you. '
-          'Choose what you\'d like to hear about.',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BottomBar extends StatelessWidget {
-  final bool saving;
-  final VoidCallback onAllow;
-  final VoidCallback onSkip;
-
-  const _BottomBar({
-    required this.saving,
-    required this.onAllow,
-    required this.onSkip,
-  });
+/// What a quote-of-the-day notification looks like. The one card in the
+/// design with a shadow.
+class _PreviewNotification extends StatelessWidget {
+  const _PreviewNotification();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: saving ? null : onAllow,
-              child: saving
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Allow notifications'),
+    final t = context.q;
+    return Semantics(
+      label:
+          'Example notification: Nelson Mandela, It always seems impossible until it’s done.',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: t.surf,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 24,
+              offset: Offset(0, 8),
             ),
-          ),
-          TextButton(
-            onPressed: saving ? null : onSkip,
-            child: const Text('Maybe later'),
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const BrandIcon(size: 36, radius: 10),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'QUOTELY',
+                          style: context.qt.caption.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ),
+                      Text('now', style: context.qt.caption),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text('Nelson Mandela', style: context.qt.rowTitle),
+                  Text(
+                    'It always seems impossible until it’s done.',
+                    style: context.qt.meta,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,17 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
-import 'package:quotely_flutter_app/constants/selectors.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../components/layouts/main_layout.dart';
-import '../components/shared/dark_gradient_background.dart';
-import '../constants/responsive.dart';
+import '../components/thread/thread.dart';
 import '../constants/shared_preference_keys.dart';
+import '../navigation/routes.dart';
 
 /// Numeric Apple App Store ID for Quotely, from App Store Connect. Used to
 /// build the "Share the App" link on iOS. The URL is deliberately built without
@@ -20,7 +17,7 @@ import '../constants/shared_preference_keys.dart';
 const String kAppStoreId = '6778280010';
 
 class SupportUsScreen extends StatefulWidget {
-  static const kRouteName = '/support-us';
+  static const kRouteName = Routes.support;
   const SupportUsScreen({super.key});
 
   @override
@@ -46,6 +43,9 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   bool _isSupporter = false;
 
   String _statusMessage = 'Loading support options...';
+
+  /// The tier the sticky button will buy.
+  String? _selectedSku;
 
   @override
   void initState() {
@@ -242,245 +242,226 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     );
   }
 
+  /// Opens the store listing on its review page.
+  Future<void> _rateApp() async {
+    final uri = Platform.isIOS
+        ? Uri.parse(
+            'https://apps.apple.com/app/id$kAppStoreId?action=write-review',
+          )
+        : Uri.parse('market://details?id=com.pranta.quotely');
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && !Platform.isIOS) {
+      await launchUrl(
+        Uri.parse(
+          'https://play.google.com/store/apps/details?id=com.pranta.quotely',
+        ),
+        mode: LaunchMode.externalApplication,
+      );
+    }
+  }
+
+  /// Store titles on Android carry the app name ("Buy me a coffee (Quotely)").
+  String _cleanTitle(String title) =>
+      title.replaceAll(RegExp(r'\s*\([^)]*\)\s*$'), '').trim();
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Donations are non-consumable: once supported, nothing is left to buy.
+    final products = _isSupporter
+        ? const <Product>[]
+        : [
+            for (final sku in [_coffeeSku, _supportSku])
+              ?_products.cast<Product?>().firstWhere(
+                (p) => p?.id == sku,
+                orElse: () => null,
+              ),
+          ];
+    final selected = products.cast<Product?>().firstWhere(
+      (p) => p?.id == _selectedSku,
+      orElse: () => products.isEmpty ? null : products.first,
+    );
 
-    // Find our specific products from the loaded list. Hidden entirely once the
-    // user has donated - these are non-consumable, so there is nothing left to
-    // buy and asking again would only produce an "already owned" error.
-    final Product? supportProduct = _isSupporter
-        ? null
-        : _products.cast<Product?>().firstWhere(
-            (p) => p?.id == _supportSku,
-            orElse: () => null,
-          );
-    final Product? coffeeProduct = _isSupporter
-        ? null
-        : _products.cast<Product?>().firstWhere(
-            (p) => p?.id == _coffeeSku,
-            orElse: () => null,
-          );
-    final kPrimaryColor = Theme.of(context).primaryColor;
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: kPrimaryColor.withValues(
-          alpha: isDarkTheme ? 0.6 : 0.9,
-        ),
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        title: MainLayoutAppBar(title: 'Support Us'),
-        leading: IconButton(
-          onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white, weight: 20),
-        ),
-      ),
-      body: Stack(
+    return ThreadPage(
+      title: 'Support Quotely',
+      bottom: selected == null
+          ? null
+          : PrimaryButton(
+              label:
+                  '${_cleanTitle(selected.title)} · ${selected.displayPrice}',
+              onPressed: () => _buyProduct(selected),
+            ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          const Positioned.fill(child: DarkGradientBackground()),
-          _loading
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 16),
-                      Text(_statusMessage),
-                    ],
-                  ),
-                )
-              // Gradient stays full-bleed; content is capped and centered on
-              // tablets like every other pushed screen.
-              : ResponsiveCenter(
-                  child: CustomScrollView(
-                    slivers: [
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 10),
-                              ShaderMask(
-                                shaderCallback: (bounds) => LinearGradient(
-                                  colors: [
-                                    theme.colorScheme.primary,
-                                    theme.colorScheme.secondary,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ).createShader(bounds),
-                                child: const Icon(
-                                  Icons.volunteer_activism,
-                                  size: 80,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                'Support Our Journey',
-                                style: theme.textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Quotely is a passion project. Your support helps us dedicate more time to new features and keep the app free for everyone.',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 30),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        sliver: SliverList(
-                          delegate: SliverChildListDelegate([
-                            _buildSectionHeader(
-                              context,
-                              _isSupporter
-                                  ? "You Are a Supporter"
-                                  : "Show Your Support",
-                            ),
-                            if (_isSupporter)
-                              _buildSupportTile(
-                                context: context,
-                                icon: Icons.verified_rounded,
-                                iconColor: Colors.green.shade400,
-                                title: "Purchase verified",
-                                subtitle:
-                                    "Thank you! Your support keeps Quotely free for everyone.",
-                                onTap: () {},
-                              ),
-                            if (supportProduct != null)
-                              _buildSupportTile(
-                                context: context,
-                                icon: Icons.favorite_rounded,
-                                iconColor: Colors.pink.shade400,
-                                title: supportProduct.title,
-                                subtitle:
-                                    '${supportProduct.description} (${supportProduct.displayPrice})',
-                                onTap: () => _buyProduct(supportProduct),
-                              ),
-                            if (coffeeProduct != null)
-                              _buildSupportTile(
-                                context: context,
-                                icon: Icons.coffee_rounded,
-                                iconColor: Colors.brown.shade400,
-                                title: coffeeProduct.title,
-                                subtitle:
-                                    '${coffeeProduct.description} (${coffeeProduct.displayPrice})',
-                                onTap: () => _buyProduct(coffeeProduct),
-                              ),
-                            const SizedBox(height: 20),
-                            _buildSectionHeader(context, "Other Ways to Help"),
-                            _buildSupportTile(
-                              context: context,
-                              icon: Icons.share_rounded,
-                              iconColor: theme.colorScheme.primary,
-                              title: 'Share the App',
-                              subtitle: 'Help the community grow by sharing.',
-                              onTap: () => _shareApp(context),
-                            ),
-                            // Hidden once we already know they support us -
-                            // there is nothing left to restore, and the tile
-                            // would just repeat what the verified tile above
-                            // already says. Still shown to everyone else, which
-                            // is who Apple Guideline 3.1.1 requires it for.
-                            if (!_isSupporter)
-                              _buildSupportTile(
-                                context: context,
-                                icon: Icons.restore_rounded,
-                                iconColor: theme.colorScheme.secondary,
-                                title: 'Restore Purchases',
-                                subtitle:
-                                    'Already supported us? Restore it here.',
-                                onTap: _restorePurchases,
-                              ),
-                          ]),
-                        ),
-                      ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                    ],
-                  ),
+          const _MakerMessage(),
+          const SizedBox(height: 16),
+          if (_isSupporter)
+            const SystemPill(
+              'You’re a supporter. Thank you!',
+              icon: Icons.verified_rounded,
+            )
+          else if (_loading)
+            const ThreadSkeleton(count: 1)
+          else if (products.isEmpty)
+            ErrorBubble(message: _statusMessage)
+          else ...[
+            for (final p in products) ...[
+              _TierCard(
+                title: _cleanTitle(p.title),
+                tagline: p.description,
+                price: p.displayPrice,
+                selected: p.id == selected?.id,
+                onTap: () => setState(() => _selectedSku = p.id),
+              ),
+              const SizedBox(height: 10),
+            ],
+            Center(
+              child: Text(
+                'One-time payment. No subscription.',
+                style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: SecondaryButton(
+                  label: 'Rate the app',
+                  icon: Icons.star_rounded,
+                  filled: true,
+                  onPressed: _rateApp,
                 ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: SecondaryButton(
+                  label: 'Tell a friend',
+                  icon: kShareIcon,
+                  filled: true,
+                  onPressed: () => _shareApp(context),
+                ),
+              ),
+            ],
+          ),
+          // Apple Guideline 3.1.1 requires a visible restore action for
+          // non-consumables; pointless once we know they're a supporter.
+          if (!_isSupporter) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: QTextButton(
+                label: 'Restore purchases',
+                onPressed: _restorePurchases,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
+}
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-          letterSpacing: 1.2,
+class _MakerMessage extends StatelessWidget {
+  const _MakerMessage();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        const QAvatar(name: 'Pranta Dutta', size: 34),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 6),
+                child: Text(
+                  'Pranta · maker of Quotely',
+                  style: context.qt.label,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                decoration: BoxDecoration(
+                  color: t.surf,
+                  borderRadius: bubbleRadius(22),
+                ),
+                child: Text(
+                  'Hey! I build Quotely on my own. No ads, no tracking. If it '
+                  'made your day a bit better, a coffee keeps it going.',
+                  style: context.qt.quoteBody,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
+}
 
-  Widget _buildSupportTile({
-    required BuildContext context,
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Container(
-        decoration: BoxDecoration(
-          // color: theme.colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
-          gradient: kGetDefaultGradient(context),
-        ),
-        child: InkResponse(
-          // Using InkResponse for splash and highlight effects
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          splashColor: iconColor.withValues(alpha: 0.1),
-          highlightColor: iconColor.withValues(alpha: 0.1),
-          // The child of InkResponse should be the actual content
-          child: Padding(
-            // Moved padding inside InkResponse's child
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Icon(icon, color: iconColor, size: 30),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+class _TierCard extends StatelessWidget {
+  final String title;
+  final String tagline;
+  final String price;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TierCard({
+    required this.title,
+    required this.tagline,
+    required this.price,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    return Semantics(
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      button: true,
+      label: '$title, $price. $tagline',
+      excludeSemantics: true,
+      child: Pressable(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: t.surf,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? t.acc : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: context.qt.rowTitle),
+                    if (tagline.isNotEmpty) ...[
+                      const SizedBox(height: 2),
                       Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                        tagline,
+                        style: context.qt.label.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Text(price, style: context.qt.rowTitle.copyWith(fontSize: 17)),
+            ],
           ),
         ),
       ),
