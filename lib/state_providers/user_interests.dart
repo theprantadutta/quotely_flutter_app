@@ -12,9 +12,9 @@ part '../generated/state_providers/user_interests.g.dart';
 /// and flips the "has selected interests" gate used by the router.
 @Riverpod(keepAlive: true)
 class UserInterests extends _$UserInterests {
-  /// Minimum number of interests a user must pick. There is no upper limit —
-  /// users can select as many as they like.
-  static const int minInterests = 10;
+  /// Minimum number of picks (quote topics, fact categories and SCREEN types
+  /// together). There is no upper limit.
+  static const int minInterests = 3;
 
   /// How many interests the picker's "Choose for me" option selects. Slightly
   /// above [minInterests] so an auto-picked feed has some variety instead of

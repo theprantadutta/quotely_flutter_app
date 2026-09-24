@@ -222,6 +222,9 @@ class DriftFactService {
               content: Value(fact.content),
               aiFactCategory: Value(fact.aiFactCategory),
               provider: Value(fact.provider),
+              falseVariant: fact.falseVariant == null
+                  ? const Value.absent()
+                  : Value(fact.falseVariant),
               isFavorite: Value(isFavorite), // This is the value we're toggling
               dateAdded: Value(fact.dateAdded),
               dateModified: Value(
@@ -303,8 +306,20 @@ class DriftFactService {
           dateModified: Value(dto.dateModified),
         );
 
-        // Insert the fact, or ignore it if a fact with the same ID already exists.
-        batch.insert(db.facts, factCompanion, mode: InsertMode.insertOrIgnore);
+        // New facts are inserted; existing rows keep their favorite flag and
+        // only pick up a false variant that arrived since they were cached.
+        batch.insert(
+          db.facts,
+          factCompanion.copyWith(falseVariant: Value(dto.falseVariant)),
+          onConflict: DoUpdate(
+            (_) => FactsCompanion(
+              content: Value(dto.content),
+              falseVariant: dto.falseVariant == null
+                  ? const Value.absent()
+                  : Value(dto.falseVariant),
+            ),
+          ),
+        );
       }
     });
   }

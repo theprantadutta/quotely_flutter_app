@@ -1,150 +1,125 @@
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:quotely_flutter_app/constants/notification_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/notification_keys.dart';
+import '../constants/notification_types.dart';
 import '../constants/shared_preference_keys.dart';
 
 class NotificationService {
   Future<void> subscribeToTopic(String topic) async {
-    final messaging = FirebaseMessaging.instance;
-    await messaging.subscribeToTopic(topic);
+    await FirebaseMessaging.instance.subscribeToTopic(topic);
   }
 
   Future<void> unsubscribeFromTopic(String topic) async {
-    final messaging = FirebaseMessaging.instance;
-    await messaging.unsubscribeFromTopic(topic);
+    await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
   }
 
+  /// `title_<slug>` topics for every followed title.
+  static Future<List<String>> followedTitleTopics() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(kFollowedTitleSlugsKey);
+    if (raw == null) return const [];
+    final map = json.decode(raw) as Map<String, dynamic>;
+    return [
+      for (final slug in map.values) '$kNotificationTitleTopicPrefix$slug',
+    ];
+  }
+
+  /// Every fixed topic the app can subscribe to (the per-title ones come
+  /// from [followedTitleTopics]).
+  static List<String> get allTopics => [
+    kNotificationAllTopic,
+    for (final t in kNotificationTypes)
+      if (t.topic != null) t.topic!,
+  ];
+
   Future<void> subscribeToAllTopic() async {
-    final messaging = FirebaseMessaging.instance;
-    // Subscribe to Quote Topics
-    await messaging.subscribeToTopic(kNotificationAllTopic);
-    await messaging.subscribeToTopic(kNotificationDailyInspirationTopic);
-    await messaging.subscribeToTopic(kNotificationMotivationMondayTopic);
-    await messaging.subscribeToTopic(kNotificationQuoteOfTheDayTopic);
-    // --- ADDED: Subscribe to new Fact Topics ---
-    await messaging.subscribeToTopic(kNotificationFactOfTheDayTopic);
-    await messaging.subscribeToTopic(kNotificationDailyBrainFoodTopic);
-    await messaging.subscribeToTopic(kNotificationWeirdFactWednesdayTopic);
+    for (final topic in allTopics) {
+      await subscribeToTopic(topic);
+    }
+    await syncFollowedTitleTopics(true);
   }
 
   Future<void> unsubscribeFromAllTopic() async {
-    final messaging = FirebaseMessaging.instance;
-    // Unsubscribe from Quote Topics
-    await messaging.unsubscribeFromTopic(kNotificationAllTopic);
-    await messaging.unsubscribeFromTopic(kNotificationDailyInspirationTopic);
-    await messaging.unsubscribeFromTopic(kNotificationMotivationMondayTopic);
-    await messaging.unsubscribeFromTopic(kNotificationQuoteOfTheDayTopic);
-    // --- ADDED: Unsubscribe from new Fact Topics ---
-    await messaging.unsubscribeFromTopic(kNotificationFactOfTheDayTopic);
-    await messaging.unsubscribeFromTopic(kNotificationDailyBrainFoodTopic);
-    await messaging.unsubscribeFromTopic(kNotificationWeirdFactWednesdayTopic);
+    for (final topic in allTopics) {
+      await unsubscribeFromTopic(topic);
+    }
+    await syncFollowedTitleTopics(false);
   }
 
-  /// Subscribes to specific notification topics based on user preferences stored in SharedPreferences.
-  /// It only subscribes if the preference is explicitly set to true.
-  /// If the preference is false or not set, it skips subscription for that topic.
+  /// Subscribes to (or leaves) every followed title's topic.
+  Future<void> syncFollowedTitleTopics(bool enabled) async {
+    for (final topic in await followedTitleTopics()) {
+      enabled
+          ? await subscribeToTopic(topic)
+          : await unsubscribeFromTopic(topic);
+    }
+  }
+
+  /// Subscribes to each topic whose preference is on (missing = on, so new
+  /// kinds such as Friday night lines are opt-in by default). Runs on every
+  /// launch; never unsubscribes.
   Future<void> enableNotificationsBasedOnPreferences() async {
     final preferences = await SharedPreferences.getInstance();
-
-    // Define a map of preference keys to their corresponding Firebase topic keys
-    final Map<String, String> notificationMap = {
-      // Quote Notifications
-      kNotificationQuoteOfTheDay: kNotificationQuoteOfTheDayTopic,
-      kNotificationDailyInspiration: kNotificationDailyInspirationTopic,
-      kNotificationMotivation: kNotificationMotivationMondayTopic,
-
-      // Fact Notifications
-      kNotificationFactOfTheDay: kNotificationFactOfTheDayTopic,
-      kNotificationDailyBrainFood: kNotificationDailyBrainFoodTopic,
-      kNotificationWeirdFactWednesday: kNotificationWeirdFactWednesdayTopic,
-    };
-
-    // First, handle the master switch: kNotificationEnabled
-    // If kNotificationEnabled is false, we should not subscribe to anything.
-    // If it's true (or not set, defaulting to true), then proceed to individual topics.
-    final bool areNotificationsGloballyEnabled =
-        preferences.getBool(kNotificationEnabled) ?? true;
-
-    if (areNotificationsGloballyEnabled) {
-      // Loop through each specific notification type
-      for (var entry in notificationMap.entries) {
-        final String prefKey = entry.key;
-        final String topicKey = entry.value;
-
-        // Check if the individual notification preference is true
-        // Default to true if the preference key is not found,
-        // so new notification types are opt-in by default
-        final bool isNotificationTypeEnabled =
-            preferences.getBool(prefKey) ?? true;
-
-        if (isNotificationTypeEnabled) {
-          await subscribeToTopic(topicKey);
-        }
-        // If isNotificationTypeEnabled is false, we do nothing (skip subscription),
-        // as per your requirement. No unsubscription here.
-      }
-      // Consider if 'kNotificationAllTopic' should always be subscribed if global is true,
-      // or if it's managed by subscribeToAllTopic/unsubscribeFromAllTopic in the UI logic.
-      // For this function, we focus on the individual granular topics.
-    } else {
-      // If global notifications are disabled, we might want to ensure ALL are unsubscribed
-      // This part is handled by your _onNotificationSwitched when kNotificationEnabled is toggled.
-      // So, this function doesn't need to unsubscribe when global is off, as it's meant
-      // to *enable* based on preferences.
+    if (!(preferences.getBool(kNotificationEnabled) ?? true)) {
       if (kDebugMode) {
-        print(
-          'Global notifications are disabled. Skipping specific topic subscriptions.',
-        );
+        print('Global notifications are disabled. Skipping subscriptions.');
+      }
+      return;
+    }
+    for (final type in kNotificationTypes) {
+      if (!(preferences.getBool(type.prefKey) ?? true)) continue;
+      if (type.topic != null) {
+        await subscribeToTopic(type.topic!);
+      } else if (type.prefKey == kNotificationFollowedTitles) {
+        await syncFollowedTitleTopics(true);
       }
     }
   }
 
-  /// Initializes all notification preferences in SharedPreferences to true,
-  /// but only if they haven't been initialized before.
-  /// This function is designed to run only once, typically on first app launch.
+  /// Seeds every notification preference to on, once per install, then
+  /// subscribes accordingly.
   Future<void> initializeNotificationPreferencesOnce() async {
     final preferences = await SharedPreferences.getInstance();
-
-    // run the subscribe function
     await enableNotificationsBasedOnPreferences();
+    if (preferences.getBool(kNotificationsInitializedKey) == true) return;
 
-    // Check if preferences have already been set
-    if (preferences.getBool(kNotificationsInitializedKey) == true) {
-      if (kDebugMode) {
-        print('Notification preferences already initialized. Skipping.');
-      }
-      return; // Exit if already initialized
+    await preferences.setBool(kNotificationEnabled, true);
+    for (final type in kNotificationTypes) {
+      await preferences.setBool(type.prefKey, true);
     }
-
-    // List of all notification preference keys to set to true
-    final List<String> allNotificationPrefKeys = [
-      kNotificationEnabled,
-      kNotificationMotivation,
-      kNotificationDailyInspiration,
-      kNotificationQuoteOfTheDay,
-      kNotificationFactOfTheDay,
-      kNotificationDailyBrainFood,
-      kNotificationWeirdFactWednesday,
-    ];
-
-    // Set all relevant notification preferences to true
-    for (final String key in allNotificationPrefKeys) {
-      await preferences.setBool(key, true);
-      if (kDebugMode) {
-        print('Set $key to true in SharedPreferences.');
-      } // For debugging
-    }
-
-    // Mark the initialization as complete
     await preferences.setBool(kNotificationsInitializedKey, true);
-    if (kDebugMode) {
-      print('Notification preferences initialization complete.');
-    }
-
-    // After setting preferences, immediately subscribe based on these newly set preferences.
-    // This ensures that on the very first launch, users are subscribed to all default topics.
     await enableNotificationsBasedOnPreferences();
+  }
+
+  // --- Quiet hours ------------------------------------------------------------
+  // Enforced locally: foreground notifications inside the window are not
+  // shown. TODO(backend): send the window with the FCM token so scheduled
+  // pushes skip it server-side too.
+
+  static const int defaultQuietStart = 22 * 60;
+  static const int defaultQuietEnd = 7 * 60;
+
+  static Future<({bool enabled, int start, int end})> quietHours() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (
+      enabled: prefs.getBool(kQuietHoursEnabledKey) ?? true,
+      start: prefs.getInt(kQuietHoursStartKey) ?? defaultQuietStart,
+      end: prefs.getInt(kQuietHoursEndKey) ?? defaultQuietEnd,
+    );
+  }
+
+  static Future<bool> isQuietNow([DateTime? at]) async {
+    final q = await quietHours();
+    if (!q.enabled) return false;
+    final now = at ?? DateTime.now();
+    final minute = now.hour * 60 + now.minute;
+    // A window can wrap midnight (22:00 → 07:00).
+    return q.start <= q.end
+        ? minute >= q.start && minute < q.end
+        : minute >= q.start || minute < q.end;
   }
 }

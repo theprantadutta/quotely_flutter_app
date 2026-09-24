@@ -10,6 +10,9 @@ class AiFactDto {
   final String content;
   final String aiFactCategory;
   final String provider;
+
+  /// A plausible false version of [content], for the True-or-false game.
+  final String? falseVariant;
   bool isFavorite;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
   final DateTime dateAdded;
@@ -21,6 +24,7 @@ class AiFactDto {
     required this.content,
     required this.aiFactCategory,
     required this.provider,
+    this.falseVariant,
     this.isFavorite = false,
     required this.dateAdded,
     required this.dateModified,
@@ -42,6 +46,7 @@ class AiFactDto {
     content: fact.content,
     aiFactCategory: fact.aiFactCategory,
     provider: fact.provider,
+    falseVariant: fact.falseVariant,
     isFavorite: fact.isFavorite,
     dateAdded: fact.dateAdded,
     dateModified: fact.dateModified,

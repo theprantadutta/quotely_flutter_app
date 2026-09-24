@@ -36,3 +36,14 @@ const kGetTodayWeirdFactWednesday =
     'WeirdFactWednesday/GetTodayWeirdFactWednesday';
 
 const kGetApplicationInfo = 'Application/GetApplicationInfo';
+
+// Scenes (docs/scenes_api.md)
+const kGetAllSceneQuotes = 'Scene/GetAllSceneQuotes';
+const kGetAllTitles = 'Scene/GetAllTitles';
+const kGetTrendingTitles = 'Scene/GetTrendingTitles';
+const kGetTitleDetail = 'Scene/GetTitleDetail';
+const kGetAllCharacters = 'Scene/GetAllCharacters';
+const kGetTodaySceneOfTheDay = 'SceneOfTheDay/GetTodaySceneOfTheDay';
+const kGetAllSceneOfTheDay = 'SceneOfTheDay/GetAllSceneOfTheDay';
+const kGetTodayFridayNightLines = 'FridayNightLines/GetTodayFridayNightLines';
+const kGetAllFridayNightLines = 'FridayNightLines/GetAllFridayNightLines';

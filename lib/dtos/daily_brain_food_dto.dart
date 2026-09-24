@@ -16,6 +16,9 @@ class DailyBrainFoodDto {
   final String content;
   final String aiFactCategory;
   final String provider;
+
+  /// AI-written false version for the True-or-false game; may be null.
+  final String? falseVariant;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
   final DateTime factDateAdded;
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
@@ -33,6 +36,7 @@ class DailyBrainFoodDto {
     required this.content,
     required this.aiFactCategory,
     required this.provider,
+    this.falseVariant,
     required this.factDateAdded,
     required this.factDateModified,
   });

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:async_queue/async_queue.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/services/notification_service.dart';
@@ -114,7 +115,7 @@ class PushNotifications {
   // Local Notifications Initialization
   static Future<void> _initializeLocalNotifications() async {
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_notification');
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings();
 
@@ -207,7 +208,9 @@ class PushNotifications {
           channelDescription: 'Notifications for new releases and updates.',
           importance: Importance.max,
           priority: Priority.max,
-          icon: '@mipmap/ic_launcher',
+          // White silhouette small icon + brand violet accent.
+          icon: '@drawable/ic_notification',
+          color: Color(0xFF6E62CD),
         );
 
     const NotificationDetails notificationDetails = NotificationDetails(
@@ -227,6 +230,8 @@ class PushNotifications {
   // Message Handlers
   static Future<void> _handleForegroundMessage(RemoteMessage message) async {
     debugPrint("Foreground message received");
+    // Quiet hours are enforced on-device for foreground delivery.
+    if (await NotificationService.isQuietNow()) return;
     if (message.notification != null) {
       await showSimpleNotification(
         title: message.notification!.title!,

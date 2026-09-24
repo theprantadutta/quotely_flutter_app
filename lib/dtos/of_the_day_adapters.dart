@@ -59,6 +59,7 @@ extension FactOfTheDayAdapter on FactOfTheDayDto {
     content: content,
     aiFactCategory: aiFactCategory,
     provider: provider,
+    falseVariant: falseVariant,
     dateAdded: factDateAdded,
     dateModified: factDateModified,
   );
@@ -70,6 +71,7 @@ extension DailyBrainFoodAdapter on DailyBrainFoodDto {
     content: content,
     aiFactCategory: aiFactCategory,
     provider: provider,
+    falseVariant: falseVariant,
     dateAdded: factDateAdded,
     dateModified: factDateModified,
   );
@@ -81,6 +83,7 @@ extension WeirdFactWednesdayAdapter on WeirdFactWednesdayDto {
     content: content,
     aiFactCategory: aiFactCategory,
     provider: provider,
+    falseVariant: falseVariant,
     dateAdded: factDateAdded,
     dateModified: factDateModified,
   );

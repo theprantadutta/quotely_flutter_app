@@ -1,27 +1,48 @@
 import 'notification_keys.dart';
 import 'shared_preference_keys.dart';
 
-/// Which content family a notification belongs to — used to group the toggles
-/// into "Quotes" and "Facts" sections.
-enum NotificationGroup { quote, fact }
+/// Which content family a notification belongs to; groups the toggles into
+/// the QUOTES / SCENES / FACTS sections.
+enum NotificationGroup { quote, scene, fact }
 
-/// One toggleable notification kind. Ties together the user-facing label, the
-/// SharedPreferences key it persists under, and the FCM topic it (un)subscribes
-/// from. This is the single source of truth shared by the notifications
-/// onboarding screen and the Settings → Notifications screen.
+extension NotificationGroupLabel on NotificationGroup {
+  String get label => switch (this) {
+    NotificationGroup.quote => 'Quotes',
+    NotificationGroup.scene => 'Scenes',
+    NotificationGroup.fact => 'Facts',
+  };
+}
+
+/// One toggleable notification kind: label, schedule copy, pref key and FCM
+/// topic. Single source of truth for the primer and Settings → Notifications.
 class NotificationType {
   final String title;
-  final String description;
+
+  /// Settings copy ("8:00 AM", "Mondays 9:00 AM").
+  final String schedule;
+
+  /// Primer copy ("Every morning at 8:00").
+  final String primerDescription;
   final String prefKey;
-  final String topic;
+
+  /// FCM topic. Null for [kNotificationFollowedTitles], which fans out to one
+  /// `title_<slug>` topic per followed title.
+  final String? topic;
   final NotificationGroup group;
+  final bool isNew;
+
+  /// Shown on the onboarding primer (the per-title one needs titles first).
+  final bool inPrimer;
 
   const NotificationType({
     required this.title,
-    required this.description,
+    required this.schedule,
+    required this.primerDescription,
     required this.prefKey,
     required this.topic,
     required this.group,
+    this.isNew = false,
+    this.inPrimer = true,
   });
 }
 
@@ -29,45 +50,72 @@ class NotificationType {
 const List<NotificationType> kNotificationTypes = [
   // --- Quotes ---
   NotificationType(
-    title: 'Quote of the Day',
-    description: 'A hand-picked quote, every day.',
+    title: 'Quote of the day',
+    schedule: '8:00 AM',
+    primerDescription: 'Every morning at 8:00',
     prefKey: kNotificationQuoteOfTheDay,
     topic: kNotificationQuoteOfTheDayTopic,
     group: NotificationGroup.quote,
   ),
   NotificationType(
-    title: 'Daily Inspiration',
-    description: 'A daily dose of motivation to keep you going.',
+    title: 'Daily inspiration',
+    schedule: '2× a day',
+    primerDescription: 'Twice a day, random times',
     prefKey: kNotificationDailyInspiration,
     topic: kNotificationDailyInspirationTopic,
     group: NotificationGroup.quote,
   ),
   NotificationType(
-    title: 'Motivation Monday',
-    description: 'Start your week with a motivational boost.',
+    title: 'Monday motivation',
+    schedule: 'Mondays 9:00 AM',
+    primerDescription: 'Mondays at 9:00',
     prefKey: kNotificationMotivation,
     topic: kNotificationMotivationMondayTopic,
     group: NotificationGroup.quote,
   ),
 
+  // --- Scenes ---
+  NotificationType(
+    title: 'Friday night lines',
+    schedule: 'Fridays 7:00 PM',
+    primerDescription: 'A film or TV line, Fridays 7 PM',
+    prefKey: kNotificationFridayNightLines,
+    topic: kNotificationFridayNightLinesTopic,
+    group: NotificationGroup.scene,
+    isNew: true,
+  ),
+  NotificationType(
+    title: 'New from titles you follow',
+    schedule: 'When lines are added',
+    primerDescription: 'When lines are added',
+    prefKey: kNotificationFollowedTitles,
+    topic: null,
+    group: NotificationGroup.scene,
+    isNew: true,
+    inPrimer: false,
+  ),
+
   // --- Facts ---
   NotificationType(
-    title: 'Fact of the Day',
-    description: 'Learn something new every single day.',
+    title: 'Fact of the day',
+    schedule: '12:00 PM',
+    primerDescription: 'Something new at lunchtime',
     prefKey: kNotificationFactOfTheDay,
     topic: kNotificationFactOfTheDayTopic,
     group: NotificationGroup.fact,
   ),
   NotificationType(
-    title: 'Daily Brain Food',
-    description: 'A daily fact to feed your curiosity.',
+    title: 'Daily brain food',
+    schedule: '6:00 PM',
+    primerDescription: 'An evening fact to chew on',
     prefKey: kNotificationDailyBrainFood,
     topic: kNotificationDailyBrainFoodTopic,
     group: NotificationGroup.fact,
   ),
   NotificationType(
-    title: 'Weird Fact Wednesday',
-    description: 'A delightfully strange fact mid-week.',
+    title: 'Weird fact Wednesday',
+    schedule: 'Wednesdays',
+    primerDescription: 'A strange one, mid-week',
     prefKey: kNotificationWeirdFactWednesday,
     topic: kNotificationWeirdFactWednesdayTopic,
     group: NotificationGroup.fact,

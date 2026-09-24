@@ -5,6 +5,10 @@ class Facts extends Table {
   TextColumn get content => text()();
   TextColumn get aiFactCategory => text()();
   TextColumn get provider => text()();
+
+  /// AI-written false version for the True-or-false game (null until the
+  /// backend has generated one).
+  TextColumn get falseVariant => text().nullable()();
   BoolColumn get isFavorite => boolean().withDefault(Constant(false))();
   DateTimeColumn get dateAdded => dateTime()();
   DateTimeColumn get dateModified => dateTime()();
