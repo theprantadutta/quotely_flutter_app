@@ -1,377 +1,169 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quotely_flutter_app/components/settings_screen/appearance/appearance_screen.dart';
-import 'package:quotely_flutter_app/screens/daily_brain_food_screen.dart';
-import 'package:quotely_flutter_app/screens/daily_inspiration_screen.dart';
-import 'package:quotely_flutter_app/screens/fact_of_the_day_screen.dart';
-import 'package:quotely_flutter_app/screens/quote_of_the_day_list_screen.dart';
-import 'package:quotely_flutter_app/screens/quote_of_the_day_screen.dart';
-import 'package:quotely_flutter_app/screens/settings_notification_screen.dart';
-import 'package:quotely_flutter_app/screens/tab_screens/authors_screen.dart';
-import 'package:quotely_flutter_app/screens/tab_screens/facts_screen.dart';
-import 'package:quotely_flutter_app/screens/weird_fact_wednesday_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/shared_preference_keys.dart';
+import '../screens/appearance_screen.dart';
 import '../screens/author_detail_screen.dart';
-import '../screens/daily_brain_food_list_screen.dart';
+import '../screens/debug_components_screen.dart';
 import '../screens/interests_screen.dart';
-import '../screens/daily_inspiration_list_screen.dart';
-import '../screens/fact_of_the_day_list_screen.dart';
-import '../screens/motivation_monday_list_screen.dart';
-import '../screens/motivation_monday_screen.dart';
 import '../screens/notifications_onboarding_screen.dart';
+import '../screens/offline_library_screen.dart';
 import '../screens/onboarding_screen.dart';
-import '../screens/settings_download_everything_screen.dart';
+import '../screens/past_messages_screen.dart';
+import '../screens/search_screen.dart';
+import '../screens/settings_notification_screen.dart';
 import '../screens/support_us_screen.dart';
-import '../screens/tab_screens/favorites_screen.dart';
+import '../screens/tab_screens/facts_screen.dart';
 import '../screens/tab_screens/home_screen.dart';
-import '../screens/tab_screens/settings_screen.dart';
-import '../screens/weird_fact_wednesday_list_screen.dart';
+import '../screens/tab_screens/people_screen.dart';
+import '../screens/tab_screens/saved_screen.dart';
+import '../screens/tab_screens/scenes_screen.dart';
+import '../screens/title_detail_screen.dart';
+import '../screens/you_screen.dart';
 import '../service_locator/init_service_locators.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
+import 'routes.dart';
 
 class AppNavigation {
   AppNavigation._();
 
-  static String initial = HomeScreen.kRouteName;
+  static String initial = Routes.today;
 
-  // Private navigators
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
-  static final _shellNavigatorHome = GlobalKey<NavigatorState>(
-    debugLabel: 'shellHome',
-  );
-  static final _shellNavigatorFavorites = GlobalKey<NavigatorState>(
-    debugLabel: 'shellFavorites',
-  );
-  static final _shellNavigatorAuthors = GlobalKey<NavigatorState>(
-    debugLabel: 'shellAuthors',
-  );
-  static final _shellNavigatorFacts = GlobalKey<NavigatorState>(
-    debugLabel: 'shellFacts',
-  );
-  static final _shellNavigatorSettings = GlobalKey<NavigatorState>(
-    debugLabel: 'shellSettings',
+  static final _shellToday = GlobalKey<NavigatorState>(debugLabel: 'today');
+  static final _shellScenes = GlobalKey<NavigatorState>(debugLabel: 'scenes');
+  static final _shellSaved = GlobalKey<NavigatorState>(debugLabel: 'saved');
+  static final _shellPeople = GlobalKey<NavigatorState>(debugLabel: 'people');
+  static final _shellFacts = GlobalKey<NavigatorState>(debugLabel: 'facts');
+
+  static GoRoute _pushed(String path, Widget Function(GoRouterState) build) =>
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: path,
+        builder: (context, state) => build(state),
+      );
+
+  static GoRoute _tab(String path, Widget child) => GoRoute(
+    path: path,
+    pageBuilder: (context, state) =>
+        NoTransitionPage(key: state.pageKey, child: child),
   );
 
-  // GoRouter configuration
   static final GoRouter router = GoRouter(
     initialLocation: initial,
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: kDebugMode,
     navigatorKey: rootNavigatorKey,
     observers: [
-      FirebaseAnalyticsObserver(analytics: getIt.get<FirebaseAnalytics>()),
+      if (getIt.isRegistered<FirebaseAnalytics>())
+        FirebaseAnalyticsObserver(analytics: getIt.get<FirebaseAnalytics>()),
     ],
+    // Old paths (still sent by notifications) land on their new homes.
+    redirect: (context, state) {
+      final target = kLegacyRedirects[state.uri.path];
+      if (target == null) return null;
+      final extra = state.uri.queryParameters;
+      if (extra.isEmpty) return target;
+      final uri = Uri.parse(target);
+      return uri
+          .replace(queryParameters: {...uri.queryParameters, ...extra})
+          .toString();
+    },
     routes: [
-      /// OnBoardingScreen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: OnboardingScreen.kRouteName,
-        name: "OnBoarding",
-        builder: (context, state) => OnboardingScreen(key: state.pageKey),
+      _pushed(Routes.onboarding, (s) => OnboardingScreen(key: s.pageKey)),
+      _pushed(
+        Routes.interests,
+        (s) => InterestsScreen(key: s.pageKey, isEditing: s.extra == true),
+      ),
+      _pushed(
+        Routes.notificationsOnboarding,
+        (s) => NotificationsOnboardingScreen(key: s.pageKey),
       ),
 
-      // /// OnBoardingThemeScreen
-      // GoRoute(
-      //   parentNavigatorKey: rootNavigatorKey,
-      //   path: OnboardingThemeScreen.route,
-      //   name: "OnBoardingTheme",
-      //   builder: (context, state) => OnboardingThemeScreen(
-      //     key: state.pageKey,
-      //   ),
-      // ),
-
-      /// Interest picker (post-onboarding and editable from Settings)
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: InterestsScreen.kRouteName,
-        name: "Interests",
-        builder: (context, state) =>
-            InterestsScreen(key: state.pageKey, isEditing: state.extra == true),
-      ),
-
-      /// Notification permission + preferences primer (shown after Interests)
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: NotificationsOnboardingScreen.kRouteName,
-        name: "Notifications Onboarding",
-        builder: (context, state) =>
-            NotificationsOnboardingScreen(key: state.pageKey),
-      ),
-
-      /// MainWrapper
       StatefulShellRoute.indexedStack(
         redirect: (context, state) async {
-          // Check if the onboarding screen has been shown before
           final preferences = await SharedPreferences.getInstance();
-          final onboardingShown =
-              preferences.getBool('onboardingShown') ?? false;
-
-          // If onboarding wasn't shown, show it and set the flag to true
-          if (!onboardingShown) {
+          if (!(preferences.getBool('onboardingShown') ?? false)) {
             await preferences.setBool('onboardingShown', true);
-            return OnboardingScreen.kRouteName; // Redirect to Onboarding screen
+            return Routes.onboarding;
           }
-
-          // Onboarding done but interests not picked yet → force the picker.
-          final hasSelectedInterests =
-              preferences.getBool(kHasSelectedInterestsKey) ?? false;
-          if (!hasSelectedInterests) {
-            return InterestsScreen.kRouteName;
+          if (!(preferences.getBool(kHasSelectedInterestsKey) ?? false)) {
+            return Routes.interests;
           }
-
-          // Interests done but the notification primer not seen yet → show it
-          // once (new users in-flow, and existing users on their next launch).
-          final hasSeenNotificationPrompt =
-              preferences.getBool(kHasSeenNotificationPrompt) ?? false;
-          if (!hasSeenNotificationPrompt) {
-            return NotificationsOnboardingScreen.kRouteName;
+          if (!(preferences.getBool(kHasSeenNotificationPrompt) ?? false)) {
+            return Routes.notificationsOnboarding;
           }
-
-          // No redirection needed if none of the conditions apply
           return null;
         },
-        builder: (context, state, navigationShell) {
-          return BottomNavigationLayout(navigationShell: navigationShell);
-        },
-        branches: <StatefulShellBranch>[
-          /// Branch Home
+        builder: (context, state, navigationShell) =>
+            BottomNavigationLayout(navigationShell: navigationShell),
+        branches: [
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorHome,
-            routes: <RouteBase>[
-              GoRoute(
-                path: HomeScreen.kRouteName,
-                name: "Home",
-                pageBuilder: (context, state) => reusableTransitionPage(
-                  state: state,
-                  child: const HomeScreen(),
-                ),
-              ),
-            ],
+            navigatorKey: _shellToday,
+            routes: [_tab(Routes.today, const HomeScreen())],
           ),
-
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorFavorites,
-            routes: <RouteBase>[
-              GoRoute(
-                path: FavoritesScreen.kRouteName,
-                name: "Favorites",
-                pageBuilder: (context, state) => reusableTransitionPage(
-                  state: state,
-                  child: const FavoritesScreen(),
-                ),
-              ),
-            ],
+            navigatorKey: _shellScenes,
+            routes: [_tab(Routes.scenes, const ScenesScreen())],
           ),
-
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorAuthors,
-            routes: <RouteBase>[
-              GoRoute(
-                path: AuthorsScreen.kRouteName,
-                name: "Authors",
-                pageBuilder: (context, state) => reusableTransitionPage(
-                  state: state,
-                  child: const AuthorsScreen(),
-                ),
-              ),
-            ],
+            navigatorKey: _shellSaved,
+            routes: [_tab(Routes.saved, const SavedScreen())],
           ),
-
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorFacts,
-            routes: <RouteBase>[
-              GoRoute(
-                path: FactsScreen.kRouteName,
-                name: "Facts",
-                pageBuilder: (context, state) => reusableTransitionPage(
-                  state: state,
-                  child: const FactsScreen(),
-                ),
-              ),
-            ],
+            navigatorKey: _shellPeople,
+            routes: [_tab(Routes.people, const PeopleScreen())],
           ),
-
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorSettings,
-            routes: <RouteBase>[
-              GoRoute(
-                path: SettingsScreen.kRouteName,
-                name: "Settings",
-                pageBuilder: (context, state) => reusableTransitionPage(
-                  state: state,
-                  child: const SettingsScreen(),
-                ),
-              ),
-            ],
+            navigatorKey: _shellFacts,
+            routes: [_tab(Routes.facts, const FactsScreen())],
           ),
         ],
       ),
 
-      /// View Quote of the Day Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: QuoteOfTheDayScreen.kRouteName,
-        name: "Quote of the Day",
-        builder: (context, state) => QuoteOfTheDayScreen(key: state.pageKey),
+      _pushed(Routes.you, (s) => YouScreen(key: s.pageKey)),
+      _pushed(Routes.appearance, (s) => AppearanceScreen(key: s.pageKey)),
+      _pushed(
+        Routes.notifications,
+        (s) => SettingsNotificationScreen(key: s.pageKey),
       ),
-
-      /// View all Quote of the Day Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: QuoteOfTheDayListScreen.kRouteName,
-        name: "Quote of the Day List",
-        builder: (context, state) =>
-            QuoteOfTheDayListScreen(key: state.pageKey),
+      _pushed(
+        Routes.offlineLibrary,
+        (s) => OfflineLibraryScreen(key: s.pageKey),
       ),
-
-      /// View Fact of the Day Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: FactOfTheDayScreen.kRouteName,
-        name: "Fact of the Day",
-        builder: (context, state) => FactOfTheDayScreen(key: state.pageKey),
+      _pushed(Routes.support, (s) => SupportUsScreen(key: s.pageKey)),
+      _pushed(
+        Routes.pastMessages,
+        (s) => PastMessagesScreen(
+          key: s.pageKey,
+          initialKind: PastKind.parse(s.uri.queryParameters['type']),
+          highlightLatest: s.uri.queryParameters['latest'] == '1',
+          highlightId: s.uri.queryParameters['highlight'],
+        ),
       ),
-
-      /// View all Fact of the Day Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: FactOfTheDayListScreen.kRouteName,
-        name: "Fact of the Day List",
-        builder: (context, state) => FactOfTheDayListScreen(key: state.pageKey),
+      _pushed(
+        '${Routes.titleBase}/:id',
+        (s) => TitleDetailScreen(
+          key: s.pageKey,
+          titleId: s.pathParameters['id']!,
+          focusQuoteId: s.uri.queryParameters['quote'],
+          focusCharacterId: s.uri.queryParameters['character'],
+        ),
       ),
-
-      /// View Daily Inspiration Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: DailyInspirationScreen.kRouteName,
-        name: "Daily Inspiration",
-        builder: (context, state) => DailyInspirationScreen(key: state.pageKey),
+      _pushed(
+        '${Routes.authorBase}/:authorSlug',
+        (s) => AuthorDetailScreen(
+          key: s.pageKey,
+          authorSlug: s.pathParameters['authorSlug']!,
+        ),
       ),
-
-      /// View all Daily Inspiration Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: DailyInspirationListScreen.kRouteName,
-        name: "Daily Inspiration List",
-        builder: (context, state) =>
-            DailyInspirationListScreen(key: state.pageKey),
-      ),
-
-      /// View Daily Brain Food Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: DailyBrainFoodScreen.kRouteName,
-        name: "Daily Brain Food",
-        builder: (context, state) => DailyBrainFoodScreen(key: state.pageKey),
-      ),
-
-      /// View all Daily Brain Food Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: DailyBrainFoodListScreen.kRouteName,
-        name: "Daily Brain Food List",
-        builder: (context, state) =>
-            DailyBrainFoodListScreen(key: state.pageKey),
-      ),
-
-      /// View Motivation Monday Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: MotivationMondayScreen.kRouteName,
-        name: "Motivation Monday",
-        builder: (context, state) => MotivationMondayScreen(key: state.pageKey),
-      ),
-
-      /// View all Monday Motivation Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: MotivationMondayListScreen.kRouteName,
-        name: "Monday Motivation List",
-        builder: (context, state) =>
-            MotivationMondayListScreen(key: state.pageKey),
-      ),
-
-      /// View Weird Fact Wednesday Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: WeirdFactWednesdayScreen.kRouteName,
-        name: "Weird Fact Wednesday",
-        builder: (context, state) =>
-            WeirdFactWednesdayScreen(key: state.pageKey),
-      ),
-
-      /// View all Weird Fact Wednesday Screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: WeirdFactWednesdayListScreen.kRouteName,
-        name: "Weird Fact Wednesday List",
-        builder: (context, state) =>
-            WeirdFactWednesdayListScreen(key: state.pageKey),
-      ),
-
-      /// View Settings Appearance
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: AppearanceScreen.kRouteName,
-        name: "Appearance",
-        builder: (context, state) => AppearanceScreen(key: state.pageKey),
-      ),
-
-      /// View Settings Appearance
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: SettingsNotificationScreen.kRouteName,
-        name: "Settings Notification",
-        builder: (context, state) =>
-            SettingsNotificationScreen(key: state.pageKey),
-      ),
-
-      /// View Settings Offline Support
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: SettingsDownloadEverythingScreen.kRouteName,
-        name: "Settings Download Everything",
-        builder: (context, state) =>
-            SettingsDownloadEverythingScreen(key: state.pageKey),
-      ),
-
-      /// Author Detail
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: '${AuthorDetailScreen.kRouteName}/:authorSlug',
-        name: "Author Detail",
-        builder: (context, state) {
-          // final authorDetailScreenArguments =
-          //     state.extra as AuthorDetailScreenArguments;
-          final authorSlug = state.pathParameters["authorSlug"]!;
-          return AuthorDetailScreen(key: state.pageKey, authorSlug: authorSlug);
-        },
-      ),
-
-      /// Donation screen
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: SupportUsScreen.kRouteName,
-        name: "Donation",
-        builder: (context, state) => SupportUsScreen(key: state.pageKey),
+      _pushed(Routes.search, (s) => SearchScreen(key: s.pageKey)),
+      _pushed(
+        Routes.debugComponents,
+        (s) => DebugComponentsScreen(key: s.pageKey),
       ),
     ],
   );
-
-  static CustomTransitionPage<void> reusableTransitionPage({
-    required GoRouterState state,
-    required Widget child,
-  }) {
-    return CustomTransitionPage<void>(
-      key: state.pageKey,
-      child: child,
-      restorationId: state.pageKey.value,
-      transitionDuration: const Duration(milliseconds: 500),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-    );
-  }
 }

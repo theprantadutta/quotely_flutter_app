@@ -1,193 +1,225 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quotely_flutter_app/constants/responsive.dart';
-import 'package:quotely_flutter_app/constants/selectors.dart';
-import 'package:quotely_flutter_app/navigation/bottom-navigation/bottom_destinations.dart';
 
+import '../../components/thread/thread.dart';
+import '../../constants/responsive.dart';
+import 'bottom_destinations.dart';
+
+/// Tab shell: the current branch above a text-only bottom nav.
 class BottomNavigationLayout extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   const BottomNavigationLayout({super.key, required this.navigationShell});
 
-  // This function handles tapping on the navigation bar items.
-  // It tells go_router to switch to the correct branch (tab).
   void _onTap(int index) {
+    HapticFeedback.selectionClick();
     navigationShell.goBranch(
       index,
-      // If the user taps the tab they are already on, go to the initial location
-      // of that tab's navigation stack.
+      // Re-tapping the current tab returns to that tab's root.
       initialLocation: index == navigationShell.currentIndex,
     );
   }
 
+  Future<bool> _confirmExit(BuildContext context) async {
+    return await showQSheet<bool>(
+          context,
+          builder: (sheet) => QSheetFrame(
+            title: 'Leave Quotely?',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Your thread will be here when you come back.',
+                  style: sheet.qt.body,
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SecondaryButton(
+                        label: 'Stay',
+                        onPressed: () => Navigator.of(sheet).pop(false),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: PrimaryButton(
+                        label: 'Leave',
+                        height: 52,
+                        onPressed: () => Navigator.of(sheet).pop(true),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ) ??
+        false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final kPrimaryColor = Theme.of(context).primaryColor;
-    final tablet = isTablet(context);
-
-    // Gradient container stays full-bleed; tab content is capped to a
-    // readable width and centered. Tablets get the wider shell cap so the
-    // feed card has room to breathe.
-    final content = Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            kPrimaryColor.withValues(alpha: 0.12), // Soft start
-            kPrimaryColor.withValues(alpha: 0.06), // Lighter end
-          ],
-          stops: const [0.0, 1.0],
-        ),
-      ),
-      child: ResponsiveCenter(
-        maxWidth: tablet ? kMaxShellWidth : kMaxContentWidth,
-        child: navigationShell,
-      ),
-    );
-
-    // Using PopScope is the modern way to handle back button presses.
-    // canPop is false, so we can show a custom dialog before exiting.
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        final bool shouldPop =
-            await showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Exit App?'),
-                content: const Text('Are you sure you want to close Quotely?'),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('No'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Yes'),
-                  ),
-                ],
-              ),
-            ) ??
-            false;
-
-        if (shouldPop && context.mounted) {
+        // Back on a non-Today tab goes to Today first, like most apps.
+        if (navigationShell.currentIndex != 0) {
+          _onTap(0);
+          return;
+        }
+        if (await _confirmExit(context)) {
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         }
       },
       child: Scaffold(
-        body: AnnotatedRegion(
-          value: getDefaultSystemUiStyle(isDarkTheme),
-          child: tablet
-              ? Row(
-                  children: [
-                    _buildRail(context, kPrimaryColor),
-                    Expanded(child: content),
-                  ],
-                )
-              : content,
+        backgroundColor: context.q.bg,
+        body: navigationShell,
+        bottomNavigationBar: ThreadBottomNav(
+          currentIndex: navigationShell.currentIndex,
+          onTap: _onTap,
         ),
-        bottomNavigationBar: tablet ? null : _buildBar(context, kPrimaryColor),
       ),
     );
   }
+}
 
-  /// Tablet navigation: a side rail with the same gradient identity as the
-  /// phone bottom bar (shadow cast to the right instead of upward).
-  Widget _buildRail(BuildContext context, Color kPrimaryColor) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: kGetDefaultGradient(context),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(4, 0),
-          ),
-        ],
-      ),
+/// Five text tabs; the active one sits in an `accSoft` pill that slides
+/// between items. `bg` background, no border, no elevation.
+class ThreadBottomNav extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  const ThreadBottomNav({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    final showIcons = isTablet(context);
+    final style = context.qt.label;
+    final scaler = MediaQuery.textScalerOf(context);
+    return ColoredBox(
+      color: t.bg,
       child: SafeArea(
-        child: NavigationRailTheme(
-          data: NavigationRailThemeData(
-            selectedIconTheme: const IconThemeData(color: Colors.white),
-            selectedLabelTextStyle: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: kPrimaryColor,
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 12, 8, 14),
+          child: Center(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final slot = constraints.maxWidth / kTabDestinations.length;
+                  final label = kTabDestinations[currentIndex].label;
+                  final painter = TextPainter(
+                    text: TextSpan(text: label, style: style),
+                    textDirection: TextDirection.ltr,
+                    textScaler: scaler,
+                  )..layout();
+                  final pillW = (painter.width + 24).clamp(0.0, slot);
+                  final height = showIcons ? 52.0 : 34.0;
+                  return SizedBox(
+                    height: height,
+                    child: Stack(
+                      children: [
+                        AnimatedPositioned(
+                          duration: context.reduceMotion
+                              ? Duration.zero
+                              : const Duration(milliseconds: 200),
+                          curve: Curves.easeOutCubic,
+                          left: slot * currentIndex + (slot - pillW) / 2,
+                          width: pillW,
+                          top: 0,
+                          bottom: 0,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: t.accSoft,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            for (var i = 0; i < kTabDestinations.length; i++)
+                              Expanded(
+                                child: _NavItem(
+                                  destination: kTabDestinations[i],
+                                  selected: i == currentIndex,
+                                  showIcon: showIcons,
+                                  onTap: () => onTap(i),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-            unselectedLabelTextStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          child: NavigationRail(
-            backgroundColor: Colors.transparent,
-            labelType: NavigationRailLabelType.all,
-            groupAlignment: 0.0,
-            indicatorColor: kPrimaryColor.withAlpha(230),
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: _onTap,
-            destinations: buildRailDestinations(),
           ),
         ),
       ),
     );
   }
+}
 
-  /// Phone navigation: the Material 3 bottom bar, unchanged.
-  Widget _buildBar(BuildContext context, Color kPrimaryColor) {
-    return NavigationBarTheme(
-      data: NavigationBarThemeData(
-        iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
-          (Set<WidgetState> states) => states.contains(WidgetState.selected)
-              ? const IconThemeData(color: Colors.white)
-              : const IconThemeData(),
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: kGetDefaultGradient(context),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
-              spreadRadius: 2,
-              offset: const Offset(0, 4),
+class _NavItem extends StatelessWidget {
+  final TabDestination destination;
+  final bool selected;
+  final bool showIcon;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.destination,
+    required this.selected,
+    required this.showIcon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    final color = selected ? t.accInk : t.mute;
+    return Tooltip(
+      message: destination.tooltip,
+      excludeFromSemantics: true,
+      child: Semantics(
+        selected: selected,
+        button: true,
+        label: '${destination.label} tab',
+        excludeSemantics: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (showIcon) ...[
+                  Icon(destination.icon, size: 20, color: color),
+                  const SizedBox(height: 2),
+                ],
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: context.qt.label.copyWith(color: color),
+                  child: Text(
+                    destination.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        // top: false so the gradient still bleeds to the very bottom of the
-        // screen under edge-to-edge, while the bar's own content is inset
-        // above the system navigation bar instead of sitting underneath it.
-        // The tablet NavigationRail path already had its own SafeArea.
-        child: SafeArea(
-          top: false,
-          child: NavigationBar(
-            // 1. Make the NavigationBar's own background transparent
-            backgroundColor: Colors.transparent,
-            // 2. Remove the default shadow to use your custom one from the Container
-            elevation: 0,
-            onDestinationSelected: _onTap,
-            selectedIndex: navigationShell.currentIndex,
-            indicatorColor: kPrimaryColor.withAlpha(230),
-            destinations: buildBarDestinations(),
-            labelTextStyle: WidgetStateProperty.resolveWith((states) {
-              final style = TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              );
-              if (states.contains(WidgetState.selected)) {
-                return style.copyWith(
-                  color: kPrimaryColor,
-                  fontWeight: FontWeight.w700,
-                );
-              }
-              return style;
-            }),
           ),
         ),
       ),
