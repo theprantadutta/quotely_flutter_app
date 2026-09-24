@@ -164,6 +164,7 @@ ThemeData buildQuotelyTheme(Brightness brightness, AppearanceSettings s) {
         elevation: 2,
       ),
       trackShape: const RoundedRectSliderTrackShape(),
+      tickMarkShape: SliderTickMarkShape.noTickMark,
     ),
     timePickerTheme: TimePickerThemeData(
       backgroundColor: t.surf,

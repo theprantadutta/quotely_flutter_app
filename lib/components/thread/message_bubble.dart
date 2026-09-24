@@ -186,7 +186,7 @@ class MessageBubble extends ConsumerWidget {
               ? BrandAvatar(size: avatarSize)
               : QAvatar(
                   name: m.sender,
-                  imageUrl: m.senderImageUrl,
+                  imageUrl: watchSenderImage(ref, m),
                   size: avatarSize,
                 ),
         ),
@@ -431,7 +431,14 @@ class SpoilerBubble extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             // Blocks the title chip and long-press while hidden.
-            IgnorePointer(ignoring: hidden, child: blurred),
+            // Wide enough for the pill even when the line is very short.
+            IgnorePointer(
+              ignoring: hidden,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: hidden ? 230 : 0),
+                child: blurred,
+              ),
+            ),
             if (hidden)
               Positioned.fill(
                 child: GestureDetector(
@@ -452,6 +459,8 @@ class SpoilerBubble extends StatelessWidget {
                       ),
                       child: Text(
                         'Tap to reveal spoiler',
+                        maxLines: 1,
+                        softWrap: false,
                         style: context.qt.label.copyWith(
                           color: t.bg,
                           fontWeight: FontWeight.w800,

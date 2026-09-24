@@ -115,46 +115,22 @@ class LocalSceneRepository implements SceneRepository {
   @override
   Future<SceneOfTheDayDto?> sceneOfTheDay() async {
     final today = DateUtils.dateOnly(DateTime.now());
-    return _pickFor(today, salt: 17);
+    return _pickFor(today, salt: 17, spoilerFree: true);
   }
 
+  /// Archives are history: only the server knows what was actually sent,
+  /// so there is nothing to invent locally.
   @override
   Future<List<SceneOfTheDayDto>> sceneOfTheDayArchive({
     required int pageNumber,
     required int pageSize,
-  }) async {
-    final today = DateUtils.dateOnly(DateTime.now());
-    final start = (pageNumber - 1) * pageSize;
-    final picks = <SceneOfTheDayDto>[];
-    for (var i = start; i < start + pageSize && i < 60; i++) {
-      final pick = await _pickFor(today.subtract(Duration(days: i)), salt: 17);
-      if (pick != null) picks.add(pick);
-    }
-    return picks;
-  }
+  }) async => const [];
 
-  /// The last N Fridays (today counts when it is Friday).
   @override
   Future<List<SceneOfTheDayDto>> fridayNightLines({
     required int pageNumber,
     required int pageSize,
-  }) async {
-    var friday = DateUtils.dateOnly(DateTime.now());
-    while (friday.weekday != DateTime.friday) {
-      friday = friday.subtract(const Duration(days: 1));
-    }
-    final start = (pageNumber - 1) * pageSize;
-    final picks = <SceneOfTheDayDto>[];
-    for (var i = start; i < start + pageSize && i < 26; i++) {
-      final pick = await _pickFor(
-        friday.subtract(Duration(days: 7 * i)),
-        salt: 53,
-        spoilerFree: true,
-      );
-      if (pick != null) picks.add(pick);
-    }
-    return picks;
-  }
+  }) async => const [];
 
   Future<SceneOfTheDayDto?> _pickFor(
     DateTime day, {
@@ -243,6 +219,10 @@ class ApiSceneRepository implements SceneRepository {
     int pageSize = 12,
   }) => _try(
     () async {
+      // The network refreshes the cache and the list is read from it, so
+      // API titles and the bundled seed show together while the API
+      // catalogue is still small (seed rows for the same slug are dropped
+      // on save).
       final res = await SceneService.getTitles(
         pageNumber: pageNumber,
         pageSize: pageSize,
@@ -250,7 +230,11 @@ class ApiSceneRepository implements SceneRepository {
         trending: true,
       );
       await DriftSceneService.saveTitles(res.titles);
-      return res.titles;
+      return _local.trendingTitles(
+        types: types,
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+      );
     },
     () => _local.trendingTitles(
       types: types,
@@ -268,7 +252,8 @@ class ApiSceneRepository implements SceneRepository {
       search: search,
     );
     await DriftSceneService.saveTitles(res.titles);
-    return res.titles;
+    // Read back from the cache so seed titles match too.
+    return _local.searchTitles(search);
   }, () => _local.searchTitles(search));
 
   @override
@@ -293,14 +278,18 @@ class ApiSceneRepository implements SceneRepository {
         search: search,
       );
       await DriftSceneService.saveCharacters(res.characters);
-      return res.characters;
+      // Cache-backed, like titles: API and seed characters list together.
+      return _local.characters(
+        search: search,
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+      );
     },
     () => _local.characters(
       search: search,
       pageNumber: pageNumber,
       pageSize: pageSize,
     ),
-    isEmpty: (v) => v.isEmpty && pageNumber == 1 && (search ?? '').isEmpty,
   );
 
   @override
@@ -328,27 +317,22 @@ class ApiSceneRepository implements SceneRepository {
     },
     () =>
         _local.sceneOfTheDayArchive(pageNumber: pageNumber, pageSize: pageSize),
-    isEmpty: (v) => v.isEmpty && pageNumber == 1,
   );
 
   @override
   Future<List<SceneOfTheDayDto>> fridayNightLines({
     required int pageNumber,
     required int pageSize,
-  }) => _try(
-    () async {
-      final res = await SceneService.getAllFridayNightLines(
-        pageNumber: pageNumber,
-        pageSize: pageSize,
-      );
-      await DriftSceneService.saveSceneQuotes([
-        for (final d in res.fridayNightLinesWithScenes) d.sceneQuote,
-      ]);
-      return res.fridayNightLinesWithScenes;
-    },
-    () => _local.fridayNightLines(pageNumber: pageNumber, pageSize: pageSize),
-    isEmpty: (v) => v.isEmpty && pageNumber == 1,
-  );
+  }) => _try(() async {
+    final res = await SceneService.getAllFridayNightLines(
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+    );
+    await DriftSceneService.saveSceneQuotes([
+      for (final d in res.fridayNightLinesWithScenes) d.sceneQuote,
+    ]);
+    return res.fridayNightLinesWithScenes;
+  }, () => _local.fridayNightLines(pageNumber: pageNumber, pageSize: pageSize));
 
   @override
   Future<int> downloadAll() async {

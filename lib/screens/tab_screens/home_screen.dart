@@ -803,7 +803,7 @@ class _TodayDivider extends _TodayEntry {
 
   @override
   Widget build(BuildContext context, ThreadLayout layout) => Padding(
-    padding: const EdgeInsets.only(top: 12, bottom: 8),
+    padding: const EdgeInsets.only(top: 4, bottom: 6),
     child: TimeDivider(text),
   );
 }

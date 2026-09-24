@@ -148,7 +148,10 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
                       key: ValueKey(_quotes[i].id),
                       index: i % 8,
                       child: MessageBubble(
-                        message: ThreadMessage.fromQuote(_quotes[i]),
+                        message: ThreadMessage.fromQuote(
+                          _quotes[i],
+                          senderImageUrl: author.imageUrl,
+                        ),
                         variant: BubbleVariant.compact,
                         showSender: false,
                         avatarSize: 30,

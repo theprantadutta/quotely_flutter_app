@@ -53,6 +53,10 @@ TextStyle _ui(
   leadingDistribution: TextLeadingDistribution.even,
 );
 
+/// Weights sit one step above the brief's table: the design screenshots were
+/// rendered in a heavier fallback face than Manrope, and matching their
+/// density on device needs the extra weight (titles are already at 800).
+///
 /// Every text style in the Thread design, with its default color already
 /// applied. Screens `copyWith` only when the design calls for a different
 /// color (e.g. `accInk` on an `accSoft` pill).
@@ -146,20 +150,20 @@ class QuotelyText extends ThemeExtension<QuotelyText> {
       titleDetail: _ui(26, FontWeight.w800, t.ink, em: -0.03, height: 1.0),
       sectionTitle: _ui(20, FontWeight.w800, t.ink, em: -0.02, height: 1.2),
       rowTitle: _ui(15, FontWeight.w800, t.ink),
-      body: _ui(14, FontWeight.w600, t.mute, height: 1.45),
-      meta: _ui(13, FontWeight.w600, t.mute, height: 1.35),
-      label: _ui(12, FontWeight.w700, t.mute),
-      chip: _ui(13, FontWeight.w700, t.ink),
+      body: _ui(14, FontWeight.w700, t.mute, height: 1.45),
+      meta: _ui(13, FontWeight.w700, t.mute, height: 1.35),
+      label: _ui(12, FontWeight.w800, t.mute),
+      chip: _ui(13, FontWeight.w800, t.ink),
       overline: _ui(12, FontWeight.w800, t.mute, height: 1.2),
-      caption: _ui(11, FontWeight.w600, t.mute),
+      caption: _ui(11, FontWeight.w700, t.mute),
       badge: _ui(9.5, FontWeight.w800, t.accInk, height: 1),
       button: _ui(16, FontWeight.w800, t.onAcc, height: 1),
       buttonSecondary: _ui(15, FontWeight.w800, t.ink, height: 1),
-      quoteHero: quote(21.5, FontWeight.w700, -0.02, 1.22),
+      quoteHero: quote(21.5, FontWeight.w800, -0.02, 1.22),
       quoteFeature: quote(20, FontWeight.w800, -0.02, 1.22),
       quoteFact: quote(25, FontWeight.w800, -0.025, 1.18),
-      quoteBody: quote(17, FontWeight.w700, -0.01, 1.30),
-      quoteCompact: quote(15.5, FontWeight.w700, -0.01, 1.30),
+      quoteBody: quote(17, FontWeight.w800, -0.01, 1.30),
+      quoteCompact: quote(15.5, FontWeight.w800, -0.01, 1.30),
     );
   }
 

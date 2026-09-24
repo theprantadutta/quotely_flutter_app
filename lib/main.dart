@@ -56,6 +56,9 @@ void main() async {
   await _lockOrientationForDeviceClass(widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FlutterError.onError = (errorDetails) {
+    // Crashlytics replaces the default handler; keep errors visible in the
+    // console while developing.
+    if (kDebugMode) FlutterError.presentError(errorDetails);
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
   };
   // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics

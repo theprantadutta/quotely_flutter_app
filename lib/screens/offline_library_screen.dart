@@ -311,7 +311,7 @@ class _OfflineLibraryScreenState extends State<OfflineLibraryScreen> {
           Text(
             'Images aren’t downloaded; portraits and posters load when you’re online.',
             textAlign: TextAlign.center,
-            style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
+            style: context.qt.label.copyWith(fontWeight: FontWeight.w700),
           ),
         ],
       ),

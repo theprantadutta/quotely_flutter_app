@@ -36,15 +36,19 @@ class ThreadMessage {
     this.date,
   });
 
-  factory ThreadMessage.fromQuote(QuoteDto quote, {DateTime? date}) =>
-      ThreadMessage._(
-        kind: MessageKind.quote,
-        text: quote.content,
-        sender: quote.author,
-        authorSlug: quote.authorSlug,
-        quote: quote,
-        date: date,
-      );
+  factory ThreadMessage.fromQuote(
+    QuoteDto quote, {
+    DateTime? date,
+    String? senderImageUrl,
+  }) => ThreadMessage._(
+    kind: MessageKind.quote,
+    text: quote.content,
+    sender: quote.author,
+    senderImageUrl: senderImageUrl,
+    authorSlug: quote.authorSlug,
+    quote: quote,
+    date: date,
+  );
 
   factory ThreadMessage.fromScene(SceneQuoteDto scene, {DateTime? date}) =>
       ThreadMessage._(

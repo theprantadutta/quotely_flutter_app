@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../navigation/routes.dart';
+import '../../riverpods/author_images_provider.dart';
 import '../../service_locator/init_service_locators.dart';
 import '../../services/drift_collection_service.dart';
 import '../../services/drift_fact_service.dart';
@@ -27,6 +28,15 @@ import 'thread_message.dart';
 void _log(String name, Map<String, Object> params) {
   if (!getIt.isRegistered<FirebaseAnalytics>()) return;
   getIt.get<FirebaseAnalytics>().logEvent(name: name, parameters: params);
+}
+
+/// The sender's photo: the message's own, else (quotes) the author's
+/// portrait looked up by slug. Null means initials.
+String? watchSenderImage(WidgetRef ref, ThreadMessage m) {
+  if (m.senderImageUrl != null) return m.senderImageUrl;
+  final slug = m.authorSlug;
+  if (m.kind != MessageKind.quote || slug == null || slug.isEmpty) return null;
+  return ref.watch(authorImagesProvider.select((a) => a.value?[slug]));
 }
 
 /// Reactive saved state; only the bubble whose status changes rebuilds.

@@ -188,8 +188,9 @@ class _PastMessagesScreenState extends ConsumerState<PastMessagesScreen> {
     final monday = now.subtract(Duration(days: now.weekday - 1));
     final d = DateUtils.dateOnly(date.toLocal());
     if (!d.isBefore(monday)) return 'This week';
-    if (!d.isBefore(monday.subtract(const Duration(days: 7))))
+    if (!d.isBefore(monday.subtract(const Duration(days: 7)))) {
       return 'Last week';
+    }
     return DateFormat('MMMM y').format(d);
   }
 

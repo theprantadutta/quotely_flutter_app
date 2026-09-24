@@ -8,10 +8,15 @@ import '../constants/shared_preference_keys.dart';
 import '../navigation/routes.dart';
 import '../services/notification_service.dart';
 
-String formatMinutes(BuildContext context, int minutes) =>
-    MaterialLocalizations.of(
-      context,
-    ).formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60));
+/// "10 PM" on the hour, "10:30 PM" otherwise. 24-hour locales keep ":00".
+String formatMinutes(BuildContext context, int minutes) {
+  final use24 = MediaQuery.alwaysUse24HourFormatOf(context);
+  final text = MaterialLocalizations.of(context).formatTimeOfDay(
+    TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60),
+    alwaysUse24HourFormat: use24,
+  );
+  return minutes % 60 == 0 && !use24 ? text.replaceFirst(':00', '') : text;
+}
 
 class SettingsNotificationScreen extends StatefulWidget {
   static const kRouteName = Routes.notifications;

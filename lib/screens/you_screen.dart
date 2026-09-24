@@ -247,7 +247,7 @@ class _YouScreenState extends ConsumerState<YouScreen> {
                   : null,
               child: Text(
                 'Made by Pranta Dutta',
-                style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
+                style: context.qt.label.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -282,7 +282,8 @@ Future<void> showAboutQuotely(BuildContext context) async {
             ),
             const SizedBox(height: 14),
             SoftPill(
-              'Pranta Dutta ↗',
+              'Pranta Dutta',
+              icon: Icons.open_in_new_rounded,
               fontSize: 13,
               onTap: () => launchUrl(
                 Uri.parse('https://pranta.dev'),
@@ -290,11 +291,28 @@ Future<void> showAboutQuotely(BuildContext context) async {
               ),
             ),
             const SizedBox(height: 14),
-            // Posters come from TMDB when the backend has a key configured.
+            // Poster and cover art credits, as each provider's terms require.
             Text(
-              'This product uses the TMDB API but is not endorsed or certified by TMDB.',
+              'This product uses the TMDB API but is not endorsed or certified by TMDB. '
+              'Anime data and cover art from AniList.',
               textAlign: TextAlign.center,
               style: sheet.qt.caption,
+            ),
+            GestureDetector(
+              onTap: () => launchUrl(
+                Uri.parse('https://rawg.io'),
+                mode: LaunchMode.externalApplication,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                  'Game data and images from RAWG',
+                  style: sheet.qt.caption.copyWith(
+                    color: t.accInk,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 6),
             Text(

@@ -302,7 +302,7 @@ class GroupedRow extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: context.qt.label.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: descriptionColor,
                     ),
                   ),

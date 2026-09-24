@@ -234,6 +234,11 @@ class _TitleDetailScreenState extends ConsumerState<TitleDetailScreen> {
     final async = ref.watch(titleDetailProvider(widget.titleId));
     final detail = async.value;
     final shield = ref.watch(spoilerShieldProvider);
+    // The pinned line isn't repeated in the list below it.
+    final pinned = _focus != null && _characterId == null;
+    final lines = pinned
+        ? _lines.where((l) => l.id != _focus!.id).toList()
+        : _lines;
 
     return ThreadPage(
       trailing: detail == null
@@ -309,7 +314,7 @@ class _TitleDetailScreenState extends ConsumerState<TitleDetailScreen> {
                     ),
                   ),
                 ),
-                if (_focus != null && _characterId == null)
+                if (pinned)
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
                     sliver: SliverToBoxAdapter(
@@ -339,10 +344,10 @@ class _TitleDetailScreenState extends ConsumerState<TitleDetailScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverList.separated(
-                    itemCount: _lines.length,
+                    itemCount: lines.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 14),
                     itemBuilder: (context, i) {
-                      final l = _lines[i];
+                      final l = lines[i];
                       return Entrance(
                         key: ValueKey(l.id),
                         index: i % 8,
@@ -408,7 +413,7 @@ class _Hero extends ConsumerWidget {
                     Text(
                       meta,
                       style: context.qt.label.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -496,7 +501,7 @@ class _Characters extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.q;
     return SizedBox(
-      height: 94,
+      height: 112,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -513,7 +518,7 @@ class _Characters extends StatelessWidget {
             child: Pressable(
               onTap: () => onTap(c),
               child: SizedBox(
-                width: 56,
+                width: 64,
                 child: Column(
                   children: [
                     AnimatedContainer(
@@ -534,8 +539,9 @@ class _Characters extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      c.shortName,
-                      maxLines: 1,
+                      c.name,
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       style: context.qt.caption.copyWith(
                         fontWeight: FontWeight.w700,

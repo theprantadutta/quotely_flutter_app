@@ -497,7 +497,7 @@ class _SavedCard extends ConsumerWidget {
                       ? const BrandAvatar(size: 24)
                       : QAvatar(
                           name: m.sender,
-                          imageUrl: m.senderImageUrl,
+                          imageUrl: watchSenderImage(ref, m),
                           size: 24,
                         ),
                   const SizedBox(width: 8),

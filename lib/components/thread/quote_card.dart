@@ -76,7 +76,7 @@ class QuoteCard extends ConsumerWidget {
                         ? const BrandAvatar(size: 28)
                         : QAvatar(
                             name: m.sender,
-                            imageUrl: m.senderImageUrl,
+                            imageUrl: watchSenderImage(ref, m),
                             size: 28,
                           ),
                   ),
@@ -93,9 +93,11 @@ class QuoteCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  ReactionRow(message: m),
                 ],
               ),
+              // Own line, so a long name is never squeezed by the pills.
+              const SizedBox(height: 12),
+              ReactionRow(message: m),
             ],
           ),
         ),
