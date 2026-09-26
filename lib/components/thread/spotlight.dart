@@ -325,15 +325,19 @@ class PageBackdrop extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.q;
     final on = ref.watch(appearanceProvider.select((a) => a.backgroundGlow));
-    final tint = t.tintFor(DateTime.now());
+    final hue = t.glowFor(DateTime.now());
+    // Dark pages need less opacity for the same visible lift.
+    final k = t.isDark ? 0.34 : 0.5;
     RadialGradient glow(Alignment center, double radius, double strength) =>
         RadialGradient(
           center: center,
           radius: radius,
           colors: [
-            tint.withValues(alpha: strength),
-            tint.withValues(alpha: 0),
+            hue.withValues(alpha: strength * k),
+            hue.withValues(alpha: strength * k * 0.45),
+            hue.withValues(alpha: 0),
           ],
+          stops: const [0, 0.5, 1],
         );
     final content = child ?? const SizedBox.expand();
     return DecoratedBox(
@@ -342,11 +346,11 @@ class PageBackdrop extends ConsumerWidget {
           ? content
           : DecoratedBox(
               decoration: BoxDecoration(
-                gradient: glow(const Alignment(1.1, -1.0), 1.25, 0.85),
+                gradient: glow(const Alignment(1.0, -1.0), 1.6, 1.0),
               ),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: glow(const Alignment(-1.2, 1.0), 1.1, 0.45),
+                  gradient: glow(const Alignment(-1.1, 1.0), 1.4, 0.7),
                 ),
                 child: content,
               ),

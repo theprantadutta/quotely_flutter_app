@@ -92,6 +92,17 @@ const List<(Color, Color)> _dayTints = [
   (Color(0xFFCFE8FF), Color(0xFF10263C)), // sky
 ];
 
+/// The same five hues, saturated enough to read as light when laid over the
+/// page at low opacity ([QuotelyTokens.glowFor]). The flat tints above are
+/// too close to the dark page to show through a gradient.
+const List<(Color, Color)> _dayGlows = [
+  (Color(0xFFF2A07E), Color(0xFFC0643F)), // clay
+  (Color(0xFF7FD3D6), Color(0xFF2E9A9C)), // sea
+  (Color(0xFFC9CF7A), Color(0xFF8E9A38)), // moss
+  (Color(0xFFC6B0FF), Color(0xFF8465D6)), // lilac
+  (Color(0xFF9CCBFF), Color(0xFF3F7EC4)), // sky
+];
+
 /// Brand constants for icons, splash and the Android notification accent.
 class QBrand {
   QBrand._();
@@ -173,6 +184,16 @@ class QuotelyTokens extends ThemeExtension<QuotelyTokens> {
         .inDays
         .abs();
     final (light, dark) = _dayTints[i % _dayTints.length];
+    return isDark ? dark : light;
+  }
+
+  /// Glow colour for the page backdrop on [day]; same hue as [tintFor].
+  Color glowFor(DateTime day) {
+    final i = DateTime(day.year, day.month, day.day)
+        .difference(DateTime(2026))
+        .inDays
+        .abs();
+    final (light, dark) = _dayGlows[i % _dayGlows.length];
     return isDark ? dark : light;
   }
 
