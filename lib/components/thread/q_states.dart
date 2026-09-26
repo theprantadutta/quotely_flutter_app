@@ -73,7 +73,7 @@ class _EntranceState extends State<Entrance>
   }
 }
 
-/// Bubble-shaped placeholder with a soft shimmer in `ph`.
+/// Loading placeholder for one entry: text lines, then who said it.
 class BubbleSkeleton extends StatefulWidget {
   final double width;
   final int lines;
@@ -106,11 +106,15 @@ class _BubbleSkeletonState extends State<BubbleSkeleton>
   @override
   Widget build(BuildContext context) {
     final t = context.q;
+    // Editorial shape, like the entries it stands in for: a few lines of
+    // text, then a small avatar and name. See-through, so it sits on the
+    // page's glow the way the real entries do.
+    final fill = t.ink.withValues(alpha: t.isDark ? 0.09 : 0.07);
     Widget bar(double w, double h) => Container(
       width: w,
       height: h,
       decoration: BoxDecoration(
-        color: t.ph,
+        color: fill,
         borderRadius: BorderRadius.circular(6),
       ),
     );
@@ -124,53 +128,31 @@ class _BubbleSkeletonState extends State<BubbleSkeleton>
         ),
         child: LayoutBuilder(
           builder: (context, c) {
-            final bubbleW =
-                (c.maxWidth - (widget.avatar ? 44 : 0)) * widget.width;
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            final w = c.maxWidth * widget.width;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.avatar) ...[
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: t.ph,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
+                for (var i = 0; i < widget.lines; i++) ...[
+                  if (i > 0) const SizedBox(height: 10),
+                  bar(i == widget.lines - 1 ? w * 0.55 : w, 20),
                 ],
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 8),
-                      child: bar(90, 10),
-                    ),
-                    Container(
-                      width: bubbleW,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: t.surf,
-                        borderRadius: bubbleRadius(22),
+                if (widget.avatar) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: fill,
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          for (var i = 0; i < widget.lines; i++) ...[
-                            if (i > 0) const SizedBox(height: 8),
-                            bar(
-                              i == widget.lines - 1
-                                  ? bubbleW * 0.45
-                                  : bubbleW - 32,
-                              14,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 9),
+                      bar(96, 11),
+                    ],
+                  ),
+                ],
               ],
             );
           },
@@ -180,7 +162,7 @@ class _BubbleSkeletonState extends State<BubbleSkeleton>
   }
 }
 
-/// A column of bubble skeletons for first loads.
+/// A column of entry skeletons for first loads.
 class ThreadSkeleton extends StatelessWidget {
   final int count;
 
@@ -191,7 +173,7 @@ class ThreadSkeleton extends StatelessWidget {
     return Column(
       children: [
         for (var i = 0; i < count; i++) ...[
-          if (i > 0) const SizedBox(height: 14),
+          if (i > 0) const SizedBox(height: 32),
           BubbleSkeleton(width: i.isEven ? 0.92 : 0.7, lines: i.isEven ? 3 : 2),
         ],
       ],

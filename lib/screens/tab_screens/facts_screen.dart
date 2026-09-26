@@ -57,6 +57,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   int _playPage = 1;
   bool _playHasMore = true;
   bool _playLoading = false;
+  int _playRetries = 0;
   bool _ignoreInterests = false;
   bool _initialLoadDone = false;
   List<String> _appliedInterests = const [];
@@ -210,7 +211,17 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       });
     } catch (e) {
       if (kDebugMode) print(e);
-      _playHasMore = false;
+      // A dropped request shouldn't hide the game for the whole session:
+      // try again shortly (and on every refresh). The failed call is cached
+      // by the keep-alive provider, so drop it first.
+      _playRetries++;
+      if (_playRetries <= 3) {
+        Future.delayed(Duration(seconds: 2 * _playRetries), () {
+          if (!mounted) return;
+          ref.invalidate(fetchAllFactsProvider);
+          _fetchPlay();
+        });
+      }
     } finally {
       _playLoading = false;
     }
@@ -220,6 +231,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     _playFacts.clear();
     _playPage = 1;
     _playHasMore = true;
+    _playRetries = 0;
   }
 
   Future<void> _refresh() async {
@@ -525,16 +537,25 @@ class _FlipDeck extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.q;
+    // Only the strip below the top card is drawn, so the deck's edges never
+    // show through the see-through card.
     Widget under(double inset, double drop, double alpha) => Positioned(
       left: inset,
       right: inset,
-      top: drop,
       bottom: -drop,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: t.surf.withValues(alpha: alpha),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: t.line),
+      height: drop,
+      child: ClipRect(
+        child: OverflowBox(
+          alignment: Alignment.bottomCenter,
+          maxHeight: 48,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: t.ink.withValues(alpha: 0.05 * alpha),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: t.ink.withValues(alpha: 0.14 * alpha)),
+            ),
+            child: const SizedBox(height: 48, width: double.infinity),
+          ),
         ),
       ),
     );
@@ -543,8 +564,8 @@ class _FlipDeck extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          under(24, 14, 0.5),
-          under(12, 7, 0.8),
+          under(24, 14, 0.6),
+          under(12, 7, 1),
           Positioned.fill(
             child: TweenAnimationBuilder<double>(
               tween: Tween(end: flipped ? pi : 0),
@@ -576,7 +597,8 @@ class _FlipDeck extends StatelessWidget {
   }
 }
 
-/// The card surface both faces share.
+/// The card surface both faces share: see-through, so the page's glow
+/// shows through it, with a hairline edge. [color] tints the glass.
 class _CardFace extends StatelessWidget {
   final String eyebrow;
   final Widget child;
@@ -598,9 +620,9 @@ class _CardFace extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 18),
       decoration: BoxDecoration(
-        color: color ?? t.surf,
+        color: color ?? t.ink.withValues(alpha: t.isDark ? 0.06 : 0.035),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: t.line),
+        border: Border.all(color: t.ink.withValues(alpha: 0.14)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,7 +667,7 @@ class _AnswerFace extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: _CardFace(
-        color: t.accSoft,
+        color: t.accSoft.withValues(alpha: 0.6),
         eyebrow: right
             ? 'Right \u00b7 $verdict'
             : 'Not quite \u00b7 it\u2019s $verdict',
