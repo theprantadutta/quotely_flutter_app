@@ -446,6 +446,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     }
     final answered = _lastAnswerRight != null;
     final done = _answered == kFactsPerDay && answered;
+    final shown = _showingFalse ? fact.falseVariant! : fact.content;
     return Padding(
       padding: const EdgeInsets.fromLTRB(22, 6, 22, 16),
       child: Column(
@@ -456,26 +457,28 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
           ),
           const SizedBox(height: 18),
           Expanded(
-            child: _FlipDeck(
-              key: ValueKey('${fact.id}:$_deckIndex'),
-              flipped: answered,
-              front: _CardFace(
-                eyebrow: fact.aiFactCategory,
-                child: Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    _showingFalse ? fact.falseVariant! : fact.content,
-                    style: context.qt.quoteFact,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 430),
+                child: _Flip(
+                  key: ValueKey('${fact.id}:$_deckIndex'),
+                  flipped: answered,
+                  front: _FactFace(
+                    eyebrow: fact.aiFactCategory,
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(shown, style: _factStyle(context, shown)),
+                    ),
+                  ),
+                  back: _AnswerFace(
+                    fact: fact,
+                    right: _lastAnswerRight ?? false,
+                    wasFalse: _showingFalse,
+                    footnote: done
+                        ? 'That\u2019s today\u2019s $kFactsPerDay. $_correct right. See you tomorrow.'
+                        : null,
                   ),
                 ),
-              ),
-              back: _AnswerFace(
-                fact: fact,
-                right: _lastAnswerRight ?? false,
-                wasFalse: _showingFalse,
-                footnote: done
-                    ? 'That\u2019s today\u2019s $kFactsPerDay. $_correct right. See you tomorrow.'
-                    : null,
               ),
             ),
           ),
@@ -520,14 +523,31 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   }
 }
 
-/// A card that turns over (around the vertical axis) when [flipped], with
-/// two blank cards peeking out beneath it so it reads as a deck.
-class _FlipDeck extends StatelessWidget {
+/// The fact at a size that fits its length: short facts go large, long
+/// ones step down so it never turns into a wall of text.
+TextStyle _factStyle(BuildContext context, String text) {
+  final base = context.qt.quoteFact;
+  final n = text.length;
+  final f = n <= 90
+      ? 1.05
+      : n <= 150
+      ? 0.95
+      : n <= 230
+      ? 0.84
+      : n <= 330
+      ? 0.74
+      : 0.64;
+  return base.copyWith(fontSize: base.fontSize! * f, height: 1.18);
+}
+
+/// Turns [front] over (around the vertical axis) to [back] when [flipped].
+/// No card behind it: the fact sits on the page like Today's lines.
+class _Flip extends StatelessWidget {
   final bool flipped;
   final Widget front;
   final Widget back;
 
-  const _FlipDeck({
+  const _Flip({
     super.key,
     required this.flipped,
     required this.front,
@@ -536,102 +556,49 @@ class _FlipDeck extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.q;
-    // Only the strip below the top card is drawn, so the deck's edges never
-    // show through the see-through card.
-    Widget under(double inset, double drop, double alpha) => Positioned(
-      left: inset,
-      right: inset,
-      bottom: -drop,
-      height: drop,
-      child: ClipRect(
-        child: OverflowBox(
-          alignment: Alignment.bottomCenter,
-          maxHeight: 48,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: t.ink.withValues(alpha: 0.05 * alpha),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: t.ink.withValues(alpha: 0.14 * alpha)),
-            ),
-            child: const SizedBox(height: 48, width: double.infinity),
-          ),
-        ),
-      ),
-    );
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          under(24, 14, 0.6),
-          under(12, 7, 1),
-          Positioned.fill(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(end: flipped ? pi : 0),
-              duration: context.reduceMotion
-                  ? Duration.zero
-                  : const Duration(milliseconds: 520),
-              curve: Curves.easeInOutCubic,
-              builder: (context, angle, _) {
-                final showBack = angle > pi / 2;
-                return Transform(
+    return TweenAnimationBuilder<double>(
+      tween: Tween(end: flipped ? pi : 0),
+      duration: context.reduceMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 520),
+      curve: Curves.easeInOutCubic,
+      builder: (context, angle, _) {
+        final showBack = angle > pi / 2;
+        return Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.0012)
+            ..rotateY(angle),
+          child: showBack
+              ? Transform(
                   alignment: Alignment.center,
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.0012)
-                    ..rotateY(angle),
-                  child: showBack
-                      ? Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()..rotateY(pi),
-                          child: back,
-                        )
-                      : front,
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+                  transform: Matrix4.identity()..rotateY(pi),
+                  child: back,
+                )
+              : front,
+        );
+      },
     );
   }
 }
 
-/// The card surface both faces share: see-through, so the page's glow
-/// shows through it, with a hairline edge. [color] tints the glass.
-class _CardFace extends StatelessWidget {
+/// One side of the fact: category overline at the top, the text centred
+/// in the space, an optional footer at the bottom.
+class _FactFace extends StatelessWidget {
   final String eyebrow;
   final Widget child;
-  final Color? color;
-  final Color? eyebrowColor;
   final Widget? footer;
 
-  const _CardFace({
-    required this.eyebrow,
-    required this.child,
-    this.color,
-    this.eyebrowColor,
-    this.footer,
-  });
+  const _FactFace({required this.eyebrow, required this.child, this.footer});
 
   @override
   Widget build(BuildContext context) {
-    final t = context.q;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 18),
-      decoration: BoxDecoration(
-        color: color ?? t.ink.withValues(alpha: t.isDark ? 0.06 : 0.035),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: t.ink.withValues(alpha: 0.14)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 8, 0, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            eyebrow.toUpperCase(),
-            style: context.qt.overline.copyWith(color: eyebrowColor),
-          ),
-          const SizedBox(height: 18),
+          Text(eyebrow.toUpperCase(), style: context.qt.overline),
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
@@ -645,7 +612,7 @@ class _CardFace extends StatelessWidget {
   }
 }
 
-/// The back of the card: the verdict, the real fact, and Share.
+/// The back: the verdict, the real fact, and Share.
 class _AnswerFace extends StatelessWidget {
   final AiFactDto fact;
   final bool right;
@@ -663,27 +630,19 @@ class _AnswerFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.q;
     final qt = context.qt;
-    final verdict = wasFalse ? 'False' : 'True';
+    final verdict = wasFalse ? 'false' : 'true';
+    final body = _factStyle(context, fact.content);
     return Semantics(
       liveRegion: true,
-      child: _CardFace(
-        color: t.accSoft.withValues(alpha: 0.6),
-        eyebrow: right
-            ? 'Right \u00b7 $verdict'
-            : 'Not quite \u00b7 it\u2019s $verdict',
-        eyebrowColor: t.accInk,
+      child: _FactFace(
+        eyebrow: wasFalse ? 'The real fact' : fact.aiFactCategory,
         footer: Row(
           children: [
-            Expanded(
-              child: Text(
-                footnote ?? (wasFalse ? 'The real fact' : fact.aiFactCategory),
-                style: qt.meta.copyWith(color: t.accInk),
-              ),
-            ),
+            Expanded(child: Text(footnote ?? '', style: qt.meta)),
             CircleIconButton(
               icon: kShareIcon,
               semanticLabel: 'Share',
-              foreground: t.accInk,
+              foreground: t.mute,
               onTap: () => shareMessage(ThreadMessage.fromFact(fact)),
             ),
           ],
@@ -694,12 +653,18 @@ class _AnswerFace extends StatelessWidget {
           children: [
             Text(
               right
-                  ? 'You got it.'
-                  : 'Actually, that\u2019s ${verdict.toLowerCase()}.',
-              style: qt.sectionTitle.copyWith(color: t.accInk),
+                  ? 'You got it \u2014 it\u2019s $verdict.'
+                  : 'Not quite \u2014 it\u2019s $verdict.',
+              style: qt.sectionTitle,
             ),
-            const SizedBox(height: 14),
-            Text(fact.content, style: qt.quoteBody),
+            const SizedBox(height: 16),
+            Text(
+              fact.content,
+              style: body.copyWith(
+                fontSize: body.fontSize! * 0.82,
+                color: t.ink.withValues(alpha: 0.86),
+              ),
+            ),
           ],
         ),
       ),
