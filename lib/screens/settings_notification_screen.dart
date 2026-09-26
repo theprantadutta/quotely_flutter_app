@@ -184,11 +184,11 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
+          // Master switch: a large row on the page, no card.
           Container(
-            padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+            padding: const EdgeInsets.fromLTRB(4, 8, 0, 18),
             decoration: BoxDecoration(
-              color: t.accSoft,
-              borderRadius: BorderRadius.circular(22),
+              border: Border(bottom: BorderSide(color: t.line)),
             ),
             child: Row(
               children: [
@@ -204,18 +204,12 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                         children: [
                           Text(
                             'All notifications',
-                            style: context.qt.rowTitle.copyWith(
-                              fontSize: 17,
-                              color: t.accInk,
-                            ),
+                            style: context.qt.sectionTitle,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
-                            '$quiet ›',
-                            style: context.qt.meta.copyWith(
-                              color: t.accInk,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            '$quiet \u203a',
+                            style: context.qt.meta.copyWith(color: t.accInk),
                           ),
                         ],
                       ),

@@ -152,7 +152,8 @@ class PosterCard extends StatelessWidget {
 /// One day in the [StreakCard] week.
 enum StreakDay { done, today, future, missed }
 
-/// `accSoft` card with the streak, totals and a Monday-first week of dots.
+/// The streak, totals and a Monday-first week of dots, set straight on the
+/// page (no card) so the backdrop shows through like everywhere else.
 class StreakCard extends StatelessWidget {
   final int streak;
   final String summary;
@@ -174,25 +175,15 @@ class StreakCard extends StatelessWidget {
     return Semantics(
       label: '$title. $summary',
       excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: t.accSoft,
-          borderRadius: BorderRadius.circular(24),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: context.qt.titlePush.copyWith(color: t.accInk)),
-            const SizedBox(height: 4),
-            Text(
-              summary,
-              style: context.qt.meta.copyWith(
-                color: t.accInk,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 14),
+            Text(title, style: context.qt.titleScreen.copyWith(fontSize: 40)),
+            const SizedBox(height: 6),
+            Text(summary.toUpperCase(), style: context.qt.overline),
+            const SizedBox(height: 22),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -203,9 +194,10 @@ class StreakCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         _letters[i],
-                        style: context.qt.caption.copyWith(
-                          color: t.accInk,
-                          fontWeight: FontWeight.w600,
+                        style: context.qt.overline.copyWith(
+                          color: i < week.length && week[i] == StreakDay.done
+                              ? t.ink
+                              : t.mute,
                         ),
                       ),
                     ],
@@ -236,17 +228,14 @@ class _Dot extends StatelessWidget {
       ),
       StreakDay.today => CustomPaint(
         size: const Size.square(size),
-        painter: _DashedCircle(color: t.accInk),
+        painter: _DashedCircle(color: t.acc),
       ),
       StreakDay.future || StreakDay.missed => Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: t.accInk.withValues(alpha: 0.35),
-            width: 1.5,
-          ),
+          border: Border.all(color: t.ink.withValues(alpha: 0.22), width: 1.5),
         ),
       ),
     };
