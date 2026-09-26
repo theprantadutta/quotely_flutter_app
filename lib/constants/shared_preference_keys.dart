@@ -64,6 +64,7 @@ const kAppearanceAccentKey = 'appearance-accent';
 const kAppearanceQuoteScaleKey = 'appearance-quote-scale';
 const kAppearanceReadingFontKey = 'appearance-reading-font';
 const kAppearanceLayoutKey = 'appearance-layout';
+const kAppearanceGlowKey = 'appearance-background-glow';
 const kAppearanceMigratedKey = 'appearance-migrated-v1';
 const kSpotlightFontMigratedKey = 'appearance-spotlight-font-v1';
 

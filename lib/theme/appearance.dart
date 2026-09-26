@@ -25,12 +25,16 @@ class AppearanceSettings {
   final ReadingFont readingFont;
   final ThreadLayout layout;
 
+  /// Soft glows of the day's colour behind every screen. On by default.
+  final bool backgroundGlow;
+
   const AppearanceSettings({
     this.themeMode = ThemeMode.system,
     this.accent = QAccent.violet,
     this.quoteScale = 1.0,
     this.readingFont = ReadingFont.serif,
     this.layout = ThreadLayout.thread,
+    this.backgroundGlow = true,
   });
 
   AppearanceSettings copyWith({
@@ -39,12 +43,14 @@ class AppearanceSettings {
     double? quoteScale,
     ReadingFont? readingFont,
     ThreadLayout? layout,
+    bool? backgroundGlow,
   }) => AppearanceSettings(
     themeMode: themeMode ?? this.themeMode,
     accent: accent ?? this.accent,
     quoteScale: quoteScale ?? this.quoteScale,
     readingFont: readingFont ?? this.readingFont,
     layout: layout ?? this.layout,
+    backgroundGlow: backgroundGlow ?? this.backgroundGlow,
   );
 
   /// Reads the saved settings. Runs the legacy-pref migration first so an
@@ -74,6 +80,7 @@ class AppearanceSettings {
         kAppearanceLayoutKey,
         ThreadLayout.thread,
       ),
+      backgroundGlow: prefs.getBool(kAppearanceGlowKey) ?? true,
     );
   }
 
@@ -216,6 +223,12 @@ class Appearance extends _$Appearance {
     _log('view_mode_toggled', {'layout': layout.name});
   }
 
+  Future<void> setBackgroundGlow(bool on) async {
+    state = state.copyWith(backgroundGlow: on);
+    await (await _prefs).setBool(kAppearanceGlowKey, on);
+    _log('background_glow_toggled', {'on': on.toString()});
+  }
+
   Future<void> reset() async {
     state = const AppearanceSettings();
     final prefs = await _prefs;
@@ -225,6 +238,7 @@ class Appearance extends _$Appearance {
       kAppearanceQuoteScaleKey,
       kAppearanceReadingFontKey,
       kAppearanceLayoutKey,
+      kAppearanceGlowKey,
     ]) {
       await prefs.remove(key);
     }

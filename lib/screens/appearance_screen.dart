@@ -58,7 +58,6 @@ class AppearanceScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(appearanceProvider);
     final c = ref.read(appearanceProvider.notifier);
-    final t = context.q;
     final brightness = Theme.of(context).brightness;
 
     Widget section(String label, Widget child) => Padding(
@@ -84,12 +83,8 @@ class AppearanceScreen extends ConsumerWidget {
                 const QAvatar(name: 'Benjamin Franklin', size: 30),
                 const SizedBox(width: 10),
                 Flexible(
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
-                    decoration: BoxDecoration(
-                      color: t.bg,
-                      borderRadius: bubbleRadius(22),
-                    ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 6, 8, 6),
                     child: Text(
                       'Well done is better than well said.',
                       style: context.qt.quoteBody,
@@ -196,6 +191,24 @@ class AppearanceScreen extends ConsumerWidget {
               ],
               value: s.layout,
               onChanged: c.setLayout,
+            ),
+          ),
+          section(
+            'Background',
+            GroupedList(
+              children: [
+                GroupedRow(
+                  title: 'Background glow',
+                  description:
+                      'A soft wash of the day\u2019s colour behind every screen',
+                  onTap: () => c.setBackgroundGlow(!s.backgroundGlow),
+                  trailing: QToggle(
+                    value: s.backgroundGlow,
+                    semanticLabel: 'Background glow',
+                    onChanged: c.setBackgroundGlow,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),

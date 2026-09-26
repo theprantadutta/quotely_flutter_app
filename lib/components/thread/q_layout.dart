@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
 import 'q_controls.dart';
 import 'q_pills.dart';
+import 'spotlight.dart';
 
 /// The thread column never stretches edge to edge on tablets.
 const double kThreadMaxWidth = 560;
@@ -159,29 +160,31 @@ class ThreadPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.q.bg,
-      body: SafeArea(
-        bottom: bottom == null,
-        child: ThreadColumn(
-          child: Column(
-            children: [
-              if (showHeader)
-                PushHeader(
-                  title: title,
-                  subtitle: subtitle,
-                  trailing: trailing,
-                ),
-              Expanded(child: body),
-              if (bottom != null)
-                SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                    child: bottom!,
+    return PageBackdrop(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          bottom: bottom == null,
+          child: ThreadColumn(
+            child: Column(
+              children: [
+                if (showHeader)
+                  PushHeader(
+                    title: title,
+                    subtitle: subtitle,
+                    trailing: trailing,
                   ),
-                ),
-            ],
+                Expanded(child: body),
+                if (bottom != null)
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: bottom!,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

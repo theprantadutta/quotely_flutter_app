@@ -84,16 +84,18 @@ class BottomNavigationLayout extends StatelessWidget {
         valueListenable: immersiveTabs,
         builder: (context, tabs, _) {
           final immersive = tabs.contains(navigationShell.currentIndex);
-          return Scaffold(
-            backgroundColor: context.q.bg,
-            // The body (and its backdrop) extends under the nav; the
-            // screen pads its content by MediaQuery's bottom inset.
-            extendBody: immersive,
-            body: navigationShell,
-            bottomNavigationBar: ThreadBottomNav(
-              currentIndex: navigationShell.currentIndex,
-              onTap: _onTap,
-              transparent: immersive,
+          return PageBackdrop(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              // The body (and its backdrop) extends under the nav; the
+              // screen pads its content by MediaQuery's bottom inset.
+              extendBody: immersive,
+              body: navigationShell,
+              bottomNavigationBar: ThreadBottomNav(
+                currentIndex: navigationShell.currentIndex,
+                onTap: _onTap,
+                transparent: immersive,
+              ),
             ),
           );
         },
@@ -124,7 +126,8 @@ class ThreadBottomNav extends StatelessWidget {
     final showIcons = isTablet(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: transparent ? Colors.transparent : t.bg,
+        // The page backdrop shows through; only the hairline separates.
+        color: Colors.transparent,
         border: Border(
           top: BorderSide(
             color: transparent ? t.ink.withValues(alpha: 0.1) : t.line,

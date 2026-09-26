@@ -262,7 +262,8 @@ class _RailButton extends StatelessWidget {
   }
 }
 
-/// Background behind the feed: soft glows of the day's hue, or a poster washed into
+/// Background behind the feed: nothing extra (the [PageBackdrop] shows
+/// through), or a poster washed into
 /// the page colour so type stays readable on top.
 class SpotlightBackdrop extends StatelessWidget {
   final Color tint;
@@ -283,7 +284,7 @@ class SpotlightBackdrop extends StatelessWidget {
           ? Duration.zero
           : const Duration(milliseconds: 450),
       child: url == null || url.isEmpty
-          ? _Glow(key: ValueKey(tint), tint: tint)
+          ? const SizedBox.shrink(key: ValueKey('none'))
           : Stack(
               key: ValueKey(url),
               fit: StackFit.expand,
@@ -310,17 +311,21 @@ class SpotlightBackdrop extends StatelessWidget {
   }
 }
 
-/// The page colour with the day's hue as soft glows, strongest top-right
-/// and a fainter echo bottom-left, so the feed reads as the same paper as
-/// every other screen rather than a flat block of colour.
-class _Glow extends StatelessWidget {
-  final Color tint;
+/// The app's background: the page colour with the day's hue as soft glows,
+/// strongest top-right and a fainter echo bottom-left. Appearance →
+/// Background glow off leaves the plain page colour. Every screen sits on
+/// this (the tab shell, [ThreadPage] and the full-screen flows), so it is
+/// opaque and paints [child] on top.
+class PageBackdrop extends ConsumerWidget {
+  final Widget? child;
 
-  const _Glow({super.key, required this.tint});
+  const PageBackdrop({super.key, this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = context.q;
+    final on = ref.watch(appearanceProvider.select((a) => a.backgroundGlow));
+    final tint = t.tintFor(DateTime.now());
     RadialGradient glow(Alignment center, double radius, double strength) =>
         RadialGradient(
           center: center,
@@ -330,20 +335,22 @@ class _Glow extends StatelessWidget {
             tint.withValues(alpha: 0),
           ],
         );
-    return SizedBox.expand(
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: t.bg),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: glow(const Alignment(1.1, -1.0), 1.25, 0.85),
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: glow(const Alignment(-1.2, 1.0), 1.1, 0.45),
+    final content = child ?? const SizedBox.expand();
+    return DecoratedBox(
+      decoration: BoxDecoration(color: t.bg),
+      child: !on
+          ? content
+          : DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: glow(const Alignment(1.1, -1.0), 1.25, 0.85),
+              ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: glow(const Alignment(-1.2, 1.0), 1.1, 0.45),
+                ),
+                child: content,
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

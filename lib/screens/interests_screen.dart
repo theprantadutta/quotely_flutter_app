@@ -183,157 +183,159 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
           )
         : const SizedBox.shrink();
 
-    return Scaffold(
-      backgroundColor: t.bg,
-      body: SafeArea(
-        child: ThreadColumn(
-          child: Column(
-            children: [
-              if (widget.isEditing) const PushHeader(),
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    widget.isEditing ? 0 : 24,
-                    20,
-                    20,
-                  ),
-                  children: [
-                    if (!widget.isEditing)
+    return PageBackdrop(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: ThreadColumn(
+            child: Column(
+              children: [
+                if (widget.isEditing) const PushHeader(),
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      widget.isEditing ? 0 : 24,
+                      20,
+                      20,
+                    ),
+                    children: [
+                      if (!widget.isEditing)
+                        Text(
+                          'Step 2 of 3',
+                          style: context.qt.label.copyWith(
+                            color: t.accInk,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      const SizedBox(height: 6),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          widget.isEditing
+                              ? 'Your interests'
+                              : 'What should we talk about?',
+                          style: context.qt.titleScreen,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
                       Text(
-                        'Step 2 of 3',
-                        style: context.qt.label.copyWith(
-                          color: t.accInk,
-                          fontWeight: FontWeight.w600,
+                        'Pick at least ${UserInterests.minInterests}. You can change this anytime.',
+                        style: context.qt.body.copyWith(fontSize: 15),
+                      ),
+                      const SizedBox(height: 14),
+                      TextField(
+                        controller: _search,
+                        onChanged: (v) => setState(() {
+                          _query = v.trim();
+                          _quotesShown = _quoteBatch;
+                          _factsShown = _factBatch;
+                        }),
+                        style: context.qt.chip.copyWith(fontSize: 14),
+                        decoration: InputDecoration(
+                          fillColor: Colors.transparent,
+                          hintText: 'Search topics',
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            size: 18,
+                            color: t.mute,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(999),
+                            borderSide: BorderSide(color: t.line),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(999),
+                            borderSide: BorderSide(color: t.line),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(999),
+                            borderSide: BorderSide(color: t.ink),
+                          ),
                         ),
                       ),
-                    const SizedBox(height: 6),
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        widget.isEditing
-                            ? 'Your interests'
-                            : 'What should we talk about?',
-                        style: context.qt.titleScreen,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Pick at least ${UserInterests.minInterests}. You can change this anytime.',
-                      style: context.qt.body.copyWith(fontSize: 15),
-                    ),
-                    const SizedBox(height: 14),
-                    TextField(
-                      controller: _search,
-                      onChanged: (v) => setState(() {
-                        _query = v.trim();
-                        _quotesShown = _quoteBatch;
-                        _factsShown = _factBatch;
-                      }),
-                      style: context.qt.chip.copyWith(fontSize: 14),
-                      decoration: InputDecoration(
-                        fillColor: Colors.transparent,
-                        hintText: 'Search topics',
-                        prefixIcon: Icon(
-                          Icons.search_rounded,
-                          size: 18,
-                          color: t.mute,
+                      if (quoteTags.isNotEmpty) ...[
+                        const SizedBox(height: 22),
+                        const SectionOverline('Quotes'),
+                        chips(window(quoteTags, _quotesShown)),
+                        more(
+                          quoteTags.length,
+                          _quotesShown,
+                          () => setState(() => _quotesShown += 40),
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide(color: t.line),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide(color: t.line),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide(color: t.ink),
-                        ),
-                      ),
-                    ),
-                    if (quoteTags.isNotEmpty) ...[
-                      const SizedBox(height: 22),
-                      const SectionOverline('Quotes'),
-                      chips(window(quoteTags, _quotesShown)),
-                      more(
-                        quoteTags.length,
-                        _quotesShown,
-                        () => setState(() => _quotesShown += 40),
-                      ),
-                    ],
-                    if (screenTypes.isNotEmpty) ...[
-                      const SizedBox(height: 22),
-                      const SectionOverline('Screen', trailing: NewBadge()),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final m in screenTypes)
-                            InterestChip(
-                              label: m.interestLabel,
-                              selected: _screen.contains(m),
-                              onTap: () => _toggleScreen(m),
-                            ),
-                        ],
-                      ),
-                    ],
-                    if (factCats.isNotEmpty) ...[
-                      const SizedBox(height: 22),
-                      const SectionOverline('Facts'),
-                      chips(window(factCats, _factsShown)),
-                      more(
-                        factCats.length,
-                        _factsShown,
-                        () => setState(() => _factsShown += 40),
-                      ),
-                    ],
-                    if (options.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 24),
-                        child: ThreadSkeleton(count: 1),
-                      ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child:
-                          _count < UserInterests.minInterests &&
-                              options.isNotEmpty
-                          ? QTextButton(
-                              label: widget.isEditing
-                                  ? 'Choose for me'
-                                  : 'Choose for me',
-                              color: t.accInk,
-                              onPressed: _autoPick,
-                            )
-                          : Text(
-                              '$_count picked',
-                              style: context.qt.chip.copyWith(
-                                fontSize: 14,
-                                color: t.mute,
+                      ],
+                      if (screenTypes.isNotEmpty) ...[
+                        const SizedBox(height: 22),
+                        const SectionOverline('Screen', trailing: NewBadge()),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final m in screenTypes)
+                              InterestChip(
+                                label: m.interestLabel,
+                                selected: _screen.contains(m),
+                                onTap: () => _toggleScreen(m),
                               ),
-                            ),
-                    ),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 190),
-                      child: PrimaryButton(
-                        label: widget.isEditing ? 'Save' : 'Continue',
-                        loading: _saving,
-                        onPressed: _count >= UserInterests.minInterests
-                            ? _save
-                            : null,
-                      ),
-                    ),
-                  ],
+                          ],
+                        ),
+                      ],
+                      if (factCats.isNotEmpty) ...[
+                        const SizedBox(height: 22),
+                        const SectionOverline('Facts'),
+                        chips(window(factCats, _factsShown)),
+                        more(
+                          factCats.length,
+                          _factsShown,
+                          () => setState(() => _factsShown += 40),
+                        ),
+                      ],
+                      if (options.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 24),
+                          child: ThreadSkeleton(count: 1),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child:
+                            _count < UserInterests.minInterests &&
+                                options.isNotEmpty
+                            ? QTextButton(
+                                label: widget.isEditing
+                                    ? 'Choose for me'
+                                    : 'Choose for me',
+                                color: t.accInk,
+                                onPressed: _autoPick,
+                              )
+                            : Text(
+                                '$_count picked',
+                                style: context.qt.chip.copyWith(
+                                  fontSize: 14,
+                                  color: t.mute,
+                                ),
+                              ),
+                      ),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 190),
+                        child: PrimaryButton(
+                          label: widget.isEditing ? 'Save' : 'Continue',
+                          loading: _saving,
+                          onPressed: _count >= UserInterests.minInterests
+                              ? _save
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

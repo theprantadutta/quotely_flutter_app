@@ -104,73 +104,75 @@ class _NotificationsOnboardingScreenState
   Widget build(BuildContext context) {
     final t = context.q;
     final types = kNotificationTypes.where((t) => t.inPrimer).toList();
-    return Scaffold(
-      backgroundColor: t.bg,
-      body: SafeArea(
-        child: ThreadColumn(
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                  children: [
-                    Text(
-                      'Step 3 of 3',
-                      style: context.qt.label.copyWith(
-                        color: t.accInk,
-                        fontWeight: FontWeight.w600,
+    return PageBackdrop(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: ThreadColumn(
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                    children: [
+                      Text(
+                        'Step 3 of 3',
+                        style: context.qt.label.copyWith(
+                          color: t.accInk,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        'When should we text you?',
-                        style: context.qt.titleScreen,
+                      const SizedBox(height: 6),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          'When should we text you?',
+                          style: context.qt.titleScreen,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                    const _PreviewNotification(),
-                    const SizedBox(height: 16),
-                    GroupedList(
-                      children: [
-                        for (final type in types)
-                          GroupedRow(
-                            title: type.title,
-                            description: type.primerDescription,
-                            isNew: type.isNew,
-                            trailing: QToggle(
-                              value: _values[type.prefKey] ?? true,
-                              semanticLabel: type.title,
-                              onChanged: (v) =>
-                                  setState(() => _values[type.prefKey] = v),
+                      const SizedBox(height: 18),
+                      const _PreviewNotification(),
+                      const SizedBox(height: 16),
+                      GroupedList(
+                        children: [
+                          for (final type in types)
+                            GroupedRow(
+                              title: type.title,
+                              description: type.primerDescription,
+                              isNew: type.isNew,
+                              trailing: QToggle(
+                                value: _values[type.prefKey] ?? true,
+                                semanticLabel: type.title,
+                                onChanged: (v) =>
+                                    setState(() => _values[type.prefKey] = v),
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                child: Column(
-                  children: [
-                    PrimaryButton(
-                      label: 'Allow notifications',
-                      loading: _saving,
-                      onPressed: () => _complete(requestPermission: true),
-                    ),
-                    const SizedBox(height: 4),
-                    QTextButton(
-                      label: 'Not now',
-                      onPressed: _saving
-                          ? null
-                          : () => _complete(requestPermission: false),
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                  child: Column(
+                    children: [
+                      PrimaryButton(
+                        label: 'Allow notifications',
+                        loading: _saving,
+                        onPressed: () => _complete(requestPermission: true),
+                      ),
+                      const SizedBox(height: 4),
+                      QTextButton(
+                        label: 'Not now',
+                        onPressed: _saving
+                            ? null
+                            : () => _complete(requestPermission: false),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

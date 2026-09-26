@@ -76,85 +76,87 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final t = context.q;
     final copy = _copy[_page];
-    return Scaffold(
-      backgroundColor: t.bg,
-      body: SafeArea(
-        child: ThreadColumn(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 4, 12, 0),
-                  child: QTextButton(label: 'Skip', onPressed: _finish),
+    return PageBackdrop(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: ThreadColumn(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 4, 12, 0),
+                    child: QTextButton(label: 'Skip', onPressed: _finish),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Listener(
-                  onPointerDown: (_) => _touched = true,
-                  child: PageView(
-                    controller: _pages,
-                    onPageChanged: (i) => setState(() => _page = i),
-                    children: const [
-                      _MiniThread(page: 0),
-                      _MiniThread(page: 1),
-                      _MiniThread(page: 2),
+                Expanded(
+                  child: Listener(
+                    onPointerDown: (_) => _touched = true,
+                    child: PageView(
+                      controller: _pages,
+                      onPageChanged: (i) => setState(() => _page = i),
+                      children: const [
+                        _MiniThread(page: 0),
+                        _MiniThread(page: 1),
+                        _MiniThread(page: 2),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 30),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: Column(
+                          key: ValueKey(_page),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Semantics(
+                              header: true,
+                              child: Text(
+                                copy.$1,
+                                style: context.qt.displayOnboarding,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              copy.$2,
+                              style: context.qt.body.copyWith(fontSize: 15),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Semantics(
+                        label: 'Page ${_page + 1} of ${_copy.length}',
+                        child: Row(
+                          children: [
+                            for (var i = 0; i < _copy.length; i++) ...[
+                              if (i > 0) const SizedBox(width: 6),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 220),
+                                width: i == _page ? 22 : 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: i == _page ? t.acc : t.line,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      PrimaryButton(label: 'Get started', onPressed: _finish),
                     ],
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: Column(
-                        key: ValueKey(_page),
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Semantics(
-                            header: true,
-                            child: Text(
-                              copy.$1,
-                              style: context.qt.displayOnboarding,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            copy.$2,
-                            style: context.qt.body.copyWith(fontSize: 15),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 22),
-                    Semantics(
-                      label: 'Page ${_page + 1} of ${_copy.length}',
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < _copy.length; i++) ...[
-                            if (i > 0) const SizedBox(width: 6),
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 220),
-                              width: i == _page ? 22 : 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: i == _page ? t.acc : t.line,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 22),
-                    PrimaryButton(label: 'Get started', onPressed: _finish),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
