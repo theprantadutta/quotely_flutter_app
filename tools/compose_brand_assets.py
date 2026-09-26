@@ -122,7 +122,8 @@ for d, px in [('mdpi', 48), ('hdpi', 72), ('xhdpi', 96), ('xxhdpi', 144), ('xxxh
     save(circle(light), rf'android\mipmap-{d}\ic_launcher_round.png', px)
 for d, px in [('mdpi', 24), ('hdpi', 36), ('xhdpi', 48), ('xxhdpi', 72), ('xxxhdpi', 96)]:
     n = Image.new('RGBA', (px * 4, px * 4), (0, 0, 0, 0))
-    save(place(n, '#FFFFFF', 0.86, 0), rf'android\drawable-{d}\ic_notification.png', px)
+    # Android's notification live area is 20dp of the 24dp icon: keep a margin.
+    save(place(n, '#FFFFFF', 0.78, 0), rf'android\drawable-{d}\ic_notification.png', px)
 save(light, r'android\playstore-icon-512.png', 512, rgb=True)
 
 # ios (square, opaque: iOS applies the mask)
