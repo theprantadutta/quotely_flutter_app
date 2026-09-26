@@ -160,10 +160,12 @@ class AppNavigation {
         ),
       ),
       _pushed(Routes.search, (s) => SearchScreen(key: s.pageKey)),
-      _pushed(
-        Routes.debugComponents,
-        (s) => DebugComponentsScreen(key: s.pageKey),
-      ),
+      // Component gallery: debug builds only, so it can't ship.
+      if (kDebugMode)
+        _pushed(
+          Routes.debugComponents,
+          (s) => DebugComponentsScreen(key: s.pageKey),
+        ),
     ],
   );
 }
