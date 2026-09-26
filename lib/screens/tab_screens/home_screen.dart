@@ -392,7 +392,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildToday(List<_Spot> today, bool loading) {
     if (today.isEmpty && loading) {
-      return const Center(child: CircularProgressIndicator.adaptive());
+      return const SpotlightSkeleton();
     }
     return PageView.builder(
       controller: _todayPager,
@@ -437,7 +437,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       }
       if (loading) {
-        return const Center(child: CircularProgressIndicator.adaptive());
+        return const SpotlightSkeleton();
       }
       return EmptyState(
         pill: 'Nothing here yet',
@@ -464,7 +464,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         }
         if (loading) {
-          return const Center(child: CircularProgressIndicator.adaptive());
+          return const SpotlightSkeleton();
         }
         if (hasError) {
           return Center(

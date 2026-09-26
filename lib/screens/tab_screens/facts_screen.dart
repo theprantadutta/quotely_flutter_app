@@ -441,7 +441,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
         controller: _scroll,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [_loading ? const ThreadSkeleton(count: 1) : _footer()],
+        children: [_loading ? const FactCardSkeleton() : _footer()],
       );
     }
     final answered = _lastAnswerRight != null;

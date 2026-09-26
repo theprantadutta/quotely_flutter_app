@@ -287,7 +287,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
   Widget _watch(List<SceneQuoteDto> feed, SceneQuoteDto? sotd) {
     if (feed.isEmpty) {
       if (_loading || !_typeInitialized) {
-        return const Center(child: CircularProgressIndicator.adaptive());
+        return const SpotlightSkeleton();
       }
       return EmptyState(
         pill: 'No lines here yet',
@@ -309,7 +309,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
         },
         itemBuilder: (context, i) {
           if (i >= feed.length) {
-            return const Center(child: CircularProgressIndicator.adaptive());
+            return const SpotlightSkeleton();
           }
           final scene = feed[i];
           return SpotlightEntry(
@@ -350,17 +350,7 @@ class _PosterRow extends StatelessWidget {
     final list = titles ?? const <MediaTitleDto>[];
     if (list.isEmpty) {
       if (!loading) return const SizedBox.shrink();
-      return SizedBox(
-        height: 190,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: 4,
-          separatorBuilder: (_, _) => const SizedBox(width: 12),
-          itemBuilder: (_, _) =>
-              const QPoster(url: null, width: 96, height: 138, radius: 14),
-        ),
-      );
+      return const SizedBox(height: 206, child: PosterRowSkeleton());
     }
     return SizedBox(
       // Poster + two title lines + count, with room for large text.

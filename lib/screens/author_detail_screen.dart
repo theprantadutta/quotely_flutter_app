@@ -119,10 +119,7 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
               ),
             ),
       body: async.isLoading && author == null
-          ? const Padding(
-              padding: EdgeInsets.all(16),
-              child: ThreadSkeleton(count: 3),
-            )
+          ? const DetailSkeleton(poster: false)
           : author == null
           ? ErrorBubble(
               message: 'Failed to get author detail.',

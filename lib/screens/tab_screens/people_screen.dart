@@ -352,7 +352,12 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
       child: _authorsError && _authors.isEmpty
           ? ErrorBubble(onRetry: _fetchAuthors)
           : _authorsLoading
-          ? const LoadMoreIndicator()
+          ? (_authors.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: PeopleListSkeleton(),
+                  )
+                : const LoadMoreIndicator(person: true))
           : _authors.isEmpty
           ? EmptyState(
               pill: _query.isEmpty
@@ -382,7 +387,12 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
     ),
     SliverToBoxAdapter(
       child: _charactersLoading
-          ? const LoadMoreIndicator()
+          ? (_characters.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: PeopleListSkeleton(),
+                  )
+                : const LoadMoreIndicator(person: true))
           : _characters.isEmpty
           ? EmptyState(
               pill: _query.isEmpty

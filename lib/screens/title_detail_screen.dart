@@ -250,10 +250,7 @@ class _TitleDetailScreenState extends ConsumerState<TitleDetailScreen> {
             ),
       body: detail == null
           ? (async.isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: ThreadSkeleton(count: 3),
-                  )
+                ? const DetailSkeleton()
                 : ErrorBubble(
                     message: 'We couldn’t find that title.',
                     onRetry: () =>

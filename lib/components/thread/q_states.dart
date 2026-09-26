@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import 'q_controls.dart';
 import 'q_pills.dart';
+import 'skeletons.dart';
 
 /// Fade + 12px slide-up on first build, staggered by [index] × 40ms.
 /// Respects reduce-motion.
@@ -72,8 +73,9 @@ class _EntranceState extends State<Entrance>
   }
 }
 
-/// Loading placeholder for one entry: text lines, then who said it.
-class BubbleSkeleton extends StatefulWidget {
+/// Loading placeholder for one entry: text lines, then who said it,
+/// shimmering. (Kept under this name for existing callers.)
+class BubbleSkeleton extends StatelessWidget {
   final double width;
   final int lines;
   final bool avatar;
@@ -86,79 +88,9 @@ class BubbleSkeleton extends StatefulWidget {
   });
 
   @override
-  State<BubbleSkeleton> createState() => _BubbleSkeletonState();
-}
-
-class _BubbleSkeletonState extends State<BubbleSkeleton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1100),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.q;
-    // Editorial shape, like the entries it stands in for: a few lines of
-    // text, then a small avatar and name. See-through, so it sits on the
-    // page's glow the way the real entries do.
-    final fill = t.ink.withValues(alpha: t.isDark ? 0.09 : 0.07);
-    Widget bar(double w, double h) => Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(
-        color: fill,
-        borderRadius: BorderRadius.circular(6),
-      ),
-    );
-    return Semantics(
-      label: 'Loading',
-      child: AnimatedBuilder(
-        animation: _c,
-        builder: (context, child) => Opacity(
-          opacity: context.reduceMotion ? 0.8 : 0.55 + 0.45 * _c.value,
-          child: child,
-        ),
-        child: LayoutBuilder(
-          builder: (context, c) {
-            final w = c.maxWidth * widget.width;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var i = 0; i < widget.lines; i++) ...[
-                  if (i > 0) const SizedBox(height: 10),
-                  bar(i == widget.lines - 1 ? w * 0.55 : w, 20),
-                ],
-                if (widget.avatar) ...[
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: fill,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 9),
-                      bar(96, 11),
-                    ],
-                  ),
-                ],
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Shimmer(
+    child: EntrySkeleton(lines: lines, width: width, byline: avatar),
+  );
 }
 
 /// A column of entry skeletons for first loads.
@@ -168,16 +100,7 @@ class ThreadSkeleton extends StatelessWidget {
   const ThreadSkeleton({super.key, this.count = 4});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (var i = 0; i < count; i++) ...[
-          if (i > 0) const SizedBox(height: 32),
-          BubbleSkeleton(width: i.isEven ? 0.92 : 0.7, lines: i.isEven ? 3 : 2),
-        ],
-      ],
-    );
-  }
+  Widget build(BuildContext context) => EntryListSkeleton(count: count);
 }
 
 /// Empty state: one system pill and a line of `mute` text. No illustration.
@@ -255,21 +178,22 @@ class ErrorBubble extends StatelessWidget {
   }
 }
 
-/// Small centered spinner for "loading the next page".
+/// "Loading the next page": one more entry, shimmering, where it will land.
 class LoadMoreIndicator extends StatelessWidget {
-  const LoadMoreIndicator({super.key});
+  /// A people row instead of an entry (People lists).
+  final bool person;
+
+  const LoadMoreIndicator({super.key, this.person = false});
 
   @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 18),
-      child: Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2.4),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: person
+        ? const EdgeInsets.symmetric(horizontal: 16)
+        : const EdgeInsets.fromLTRB(22, 20, 22, 28),
+    child: Shimmer(
+      child: person
+          ? const PersonRowSkeleton()
+          : const EntrySkeleton(lines: 2, width: 0.82),
+    ),
+  );
 }
