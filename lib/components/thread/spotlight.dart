@@ -262,7 +262,7 @@ class _RailButton extends StatelessWidget {
   }
 }
 
-/// Background behind the feed: the day's tint, or a poster washed into
+/// Background behind the feed: soft glows of the day's hue, or a poster washed into
 /// the page colour so type stays readable on top.
 class SpotlightBackdrop extends StatelessWidget {
   final Color tint;
@@ -283,15 +283,12 @@ class SpotlightBackdrop extends StatelessWidget {
           ? Duration.zero
           : const Duration(milliseconds: 450),
       child: url == null || url.isEmpty
-          ? SizedBox.expand(
-              key: ValueKey(tint),
-              child: ColoredBox(color: tint),
-            )
+          ? _Glow(key: ValueKey(tint), tint: tint)
           : Stack(
               key: ValueKey(url),
               fit: StackFit.expand,
               children: [
-                ColoredBox(color: tint),
+                ColoredBox(color: t.bg),
                 ImageFiltered(
                   imageFilter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
                   child: CachedNetworkImage(
@@ -309,6 +306,44 @@ class SpotlightBackdrop extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// The page colour with the day's hue as soft glows, strongest top-right
+/// and a fainter echo bottom-left, so the feed reads as the same paper as
+/// every other screen rather than a flat block of colour.
+class _Glow extends StatelessWidget {
+  final Color tint;
+
+  const _Glow({super.key, required this.tint});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    RadialGradient glow(Alignment center, double radius, double strength) =>
+        RadialGradient(
+          center: center,
+          radius: radius,
+          colors: [
+            tint.withValues(alpha: strength),
+            tint.withValues(alpha: 0),
+          ],
+        );
+    return SizedBox.expand(
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: t.bg),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: glow(const Alignment(1.1, -1.0), 1.25, 0.85),
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: glow(const Alignment(-1.2, 1.0), 1.1, 0.45),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
