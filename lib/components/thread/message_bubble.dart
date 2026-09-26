@@ -420,11 +420,15 @@ class SpoilerBubble extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             // Blocks the title chip and long-press while hidden.
-            // Wide enough for the pill even when the line is very short.
+            // Wide and tall enough for the pill even when the line is very
+            // short (entries have no bubble around them to pad it out).
             IgnorePointer(
               ignoring: hidden,
               child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: hidden ? 230 : 0),
+                constraints: BoxConstraints(
+                  minWidth: hidden ? 230 : 0,
+                  minHeight: hidden ? 56 : 0,
+                ),
                 child: blurred,
               ),
             ),

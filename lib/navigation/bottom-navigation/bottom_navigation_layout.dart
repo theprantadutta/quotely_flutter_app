@@ -36,7 +36,7 @@ class BottomNavigationLayout extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Your thread will be here when you come back.',
+                  'Today\u2019s picks will be here when you come back.',
                   style: sheet.qt.body,
                 ),
                 const SizedBox(height: 18),

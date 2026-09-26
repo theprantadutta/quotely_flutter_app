@@ -366,9 +366,8 @@ class _MakerMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.q;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const QAvatar(name: 'Pranta Dutta', size: 34),
         const SizedBox(width: 10),
@@ -383,12 +382,8 @@ class _MakerMessage extends StatelessWidget {
                   style: context.qt.label,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                decoration: BoxDecoration(
-                  color: t.surf,
-                  borderRadius: bubbleRadius(22),
-                ),
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
                 child: Text(
                   'Hey! I build Quotely on my own. No ads, no tracking. If it '
                   'made your day a bit better, a coffee keeps it going.',
@@ -433,11 +428,11 @@ class _TierCard extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: t.surf,
-            borderRadius: BorderRadius.circular(20),
+            color: selected ? t.ink.withValues(alpha: 0.06) : null,
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: selected ? t.acc : Colors.transparent,
-              width: 2,
+              color: selected ? t.ink : t.line,
+              width: selected ? 1.4 : 1,
             ),
           ),
           child: Row(

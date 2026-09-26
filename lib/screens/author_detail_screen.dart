@@ -199,8 +199,9 @@ class _Profile extends ConsumerWidget {
       final child = Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
-          color: filled ? t.acc : t.surf,
+          color: filled ? t.ink : null,
           borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: filled ? t.ink : t.line),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -209,12 +210,12 @@ class _Profile extends ConsumerWidget {
               text,
               style: context.qt.chip.copyWith(
                 fontWeight: FontWeight.w600,
-                color: filled ? t.onAcc : t.ink,
+                color: filled ? t.bg : t.ink,
               ),
             ),
             if (icon != null) ...[
               const SizedBox(width: 4),
-              Icon(icon, size: 14, color: filled ? t.onAcc : t.ink),
+              Icon(icon, size: 14, color: filled ? t.bg : t.ink),
             ],
           ],
         ),

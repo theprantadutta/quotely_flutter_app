@@ -269,28 +269,38 @@ Future<void> showAboutQuotely(BuildContext context) async {
       return QSheetFrame(
         child: Column(
           children: [
-            const BrandIcon(size: 80, radius: 20),
-            const SizedBox(height: 14),
-            Text('Quotely', style: sheet.qt.sectionTitle),
-            Text('Version ${info.version}', style: sheet.qt.meta),
-            const SizedBox(height: 12),
+            const BrandIcon(size: 84, radius: 19),
+            const SizedBox(height: 16),
+            Text('Quotely', style: sheet.qt.titleDetail),
+            const SizedBox(height: 4),
+            Text('VERSION ${info.version}', style: sheet.qt.overline),
+            const SizedBox(height: 16),
             Text(
-              'Wisdom, one message at a time. Quotes from thinkers, films, '
-              'shows and anime, delivered like a conversation.',
+              'Wisdom, one line at a time. Quotes from thinkers, and lines '
+              'from films, shows, anime and games.',
               textAlign: TextAlign.center,
               style: sheet.qt.body,
             ),
-            const SizedBox(height: 14),
-            SoftPill(
-              'Pranta Dutta',
-              icon: Icons.open_in_new_rounded,
-              fontSize: 13,
+            const SizedBox(height: 6),
+            HitTarget(
+              semanticLabel: 'Made by Pranta Dutta, opens pranta.dev',
               onTap: () => launchUrl(
                 Uri.parse('https://pranta.dev'),
                 mode: LaunchMode.externalApplication,
               ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Made by Pranta Dutta',
+                    style: sheet.qt.chip.copyWith(color: t.accInk),
+                  ),
+                  const SizedBox(width: 5),
+                  Icon(Icons.north_east_rounded, size: 15, color: t.accInk),
+                ],
+              ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             // Poster and cover art credits, as each provider's terms require.
             Text(
               'This product uses the TMDB API but is not endorsed or certified by TMDB. '

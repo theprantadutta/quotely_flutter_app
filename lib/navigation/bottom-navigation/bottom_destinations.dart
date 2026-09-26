@@ -12,7 +12,7 @@ class TabDestination {
 }
 
 const kTabDestinations = <TabDestination>[
-  TabDestination('Today', 'Today’s thread', Icons.chat_bubble_outline_rounded),
+  TabDestination('Today', 'Today\u2019s picks', Icons.wb_sunny_outlined),
   TabDestination('Scenes', 'Lines from screen', Icons.movie_outlined),
   TabDestination('Saved', 'Saved things', Icons.favorite_border_rounded),
   TabDestination(

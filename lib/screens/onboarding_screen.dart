@@ -11,7 +11,7 @@ import '../dtos/quote_dto.dart';
 import '../dtos/scene_quote_dto.dart';
 import '../navigation/routes.dart';
 
-/// Welcome: three pages, each a live mini-thread that builds itself.
+/// Welcome: three pages, each a small live preview that builds itself.
 class OnboardingScreen extends StatefulWidget {
   static const kRouteName = Routes.onboarding;
   const OnboardingScreen({super.key});
@@ -28,15 +28,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const _copy = [
     (
-      'Wisdom, one message at a time.',
-      'Quotes from thinkers, films, shows and anime, delivered like a conversation.',
+      'Wisdom, one line at a time.',
+      'Quotes from thinkers, and lines from films, shows, anime and games.',
     ),
     (
       'Every screen has a line worth keeping.',
       'Movies, TV, anime and games, with a spoiler shield that has your back.',
     ),
     (
-      'A message a day, right on time.',
+      'A line a day, right on time.',
       'Quote of the day, Friday night lines and a weird fact on Wednesdays. You choose.',
     ),
   ];

@@ -1,14 +1,31 @@
+# Splash: the app icon's own ground (warm paper with the peach and blue glow)
+# and the serif quote mark, in BOTH appearances. The launcher icon is fixed,
+# so a dark splash would mean tapping a paper tile and landing on black.
+# Logo only, no branding.
+#
+# Sizes fail silently (the generator stretches rather than erroring). The
+# sources come from tools/compose_brand_assets.py; see assets/brand/README.md.
 flutter_native_splash:
-  color: "#F4F3F8"
-  image: assets/brand/splash/splash-logo-light-512.png
-  color_dark: "#0F0E14"
-  image_dark: assets/brand/splash/splash-logo-dark-512.png
+  color: "#F3EEE5"
+  color_dark: "#F3EEE5"
+  background_image: assets/brand/splash/splash-background-1284x2778.png
+  background_image_dark: assets/brand/splash/splash-background-1284x2778.png
 
+  # 4x asset: 1024 canvas, mark at 40% -> about 100dp.
+  image: assets/brand/splash/splash-mark-1024.png
+  image_dark: assets/brand/splash/splash-mark-1024.png
+
+  # Android 12+: 1152 canvas, everything inside the centred 768px circle
+  # (Android crops, it does not scale). The window can only be a colour here.
   android_12:
-    image: assets/brand/splash/android12-icon-light-1152.png
-    icon_background_color: "#6E62CD"
-    image_dark: assets/brand/splash/android12-icon-dark-1152.png
-    icon_background_color_dark: "#A3A0F3"
+    color: "#F3EEE5"
+    color_dark: "#F3EEE5"
+    image: assets/brand/splash/android12-mark-1152.png
+    image_dark: assets/brand/splash/android12-mark-1152.png
+    icon_background_color: "#F3EEE5"
+    icon_background_color_dark: "#F3EEE5"
 
+  android: true
+  ios: true
   # Mobile only.
   web: false

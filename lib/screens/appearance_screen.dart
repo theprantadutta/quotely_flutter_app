@@ -186,7 +186,7 @@ class AppearanceScreen extends ConsumerWidget {
             'Default layout',
             SegmentedPill<ThreadLayout>(
               options: const [
-                ChipOption(ThreadLayout.thread, 'Thread'),
+                ChipOption(ThreadLayout.thread, 'List'),
                 ChipOption(ThreadLayout.cards, 'Cards'),
               ],
               value: s.layout,

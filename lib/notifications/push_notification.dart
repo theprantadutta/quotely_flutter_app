@@ -208,9 +208,9 @@ class PushNotifications {
           channelDescription: 'Notifications for new releases and updates.',
           importance: Importance.max,
           priority: Priority.max,
-          // White silhouette small icon + brand violet accent.
+          // White silhouette small icon + brand accent (terracotta).
           icon: '@drawable/ic_notification',
-          color: Color(0xFF6E62CD),
+          color: Color(0xFFA5492B), // QBrand.accent
         );
 
     const NotificationDetails notificationDetails = NotificationDetails(

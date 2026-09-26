@@ -103,13 +103,14 @@ const List<(Color, Color)> _dayGlows = [
   (Color(0xFF9CCBFF), Color(0xFF3F7EC4)), // sky
 ];
 
-/// Brand constants for icons, splash and the Android notification accent.
+/// Brand constants: the icon and splash ground, the mark, and the Android
+/// notification accent (terracotta, the default accent).
 class QBrand {
   QBrand._();
-  static const violet = Color(0xFF6E62CD);
-  static const violetLight = Color(0xFFA3A0F3);
-  static const paper = Color(0xFFF4F3F8);
-  static const night = Color(0xFF0F0E14);
+  static const paper = Color(0xFFF3EEE5);
+  static const ink = Color(0xFF1D1915);
+  static const night = Color(0xFF15120F);
+  static const accent = Color(0xFFA5492B);
 }
 
 /// Every color the Thread design uses. Widgets read these through

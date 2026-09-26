@@ -233,7 +233,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                 actions: [
                   MiniSegmented<ThreadLayout>(
                     options: const [
-                      ChipOption(ThreadLayout.thread, 'Thread'),
+                      ChipOption(ThreadLayout.thread, 'List'),
                       ChipOption(ThreadLayout.cards, 'Cards'),
                     ],
                     value: layout,
@@ -372,7 +372,7 @@ class _CollectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.q;
-    final fg = selected ? t.accInk : t.ink;
+    final fg = t.ink;
     return Semantics(
       selected: selected,
       button: true,
@@ -386,8 +386,12 @@ class _CollectionCard extends StatelessWidget {
           constraints: const BoxConstraints(minWidth: 110, maxWidth: 180),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: BoxDecoration(
-            color: selected ? t.accSoft : t.surf,
+            color: selected ? t.ink.withValues(alpha: 0.06) : null,
             borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected ? t.ink : t.line,
+              width: selected ? 1.4 : 1,
+            ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -401,9 +405,7 @@ class _CollectionCard extends StatelessWidget {
               ),
               Text(
                 '$count saved',
-                style: context.qt.label.copyWith(
-                  color: selected ? t.accInk : t.mute,
-                ),
+                style: context.qt.label.copyWith(color: t.mute),
               ),
             ],
           ),

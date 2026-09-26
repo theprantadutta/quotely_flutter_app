@@ -249,7 +249,7 @@ class SecondaryButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           alignment: Alignment.center,
           decoration: ShapeDecoration(
-            color: filled ? t.surf : Colors.transparent,
+            color: filled ? t.ink.withValues(alpha: 0.07) : Colors.transparent,
             shape: filled
                 ? RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

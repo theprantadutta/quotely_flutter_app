@@ -80,9 +80,10 @@ flutter:
   uses-material-design: true
 
   # Only what the app loads at runtime. Build-time icon/splash sources under
-  # assets/brand/{android,ios,web,splash,logo} are deliberately not bundled.
+  # assets/brand/{master,android,ios,splash,logo} are deliberately not
+  # bundled: they are baked into android/ and ios/ by the generators.
   assets:
-    - assets/brand/master/
+    - assets/brand/app/
     - assets/legal/
     - assets/data/
     - .env
@@ -116,8 +117,13 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/brand/master/quotely-icon-light-square-1024.png"
   remove_alpha_ios: true
-  adaptive_icon_background: "#6E62CD"
+  # The paper-and-glow ground as an image, so the adaptive icon matches the
+  # iOS and legacy icons exactly.
+  adaptive_icon_background: "assets/brand/android/adaptive/ic_launcher_background.png"
   adaptive_icon_foreground: "assets/brand/android/adaptive/ic_launcher_foreground.png"
   adaptive_icon_monochrome: "assets/brand/android/adaptive/ic_launcher_monochrome.png"
   # The brand foreground already keeps the mark inside the 66dp safe zone.
   adaptive_icon_foreground_inset: 0
+  # iOS 18 dark and tinted appearances: transparent, glyph only.
+  image_path_ios_dark_transparent: "assets/brand/ios/AppIcon-1024-dark.png"
+  image_path_ios_tinted_grayscale: "assets/brand/ios/AppIcon-1024-tinted.png"

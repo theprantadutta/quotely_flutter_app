@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
-import 'message_bubble.dart';
 import 'q_controls.dart';
 import 'q_pills.dart';
 
@@ -230,15 +229,16 @@ class ErrorBubble extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 6),
-            child: Text('Quotely', style: context.qt.label),
+            child: Text('QUOTELY', style: context.qt.overline),
           ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-            decoration: BoxDecoration(
-              color: t.surf,
-              borderRadius: bubbleRadius(22),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              message,
+              style: context.qt.quoteCompact.copyWith(
+                color: t.ink.withValues(alpha: 0.86),
+              ),
             ),
-            child: Text(message, style: context.qt.quoteCompact),
           ),
           if (onRetry != null) ...[
             const SizedBox(height: 12),

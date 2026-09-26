@@ -192,7 +192,7 @@ class QPoster extends StatelessWidget {
   }
 }
 
-/// The app's own avatar ("Quotely" as a sender): violet mark on `accSoft`.
+/// The app's own avatar ("Quotely" as a sender): the app icon, round.
 class BrandAvatar extends StatelessWidget {
   final double size;
 
@@ -200,24 +200,18 @@ class BrandAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.q;
-    return Container(
+    return Image.asset(
+      'assets/brand/app/avatar-256.png',
       width: size,
       height: size,
-      padding: EdgeInsets.all(size * 0.2),
-      decoration: BoxDecoration(color: t.accSoft, shape: BoxShape.circle),
-      child: Image.asset(
-        t.isDark
-            ? 'assets/brand/master/quotely-mark-white-1024.png'
-            : 'assets/brand/master/quotely-mark-violet-1024.png',
-        cacheWidth: 128,
-        semanticLabel: 'Quotely',
-      ),
+      cacheWidth: 128,
+      semanticLabel: 'Quotely',
     );
   }
 }
 
-/// The rounded brand icon for the current brightness (About, primer card).
+/// The app icon (About, notifications primer). One logo in both themes:
+/// it is the icon people tap, so it stays the same.
 class BrandIcon extends StatelessWidget {
   final double size;
   final double radius;
@@ -229,9 +223,7 @@ class BrandIcon extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Image.asset(
-        context.q.isDark
-            ? 'assets/brand/master/quotely-icon-dark-1024.png'
-            : 'assets/brand/master/quotely-icon-light-1024.png',
+        'assets/brand/app/logo-512.png',
         width: size,
         height: size,
         cacheWidth: 256,

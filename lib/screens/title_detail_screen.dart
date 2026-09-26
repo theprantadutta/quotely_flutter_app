@@ -443,14 +443,15 @@ class _Hero extends ConsumerWidget {
                                 vertical: 9,
                               ),
                               decoration: BoxDecoration(
-                                color: following ? t.accSoft : t.acc,
+                                color: following ? null : t.ink,
                                 borderRadius: BorderRadius.circular(999),
+                                border: Border.all(color: t.ink),
                               ),
                               child: Text(
                                 following ? '✓ Following' : 'Follow',
                                 style: context.qt.chip.copyWith(
                                   fontWeight: FontWeight.w600,
-                                  color: following ? t.accInk : t.onAcc,
+                                  color: following ? t.ink : t.bg,
                                 ),
                               ),
                             ),
@@ -462,8 +463,8 @@ class _Hero extends ConsumerWidget {
                             vertical: 9,
                           ),
                           decoration: BoxDecoration(
-                            color: t.surf,
                             borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: t.line),
                           ),
                           child: Text(
                             '${title.quoteCount} quotes',

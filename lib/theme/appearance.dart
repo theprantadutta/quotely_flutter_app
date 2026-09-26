@@ -10,8 +10,8 @@ import 'typography.dart';
 
 part '../generated/theme/appearance.g.dart';
 
-/// Appearance → Default layout. Thread is the chat-style list; Cards is one
-/// full-width card per item (the old carousel, restyled).
+/// Appearance → Default layout. List ([thread], the persisted name) is the
+/// editorial list; Cards is one outlined card per item.
 enum ThreadLayout { thread, cards }
 
 /// Appearance → Background. Poster: the day's scene poster, blurred and

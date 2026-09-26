@@ -12,7 +12,7 @@ import 'q_sheet.dart';
 const kTermsFile = 'assets/legal/terms.md';
 const kPrivacyFile = 'assets/legal/privacy.md';
 
-/// Scrollable markdown (Terms, Privacy) in a sheet, in the Thread type.
+/// Scrollable markdown (Terms, Privacy) in a sheet, in the app's type.
 Future<void> showLegalSheet(
   BuildContext context, {
   required String title,
@@ -68,7 +68,7 @@ Future<void> showLegalConsentIfNeeded(BuildContext context) async {
     isDismissible: false,
     enableDrag: false,
     isScrollControlled: true,
-    backgroundColor: t.surf,
+    backgroundColor: t.bg,
     barrierColor: t.scrim,
     constraints: const BoxConstraints(maxWidth: 560),
     builder: (sheet) => PopScope(

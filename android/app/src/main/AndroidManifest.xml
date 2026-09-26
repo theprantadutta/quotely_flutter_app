@@ -91,7 +91,7 @@
             android:resource="@drawable/ic_notification" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/quotely_violet" />
+            android:resource="@color/quotely_accent" />
         <!-- If you want your foreground service to be stopped if
              your app is stopped, set android:stopWithTask to true.
              See https://developer.android.com/reference/android/R.attr#stopWithTask -->
