@@ -337,6 +337,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? (todayIndex < today.length ? today[todayIndex].message : null)
         : (feedIndex < feed.length ? feed[feedIndex] : null);
 
+    // The shell draws the nav over this screen (see immersiveTabs).
+    final navInset = MediaQuery.paddingOf(context).bottom;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -359,9 +362,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               const IosUpdateBanner(),
               Expanded(
-                child: IndexedStack(
-                  index: _tab.index,
-                  children: [_buildToday(today, qotdLoading), _buildFeed(feed)],
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: navInset),
+                  child: IndexedStack(
+                    index: _tab.index,
+                    children: [
+                      _buildToday(today, qotdLoading),
+                      _buildFeed(feed),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -369,7 +378,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         Positioned(
           right: 6,
-          bottom: 18,
+          bottom: 18 + navInset,
           child: SpotlightRail(message: current, onAsk: _openAsk),
         ),
       ],

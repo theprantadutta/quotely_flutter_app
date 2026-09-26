@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../components/thread/thread.dart';
 import '../../dtos/media_title_dto.dart';
 import '../../dtos/scene_quote_dto.dart';
+import '../../navigation/bottom-navigation/bottom_navigation_layout.dart';
 import '../../navigation/routes.dart';
 import '../../riverpods/scene_providers.dart';
 import '../../service_locator/init_service_locators.dart';
@@ -153,7 +154,14 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
               ChipOption(_Mode.browse, 'Browse'),
             ],
             value: _mode,
-            onChanged: (m) => setState(() => _mode = m),
+            onChanged: (m) {
+              setState(() => _mode = m);
+              // Scenes is tab 1; only Watch runs behind the nav.
+              immersiveTabs.value = {
+                ...immersiveTabs.value.where((i) => i != 1),
+                if (m == _Mode.watch) 1,
+              };
+            },
           ),
           const Spacer(),
           CircleIconButton(
@@ -184,6 +192,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
     );
 
     if (_mode == _Mode.watch) {
+      final navInset = MediaQuery.paddingOf(context).bottom;
       return Stack(
         fit: StackFit.expand,
         children: [
@@ -197,13 +206,18 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
               children: [
                 header,
                 types,
-                Expanded(child: _watch(feed, sotd)),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: navInset),
+                    child: _watch(feed, sotd),
+                  ),
+                ),
               ],
             ),
           ),
           Positioned(
             right: 6,
-            bottom: 18,
+            bottom: 18 + navInset,
             child: SpotlightRail(
               message: current == null
                   ? null

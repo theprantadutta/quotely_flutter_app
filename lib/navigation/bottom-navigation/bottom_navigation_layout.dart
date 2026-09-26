@@ -6,6 +6,12 @@ import '../../components/thread/thread.dart';
 import '../../constants/responsive.dart';
 import 'bottom_destinations.dart';
 
+/// Tabs currently showing a full-screen Spotlight feed (Today = 0, Scenes
+/// in Watch mode = 1). On these the page's tinted or poster backdrop runs
+/// behind a see-through nav instead of stopping at a solid strip. Screens
+/// add or remove their index as they switch modes.
+final immersiveTabs = ValueNotifier<Set<int>>(const {0, 1});
+
 /// Tab shell: the current branch above a text-only bottom nav.
 class BottomNavigationLayout extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -74,13 +80,23 @@ class BottomNavigationLayout extends StatelessWidget {
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         }
       },
-      child: Scaffold(
-        backgroundColor: context.q.bg,
-        body: navigationShell,
-        bottomNavigationBar: ThreadBottomNav(
-          currentIndex: navigationShell.currentIndex,
-          onTap: _onTap,
-        ),
+      child: ValueListenableBuilder<Set<int>>(
+        valueListenable: immersiveTabs,
+        builder: (context, tabs, _) {
+          final immersive = tabs.contains(navigationShell.currentIndex);
+          return Scaffold(
+            backgroundColor: context.q.bg,
+            // The body (and its backdrop) extends under the nav; the
+            // screen pads its content by MediaQuery's bottom inset.
+            extendBody: immersive,
+            body: navigationShell,
+            bottomNavigationBar: ThreadBottomNav(
+              currentIndex: navigationShell.currentIndex,
+              onTap: _onTap,
+              transparent: immersive,
+            ),
+          );
+        },
       ),
     );
   }
@@ -92,10 +108,14 @@ class ThreadBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
+  /// Over a Spotlight backdrop: no fill, a fainter hairline.
+  final bool transparent;
+
   const ThreadBottomNav({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.transparent = false,
   });
 
   @override
@@ -104,8 +124,12 @@ class ThreadBottomNav extends StatelessWidget {
     final showIcons = isTablet(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: t.bg,
-        border: Border(top: BorderSide(color: t.line)),
+        color: transparent ? Colors.transparent : t.bg,
+        border: Border(
+          top: BorderSide(
+            color: transparent ? t.ink.withValues(alpha: 0.1) : t.line,
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
