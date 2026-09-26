@@ -83,13 +83,13 @@ const Map<QAccent, _AccentRoles> _dark = {
 };
 
 /// "Tinted background of the day" for the full-screen feed: the hue turns
-/// over each day. Light L0.92 C0.045, dark L0.21 C0.045.
+/// over each day. Light L0.92 C0.045, dark L0.26 C0.05 (visible against the dark page).
 const List<(Color, Color)> _dayTints = [
-  (Color(0xFFFFDCCC), Color(0xFF291106)), // clay
-  (Color(0xFFC3EEF0), Color(0xFF001E20)), // sea
-  (Color(0xFFE6E8C6), Color(0xFF1A1A00)), // moss
-  (Color(0xFFE9DEFF), Color(0xFF1C132A)), // lilac
-  (Color(0xFFCFE8FF), Color(0xFF06192C)), // sky
+  (Color(0xFFFFDCCC), Color(0xFF3A1D12)), // clay
+  (Color(0xFFC3EEF0), Color(0xFF0B2B2D)), // sea
+  (Color(0xFFE6E8C6), Color(0xFF28290E)), // moss
+  (Color(0xFFE9DEFF), Color(0xFF2A1F3F)), // lilac
+  (Color(0xFFCFE8FF), Color(0xFF10263C)), // sky
 ];
 
 /// Brand constants for icons, splash and the Android notification accent.

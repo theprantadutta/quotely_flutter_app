@@ -20,6 +20,9 @@ class FactService {
     required List<String> factCategories,
     required List<String> aiProviders,
     int? seed,
+
+    /// Only facts with a false twin, for "True or false?".
+    bool playable = false,
   }) async {
     try {
       // Use provided seed or get the current session seed
@@ -33,6 +36,7 @@ class FactService {
         if (factCategories.isNotEmpty)
           'factCategories': factCategories.join(','),
         if (aiProviders.isNotEmpty) 'aiProviders': aiProviders.join(','),
+        if (playable) 'playable': 'true',
       };
 
       final uri = Uri.parse(

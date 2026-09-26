@@ -757,7 +757,7 @@ class _AskSheetState extends State<_AskSheet> {
               ],
           ],
           const SizedBox(height: 18),
-          Composer(onSubmit: _ask, busy: _busy),
+          Composer(onSubmit: _ask, busy: _busy, inset: 0),
         ],
       ),
     );

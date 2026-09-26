@@ -106,7 +106,7 @@ class SpotlightEntry extends ConsumerWidget {
                   const SizedBox(height: 2),
                   Text(
                     d,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: qt.meta,
                   ),
@@ -274,12 +274,19 @@ class SpotlightBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.q;
     final url = imageUrl;
+    // The switcher's default Stack hands children loose constraints; the
+    // layout builder makes both backdrops fill the screen.
     return AnimatedSwitcher(
+      layoutBuilder: (current, previous) =>
+          Stack(fit: StackFit.expand, children: [...previous, ?current]),
       duration: context.reduceMotion
           ? Duration.zero
           : const Duration(milliseconds: 450),
       child: url == null || url.isEmpty
-          ? ColoredBox(key: ValueKey(tint), color: tint)
+          ? SizedBox.expand(
+              key: ValueKey(tint),
+              child: ColoredBox(color: tint),
+            )
           : Stack(
               key: ValueKey(url),
               fit: StackFit.expand,

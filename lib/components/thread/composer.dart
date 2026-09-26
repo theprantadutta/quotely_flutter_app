@@ -23,7 +23,11 @@ class Composer extends StatefulWidget {
     required this.onSubmit,
     this.busy = false,
     this.suggestions = kComposerSuggestions,
+    this.inset = 16,
   });
+
+  /// Side inset; 0 inside a sheet that already pads its content.
+  final double inset;
 
   @override
   State<Composer> createState() => _ComposerState();
@@ -66,7 +70,7 @@ class _ComposerState extends State<Composer> {
           height: 44,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: widget.inset),
             itemCount: widget.suggestions.length,
             separatorBuilder: (_, _) => const SizedBox(width: 6),
             itemBuilder: (_, i) => Center(
@@ -79,7 +83,7 @@ class _ComposerState extends State<Composer> {
         ),
         const SizedBox(height: 6),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: widget.inset),
           child: Container(
             padding: const EdgeInsets.fromLTRB(18, 6, 6, 6),
             decoration: BoxDecoration(

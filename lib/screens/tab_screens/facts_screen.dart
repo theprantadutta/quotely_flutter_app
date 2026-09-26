@@ -51,6 +51,12 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   bool _loading = false;
   bool _error = false;
   final List<AiFactDto> _facts = [];
+
+  // Play deals from its own list: only facts that have a false twin.
+  final List<AiFactDto> _playFacts = [];
+  int _playPage = 1;
+  bool _playHasMore = true;
+  bool _playLoading = false;
   bool _ignoreInterests = false;
   bool _initialLoadDone = false;
   List<String> _appliedInterests = const [];
@@ -83,7 +89,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     await ref.read(userInterestsProvider.notifier).ready;
     if (!mounted) return;
     _appliedInterests = List.of(ref.read(userInterestsProvider));
-    await _fetch();
+    await Future.wait([_fetch(), _fetchPlay()]);
     if (mounted) setState(() => _initialLoadDone = true);
   }
 
@@ -174,6 +180,48 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     }
   }
 
+  Future<void> _fetchPlay() async {
+    if (_playLoading || !_playHasMore) return;
+    _playLoading = true;
+    try {
+      final res = await ref.read(
+        fetchAllFactsProvider(
+          _playPage,
+          10,
+          _category == null ? const <String>[] : [_category!],
+          const [],
+          PaginationSeed.current,
+          playable: true,
+        ).future,
+      );
+      if (!mounted) return;
+      setState(() {
+        _playHasMore = res.aiFacts.length == 10;
+        _playPage++;
+        _playFacts.addAll(
+          res.aiFacts.where(
+            (f) =>
+                (f.falseVariant ?? '').trim().isNotEmpty &&
+                !_playFacts.any((x) => x.id == f.id),
+          ),
+        );
+        if (!_userPickedMode && _gameAvailable) _mode = _FactsMode.play;
+        _shuffleCurrent();
+      });
+    } catch (e) {
+      if (kDebugMode) print(e);
+      _playHasMore = false;
+    } finally {
+      _playLoading = false;
+    }
+  }
+
+  void _resetPlay() {
+    _playFacts.clear();
+    _playPage = 1;
+    _playHasMore = true;
+  }
+
   Future<void> _refresh() async {
     ref.invalidate(fetchAllFactsProvider);
     setState(() {
@@ -182,8 +230,9 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       _hasMore = true;
       _deckIndex = 0;
       _lastAnswerRight = null;
+      _resetPlay();
     });
-    await _fetch();
+    await Future.wait([_fetch(), _fetchPlay()]);
   }
 
   void _setCategory(String? c) {
@@ -195,15 +244,14 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       _deckIndex = 0;
       _lastAnswerRight = null;
       _ignoreInterests = false;
+      _resetPlay();
     });
     ref.invalidate(fetchAllFactsProvider);
     _fetch();
+    _fetchPlay();
   }
 
-  List<AiFactDto> get _deck => [
-    for (final f in _facts)
-      if ((f.falseVariant ?? '').trim().isNotEmpty) f,
-  ];
+  List<AiFactDto> get _deck => _playFacts;
 
   bool get _gameAvailable => kFactsGameEnabled || _deck.isNotEmpty;
 
@@ -247,7 +295,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       _lastAnswerRight = null;
       _shuffleCurrent();
     });
-    if (_deckIndex >= _deck.length - 2) _fetch();
+    if (_deckIndex >= _deck.length - 2) _fetchPlay();
   }
 
   @override

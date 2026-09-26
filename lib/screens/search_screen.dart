@@ -95,8 +95,8 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               decoration: BoxDecoration(
-                color: t.surf,
                 borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: t.line),
               ),
               child: TextField(
                 controller: _controller,

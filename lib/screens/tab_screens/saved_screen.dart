@@ -27,6 +27,7 @@ class SavedScreen extends ConsumerStatefulWidget {
 class _SavedScreenState extends ConsumerState<SavedScreen> {
   final _analytics = getIt.get<FirebaseAnalytics>();
   MessageKind _kind = MessageKind.quote;
+  bool _userPickedKind = false;
   int? _collection;
 
   List<QuoteDto>? _quotes;
@@ -116,7 +117,10 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
   }
 
   void _setKind(MessageKind kind) {
-    setState(() => _kind = kind);
+    setState(() {
+      _kind = kind;
+      _userPickedKind = true;
+    });
     _selectCollection(_collection);
     _analytics.logEvent(
       name: 'favorites_view_changed',
@@ -173,6 +177,29 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     );
   }
 
+  /// Opens on the first kind that has something, until the user picks one:
+  /// a lone saved scene shouldn't greet them with "Nothing saved yet".
+  void _autoPickKind() {
+    if (_userPickedKind ||
+        _quotes == null ||
+        _scenes == null ||
+        _facts == null) {
+      return;
+    }
+    final counts = {
+      MessageKind.quote: _quotes!.length,
+      MessageKind.scene: _scenes!.length,
+      MessageKind.fact: _facts!.length,
+    };
+    if (counts[_kind]! > 0) return;
+    for (final k in counts.keys) {
+      if (counts[k]! > 0) {
+        _kind = k;
+        return;
+      }
+    }
+  }
+
   List<ThreadMessage>? get _items {
     if (_collection != null) return _collectionItems;
     return switch (_kind) {
@@ -189,6 +216,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     final s = _scenes?.length ?? 0;
     final f = _facts?.length ?? 0;
     final total = q + s + f;
+    _autoPickKind();
     final items = _items;
 
     return SafeArea(

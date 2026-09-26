@@ -349,7 +349,8 @@ class _PosterRow extends StatelessWidget {
       );
     }
     return SizedBox(
-      height: 196,
+      // Poster + two title lines + count, with room for large text.
+      height: 206,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),

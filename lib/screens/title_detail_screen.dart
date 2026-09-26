@@ -342,10 +342,13 @@ class _TitleDetailScreenState extends ConsumerState<TitleDetailScreen> {
                     ),
                   ),
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 22),
                   sliver: SliverList.separated(
                     itemCount: lines.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 14),
+                    separatorBuilder: (_, _) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      child: Divider(height: 1, color: context.q.line),
+                    ),
                     itemBuilder: (context, i) {
                       final l = lines[i];
                       return Entrance(

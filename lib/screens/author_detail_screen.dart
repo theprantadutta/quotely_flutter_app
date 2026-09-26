@@ -140,10 +140,13 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
                   ),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 22),
                   sliver: SliverList.separated(
                     itemCount: _quotes.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      child: Divider(height: 1, color: context.q.line),
+                    ),
                     itemBuilder: (context, i) => Entrance(
                       key: ValueKey(_quotes[i].id),
                       index: i % 8,

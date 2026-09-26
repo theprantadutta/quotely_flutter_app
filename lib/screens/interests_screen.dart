@@ -232,7 +232,7 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                       }),
                       style: context.qt.chip.copyWith(fontSize: 14),
                       decoration: InputDecoration(
-                        fillColor: t.surf,
+                        fillColor: Colors.transparent,
                         hintText: 'Search topics',
                         prefixIcon: Icon(
                           Icons.search_rounded,
@@ -241,11 +241,15 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide.none,
+                          borderSide: BorderSide(color: t.line),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(999),
-                          borderSide: BorderSide.none,
+                          borderSide: BorderSide(color: t.line),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: BorderSide(color: t.ink),
                         ),
                       ),
                     ),
