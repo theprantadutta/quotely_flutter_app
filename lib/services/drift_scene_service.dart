@@ -11,6 +11,7 @@ import '../dtos/character_dto.dart';
 import '../dtos/media_title_dto.dart';
 import '../dtos/scene_quote_dto.dart';
 import '../service_locator/init_service_locators.dart';
+import '../util/profanity.dart';
 import 'scene_service.dart';
 
 /// Offline cache for Scenes, plus the bundled seed that makes the feature
@@ -29,7 +30,21 @@ class DriftSceneService {
 
   /// Loads the bundled seed into Drift once per install. Safe to call from
   /// anywhere; concurrent callers share one load.
-  static Future<void> ensureSeeded() => _seeding ??= _loadSeed();
+  static Future<void> ensureSeeded() =>
+      _seeding ??= _loadSeed().then((_) => _purgeProfanity());
+
+  /// Drops cached lines that fail the profanity check (e.g. cached before
+  /// the backend's sweep removed them). Saved lines are dropped too: the
+  /// app doesn't show profanity anywhere.
+  static Future<void> _purgeProfanity() async {
+    final rows = await _db.select(_db.sceneQuotes).get();
+    final ids = [
+      for (final r in rows)
+        if (isProfane(r.content)) r.id,
+    ];
+    if (ids.isEmpty) return;
+    await (_db.delete(_db.sceneQuotes)..where((q) => q.id.isIn(ids))).go();
+  }
 
   static Future<void> _loadSeed() async {
     final prefs = await SharedPreferences.getInstance();
@@ -162,6 +177,10 @@ class DriftSceneService {
 
   /// Upserts lines without touching `isFavorite` (absent from the update).
   static Future<void> saveSceneQuotes(List<SceneQuoteDto> quotes) async {
+    quotes = [
+      for (final q in quotes)
+        if (isClean(q.content)) q,
+    ];
     if (quotes.isEmpty) return;
     await _db.batch((b) {
       for (final q in quotes) {

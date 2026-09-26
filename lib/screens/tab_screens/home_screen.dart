@@ -39,6 +39,7 @@ import '../../state_providers/profile.dart';
 import '../../state_providers/scene_state.dart';
 import '../../state_providers/user_interests.dart';
 import '../../util/pagination_seed.dart';
+import '../../util/profanity.dart';
 
 enum TodayFilter { all, quotes, scenes, facts }
 
@@ -232,7 +233,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         hasMoreData = page.quotes.length == quotePageSize;
         quotePageNumber++;
         quotes.addAll(
-          page.quotes.where((q) => !quotes.any((x) => x.id == q.id)),
+          page.quotes.where(
+            (q) => isClean(q.content) && !quotes.any((x) => x.id == q.id),
+          ),
         );
         isLoadingMore = false;
       });

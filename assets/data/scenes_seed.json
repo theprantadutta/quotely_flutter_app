@@ -12,7 +12,7 @@
    ],
    "description": "Two imprisoned men bond over years, finding solace and redemption through acts of common decency.",
    "posterUrl": null,
-   "quoteCount": 7,
+   "quoteCount": 6,
    "popularity": 96,
    "dateAdded": "2026-09-01T00:00:00Z",
    "dateModified": "2026-09-01T00:00:00Z"
@@ -335,14 +335,6 @@
    "name": "Ellis \"Red\" Redding",
    "avatarUrl": null,
    "quoteCount": 2
-  },
-  {
-   "id": "seed-the-shawshank-redemption-brooks-hatlen",
-   "titleId": "seed-the-shawshank-redemption",
-   "titleName": "The Shawshank Redemption",
-   "name": "Brooks Hatlen",
-   "avatarUrl": null,
-   "quoteCount": 1
   },
   {
    "id": "seed-the-shawshank-redemption-warden-norton",
@@ -926,30 +918,6 @@
    "spoilerAfterEpisode": null,
    "tags": [
     "hope"
-   ],
-   "likes": 0,
-   "dateAdded": "2026-09-01T00:00:00Z",
-   "dateModified": "2026-09-01T00:00:00Z"
-  },
-  {
-   "id": "seed-the-shawshank-redemption-brooks-hatlen-1",
-   "content": "The world went and got itself in a big damn hurry.",
-   "titleId": "seed-the-shawshank-redemption",
-   "titleSlug": "the-shawshank-redemption",
-   "titleName": "The Shawshank Redemption",
-   "titleType": "movie",
-   "titleYear": 1994,
-   "posterUrl": null,
-   "characterId": "seed-the-shawshank-redemption-brooks-hatlen",
-   "characterName": "Brooks Hatlen",
-   "characterAvatarUrl": null,
-   "episodeLabel": "01:09:20",
-   "season": null,
-   "episode": null,
-   "isSpoiler": false,
-   "spoilerAfterEpisode": null,
-   "tags": [
-    "change"
    ],
    "likes": 0,
    "dateAdded": "2026-09-01T00:00:00Z",

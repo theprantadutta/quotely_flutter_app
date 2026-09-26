@@ -10,6 +10,7 @@ import '../dtos/quote_dto.dart';
 import '../service_locator/init_service_locators.dart';
 import 'drift_scene_service.dart';
 import 'quote_service.dart';
+import '../util/profanity.dart';
 
 /// Answers the Today composer ("Ask for a quote about…").
 ///
@@ -93,6 +94,14 @@ class ComposerSearchService {
   /// Up to [limit] messages answering [prompt]. Never throws; an empty list
   /// means nothing matched.
   static Future<List<ThreadMessage>> ask(String prompt, {int limit = 3}) async {
+    final results = await _ask(prompt, limit);
+    return [
+      for (final m in results)
+        if (isClean(m.text)) m,
+    ];
+  }
+
+  static Future<List<ThreadMessage>> _ask(String prompt, int limit) async {
     final tokens = _tokens(prompt);
     if (tokens.isEmpty) return const [];
 

@@ -5,6 +5,7 @@ import '../dtos/character_dto.dart';
 import '../dtos/media_title_dto.dart';
 import '../dtos/scene_quote_dto.dart';
 import '../util/pagination_seed.dart';
+import '../util/profanity.dart';
 import 'drift_scene_service.dart';
 import 'scene_service.dart';
 
@@ -199,7 +200,10 @@ class ApiSceneRepository implements SceneRepository {
         seed: PaginationSeed.current,
       );
       await DriftSceneService.saveSceneQuotes(res.sceneQuotes);
-      return res.sceneQuotes;
+      return [
+        for (final q in res.sceneQuotes)
+          if (isClean(q.content)) q,
+      ];
     },
     () => _local.sceneQuotes(
       pageNumber: pageNumber,
@@ -295,7 +299,9 @@ class ApiSceneRepository implements SceneRepository {
   @override
   Future<SceneOfTheDayDto?> sceneOfTheDay() => _try(() async {
     final dto = await SceneService.getTodaySceneOfTheDay();
-    if (dto == null) return _local.sceneOfTheDay();
+    if (dto == null || isProfane(dto.sceneQuote.content)) {
+      return _local.sceneOfTheDay();
+    }
     await DriftSceneService.saveSceneQuotes([dto.sceneQuote]);
     return dto;
   }, _local.sceneOfTheDay);
@@ -313,7 +319,10 @@ class ApiSceneRepository implements SceneRepository {
       await DriftSceneService.saveSceneQuotes([
         for (final d in res.sceneOfTheDayWithScenes) d.sceneQuote,
       ]);
-      return res.sceneOfTheDayWithScenes;
+      return [
+        for (final d in res.sceneOfTheDayWithScenes)
+          if (isClean(d.sceneQuote.content)) d,
+      ];
     },
     () =>
         _local.sceneOfTheDayArchive(pageNumber: pageNumber, pageSize: pageSize),
@@ -331,7 +340,10 @@ class ApiSceneRepository implements SceneRepository {
     await DriftSceneService.saveSceneQuotes([
       for (final d in res.fridayNightLinesWithScenes) d.sceneQuote,
     ]);
-    return res.fridayNightLinesWithScenes;
+    return [
+      for (final d in res.fridayNightLinesWithScenes)
+        if (isClean(d.sceneQuote.content)) d,
+    ];
   }, () => _local.fridayNightLines(pageNumber: pageNumber, pageSize: pageSize));
 
   @override
