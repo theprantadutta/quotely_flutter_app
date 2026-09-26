@@ -197,14 +197,17 @@ ThemeData buildQuotelyTheme(Brightness brightness, AppearanceSettings s) {
 }
 
 /// Status and navigation bar icons that read on the current background.
+///
+/// Icon brightness only, no bar colours: edge-to-edge makes the bars
+/// transparent, and setting a colour routes through the Android 15
+/// deprecated Window.setStatusBarColor / setNavigationBarColor (see main.dart).
 SystemUiOverlayStyle quotelyOverlayStyle(QuotelyTokens t) =>
     SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
       statusBarIconBrightness: t.isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: t.isDark ? Brightness.dark : Brightness.light,
-      systemNavigationBarColor: t.bg,
-      systemNavigationBarDividerColor: Colors.transparent,
       systemNavigationBarIconBrightness: t.isDark
           ? Brightness.light
           : Brightness.dark,
+      // Keeps Android from adding its own scrim behind 3-button navigation.
+      systemNavigationBarContrastEnforced: false,
     );

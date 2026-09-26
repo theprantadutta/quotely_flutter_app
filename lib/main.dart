@@ -41,16 +41,14 @@ void main() async {
   // Edge-to-edge: content draws under the (transparent) status and navigation
   // bars, with SafeArea on each screen handling the inset padding. The native
   // opt-in lives in MainActivity; this is the Flutter-side half, and it keeps
-  // us off SystemUiMode.manual, which routes through the deprecated
-  // setStatusBarColor path that Play Console also flags.
+  // us off SystemUiMode.manual.
+  //
+  // No bar colours anywhere (here or in quotelyOverlayStyle): any non-null
+  // statusBarColor / systemNavigationBarColor / ...DividerColor makes the
+  // engine call Window.setStatusBarColor / setNavigationBarColor, which are
+  // deprecated in Android 15 and flagged by Play Console. Edge-to-edge makes
+  // the bars transparent already; only the icon brightness is set.
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-    ),
-  );
   // Phones are portrait-only; tablets/iPads may rotate freely. No BuildContext
   // exists yet, so read the device class straight from the engine view.
   await _lockOrientationForDeviceClass(widgetsBinding);
