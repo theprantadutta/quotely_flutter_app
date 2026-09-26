@@ -195,20 +195,12 @@ class AppearanceScreen extends ConsumerWidget {
           ),
           section(
             'Background',
-            GroupedList(
-              children: [
-                GroupedRow(
-                  title: 'Background glow',
-                  description:
-                      'A soft wash of the day\u2019s colour behind every screen',
-                  onTap: () => c.setBackgroundGlow(!s.backgroundGlow),
-                  trailing: QToggle(
-                    value: s.backgroundGlow,
-                    semanticLabel: 'Background glow',
-                    onChanged: c.setBackgroundGlow,
-                  ),
-                ),
+            SegmentedPill<BackdropStyle>(
+              options: [
+                for (final b in BackdropStyle.values) ChipOption(b, b.label),
               ],
+              value: s.backdrop,
+              onChanged: c.setBackdrop,
             ),
           ),
           const SizedBox(height: 24),

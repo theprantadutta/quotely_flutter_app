@@ -64,7 +64,9 @@ const kAppearanceAccentKey = 'appearance-accent';
 const kAppearanceQuoteScaleKey = 'appearance-quote-scale';
 const kAppearanceReadingFontKey = 'appearance-reading-font';
 const kAppearanceLayoutKey = 'appearance-layout';
+/// Legacy on/off for the glow; read once to seed [kAppearanceBackdropKey].
 const kAppearanceGlowKey = 'appearance-background-glow';
+const kAppearanceBackdropKey = 'appearance-backdrop';
 const kAppearanceMigratedKey = 'appearance-migrated-v1';
 const kSpotlightFontMigratedKey = 'appearance-spotlight-font-v1';
 

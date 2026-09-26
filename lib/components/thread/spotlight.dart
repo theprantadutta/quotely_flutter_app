@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../riverpods/scene_providers.dart';
 import '../../services/activity_service.dart';
 import '../../state_providers/scene_state.dart';
 import '../../theme/app_theme.dart';
@@ -273,7 +274,6 @@ class SpotlightBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.q;
     final url = imageUrl;
     // The switcher's default Stack hands children loose constraints; the
     // layout builder makes both backdrops fill the screen.
@@ -285,37 +285,50 @@ class SpotlightBackdrop extends StatelessWidget {
           : const Duration(milliseconds: 450),
       child: url == null || url.isEmpty
           ? const SizedBox.shrink(key: ValueKey('none'))
-          : Stack(
-              key: ValueKey(url),
-              fit: StackFit.expand,
-              children: [
-                ColoredBox(color: t.bg),
-                ImageFiltered(
-                  imageFilter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-                  child: CachedNetworkImage(
-                    imageUrl: url,
-                    fit: BoxFit.cover,
-                    httpHeaders: kImageHeaders,
-                    memCacheWidth: 200,
-                    fadeInDuration: const Duration(milliseconds: 300),
-                    errorWidget: (_, _, _) => const SizedBox.shrink(),
-                  ),
-                ),
-                // Wash toward the page colour: poster colour, paper legibility.
-                ColoredBox(
-                  color: t.bg.withValues(alpha: t.isDark ? 0.72 : 0.7),
-                ),
-              ],
-            ),
+          : PosterWash(key: ValueKey(url), url: url),
     );
   }
 }
 
-/// The app's background: the page colour with the day's hue as soft glows,
-/// strongest top-right and a fainter echo bottom-left. Appearance →
-/// Background glow off leaves the plain page colour. Every screen sits on
-/// this (the tab shell, [ThreadPage] and the full-screen flows), so it is
-/// opaque and paints [child] on top.
+/// A poster blurred to pure colour and washed into the page colour, so type
+/// stays readable on top. The Scenes look; [PageBackdrop] uses it for every
+/// screen with the day's scene poster.
+class PosterWash extends StatelessWidget {
+  final String url;
+
+  const PosterWash({super.key, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ColoredBox(color: t.bg),
+        ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+          child: CachedNetworkImage(
+            imageUrl: url,
+            fit: BoxFit.cover,
+            httpHeaders: kImageHeaders,
+            memCacheWidth: 200,
+            fadeInDuration: const Duration(milliseconds: 300),
+            errorWidget: (_, _, _) => const SizedBox.shrink(),
+          ),
+        ),
+        ColoredBox(color: t.bg.withValues(alpha: t.isDark ? 0.72 : 0.7)),
+      ],
+    );
+  }
+}
+
+/// The app's background, per Appearance → Background:
+/// - Poster: the day's scene poster as a [PosterWash] (the Scenes look),
+///   falling back to Glow until the poster is known;
+/// - Glow: the page colour with soft gradients of the day's hue;
+/// - Plain: the page colour.
+/// Every screen sits on this (the tab shell, [ThreadPage] and the
+/// full-screen flows), so it is opaque and paints [child] on top.
 class PageBackdrop extends ConsumerWidget {
   final Widget? child;
 
@@ -324,7 +337,26 @@ class PageBackdrop extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.q;
-    final on = ref.watch(appearanceProvider.select((a) => a.backgroundGlow));
+    final style = ref.watch(appearanceProvider.select((a) => a.backdrop));
+    final content = child ?? const SizedBox.expand();
+    if (style == BackdropStyle.plain) {
+      return DecoratedBox(
+        decoration: BoxDecoration(color: t.bg),
+        child: content,
+      );
+    }
+    if (style == BackdropStyle.poster) {
+      final url = ref.watch(sceneOfTheDayProvider).value?.sceneQuote.posterUrl;
+      if (url != null && url.isNotEmpty) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            PosterWash(url: url),
+            content,
+          ],
+        );
+      }
+    }
     final hue = t.glowFor(DateTime.now());
     // Dark pages need less opacity for the same visible lift.
     final k = t.isDark ? 0.34 : 0.5;
@@ -339,22 +371,19 @@ class PageBackdrop extends ConsumerWidget {
           ],
           stops: const [0, 0.5, 1],
         );
-    final content = child ?? const SizedBox.expand();
     return DecoratedBox(
       decoration: BoxDecoration(color: t.bg),
-      child: !on
-          ? content
-          : DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: glow(const Alignment(1.0, -1.0), 1.6, 1.0),
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: glow(const Alignment(-1.1, 1.0), 1.4, 0.7),
-                ),
-                child: content,
-              ),
-            ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: glow(const Alignment(1.0, -1.0), 1.6, 1.0),
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: glow(const Alignment(-1.1, 1.0), 1.4, 0.7),
+          ),
+          child: content,
+        ),
+      ),
     );
   }
 }

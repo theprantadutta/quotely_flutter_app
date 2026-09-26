@@ -14,6 +14,19 @@ part '../generated/theme/appearance.g.dart';
 /// full-width card per item (the old carousel, restyled).
 enum ThreadLayout { thread, cards }
 
+/// Appearance → Background. Poster: the day's scene poster, blurred and
+/// washed into the page colour (the Scenes look, everywhere). Glow: soft
+/// gradients of the day's hue. Plain: the page colour alone.
+enum BackdropStyle { poster, glow, plain }
+
+extension BackdropStyleLabel on BackdropStyle {
+  String get label => switch (this) {
+    BackdropStyle.poster => 'Poster',
+    BackdropStyle.glow => 'Glow',
+    BackdropStyle.plain => 'Plain',
+  };
+}
+
 @immutable
 class AppearanceSettings {
   static const double minQuoteScale = 0.85;
@@ -25,8 +38,8 @@ class AppearanceSettings {
   final ReadingFont readingFont;
   final ThreadLayout layout;
 
-  /// Soft glows of the day's colour behind every screen. On by default.
-  final bool backgroundGlow;
+  /// What sits behind every screen. Poster by default.
+  final BackdropStyle backdrop;
 
   const AppearanceSettings({
     this.themeMode = ThemeMode.system,
@@ -34,7 +47,7 @@ class AppearanceSettings {
     this.quoteScale = 1.0,
     this.readingFont = ReadingFont.serif,
     this.layout = ThreadLayout.thread,
-    this.backgroundGlow = true,
+    this.backdrop = BackdropStyle.poster,
   });
 
   AppearanceSettings copyWith({
@@ -43,14 +56,14 @@ class AppearanceSettings {
     double? quoteScale,
     ReadingFont? readingFont,
     ThreadLayout? layout,
-    bool? backgroundGlow,
+    BackdropStyle? backdrop,
   }) => AppearanceSettings(
     themeMode: themeMode ?? this.themeMode,
     accent: accent ?? this.accent,
     quoteScale: quoteScale ?? this.quoteScale,
     readingFont: readingFont ?? this.readingFont,
     layout: layout ?? this.layout,
-    backgroundGlow: backgroundGlow ?? this.backgroundGlow,
+    backdrop: backdrop ?? this.backdrop,
   );
 
   /// Reads the saved settings. Runs the legacy-pref migration first so an
@@ -80,7 +93,14 @@ class AppearanceSettings {
         kAppearanceLayoutKey,
         ThreadLayout.thread,
       ),
-      backgroundGlow: prefs.getBool(kAppearanceGlowKey) ?? true,
+      // Someone who switched the old glow off keeps a plain background.
+      backdrop: pick(
+        BackdropStyle.values,
+        kAppearanceBackdropKey,
+        prefs.getBool(kAppearanceGlowKey) == false
+            ? BackdropStyle.plain
+            : BackdropStyle.poster,
+      ),
     );
   }
 
@@ -223,10 +243,10 @@ class Appearance extends _$Appearance {
     _log('view_mode_toggled', {'layout': layout.name});
   }
 
-  Future<void> setBackgroundGlow(bool on) async {
-    state = state.copyWith(backgroundGlow: on);
-    await (await _prefs).setBool(kAppearanceGlowKey, on);
-    _log('background_glow_toggled', {'on': on.toString()});
+  Future<void> setBackdrop(BackdropStyle style) async {
+    state = state.copyWith(backdrop: style);
+    await (await _prefs).setString(kAppearanceBackdropKey, style.name);
+    _log('backdrop_changed', {'style': style.name});
   }
 
   Future<void> reset() async {
@@ -239,6 +259,7 @@ class Appearance extends _$Appearance {
       kAppearanceReadingFontKey,
       kAppearanceLayoutKey,
       kAppearanceGlowKey,
+      kAppearanceBackdropKey,
     ]) {
       await prefs.remove(key);
     }
