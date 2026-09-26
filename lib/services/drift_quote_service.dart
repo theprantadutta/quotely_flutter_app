@@ -4,6 +4,7 @@ import 'package:quotely_flutter_app/dtos/quote_dto.dart';
 import 'package:quotely_flutter_app/service_locator/init_service_locators.dart';
 
 import '../database/database.dart';
+import '../database/seeded_order.dart';
 
 class DriftQuoteService {
   DriftQuoteService._();
@@ -120,13 +121,49 @@ class DriftQuoteService {
           dateModified: dto.dateModified,
         );
 
+        // New quotes are inserted; existing rows pick up edits (text,
+        // author, tags) and keep their saved flag.
         batch.insert(
           db.quotes,
           quote.toCompanion(true),
-          mode: InsertMode.insertOrIgnore,
+          onConflict: DoUpdate(
+            (_) => QuotesCompanion(
+              content: Value(dto.content),
+              author: Value(dto.author),
+              tags: Value(dto.tags.join(',')),
+              authorSlug: Value(dto.authorSlug),
+              length: Value(dto.length),
+              dateModified: Value(dto.dateModified),
+            ),
+          ),
         );
       }
     });
+  }
+
+  /// After a full download: drops local quotes the backend no longer has
+  /// (removed as duplicates or for content), except saved ones.
+  static Future<int> pruneMissing(Set<String> keepIds) async {
+    final db = getIt.get<AppDatabase>();
+    return (db.delete(db.quotes)..where(
+          (q) => q.isFavorite.equals(false) & q.id.isNotIn(keepIds.toList()),
+        ))
+        .go();
+  }
+
+  /// Quotes by one author from the local database.
+  static Future<List<Quote>> getLocalQuotesByAuthor({
+    required String authorSlug,
+    required int pageNumber,
+    required int pageSize,
+    int? seed,
+  }) async {
+    final db = getIt.get<AppDatabase>();
+    final query = db.select(db.quotes)
+      ..where((q) => q.authorSlug.equals(authorSlug))
+      ..limit(pageSize, offset: (pageNumber - 1) * pageSize);
+    if (seed != null) query.orderBy([(_) => seededOrder(seed)]);
+    return query.get();
   }
 
   // Helper function to get paginated quotes from local database
@@ -134,11 +171,15 @@ class DriftQuoteService {
     required int pageNumber,
     required int pageSize,
     required List<String> tags,
+    int? seed,
   }) async {
     final db = getIt.get<AppDatabase>();
     final offset = (pageNumber - 1) * pageSize;
 
     var query = db.select(db.quotes)..limit(pageSize, offset: offset);
+    // A per-session shuffle, like the API's: pages stay stable within a
+    // session and the feed opens differently next time.
+    if (seed != null) query.orderBy([(_) => seededOrder(seed)]);
 
     if (tags.isNotEmpty) {
       query.where((tbl) {

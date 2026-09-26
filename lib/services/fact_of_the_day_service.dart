@@ -3,14 +3,14 @@ import 'dart:convert';
 import '../constants/urls.dart';
 import '../dtos/fact_of_the_day_dto.dart';
 import '../dtos/fact_of_the_day_response_dto.dart';
-import 'http_service.dart';
+import 'local_first.dart';
 
 class FactOfTheDayService {
   Future<FactOfTheDayResponseDto> getAllFactOfTheDayFromDatabase({
     required int pageNumber,
     required int pageSize,
   }) async {
-    final response = await HttpService.get(
+    final response = await LocalFirst.get(
       '$kApiUrl/$kGetAllFactOfTheDay?pageNumber=$pageNumber&pageSize=$pageSize',
     );
     if (response.statusCode == 200) {
@@ -20,7 +20,10 @@ class FactOfTheDayService {
   }
 
   Future<FactOfTheDayDto> getTodayFactOfTheDayFromDatabase() async {
-    final response = await HttpService.get('$kApiUrl/$kGetTodayFactOfTheDay');
+    final response = await LocalFirst.get(
+      '$kApiUrl/$kGetTodayFactOfTheDay',
+      todayOnly: true,
+    );
     if (response.statusCode == 200) {
       return FactOfTheDayDto.fromJson(json.decode(response.data));
     }

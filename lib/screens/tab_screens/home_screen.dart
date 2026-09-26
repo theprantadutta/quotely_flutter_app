@@ -28,6 +28,7 @@ import '../../riverpods/weird_fact_wednesday_provider.dart';
 import '../../service_locator/init_service_locators.dart';
 import '../../services/activity_service.dart';
 import '../../services/composer_search_service.dart';
+import '../../services/library_sync.dart';
 import '../../services/drift_fact_service.dart';
 import '../../services/drift_quote_service.dart';
 import '../../services/drift_scene_service.dart';
@@ -100,6 +101,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await showLegalConsentIfNeeded(context);
       await PushNotifications.asyncQueue.start();
+      // Local first: screens read the local database; this keeps it full.
+      // At most once a day, respecting Offline library's Wi-Fi only switch.
+      await Future<void>.delayed(const Duration(seconds: 4));
+      unawaited(LibrarySync.maybeRunDaily());
     });
   }
 

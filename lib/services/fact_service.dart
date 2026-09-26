@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:quotely_flutter_app/dtos/pagination_dto.dart';
 import 'package:quotely_flutter_app/util/pagination_seed.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +9,9 @@ import '../dtos/ai_fact_dto.dart';
 import '../dtos/ai_fact_response_dto.dart';
 import 'drift_fact_service.dart';
 import 'http_service.dart';
+import 'local_first.dart';
 
+/// Facts, local first (see [LocalFirst]).
 class FactService {
   FactService._();
 
@@ -23,144 +24,100 @@ class FactService {
 
     /// Only facts with a false twin, for "True or false?".
     bool playable = false,
-  }) async {
-    try {
-      // Use provided seed or get the current session seed
-      final effectiveSeed = seed ?? PaginationSeed.current;
-
-      // Try to get from the API first
-      final queryParameters = {
-        'pageNumber': pageNumber.toString(),
-        'pageSize': pageSize.toString(),
-        'seed': effectiveSeed.toString(),
-        if (factCategories.isNotEmpty)
-          'factCategories': factCategories.join(','),
-        if (aiProviders.isNotEmpty) 'aiProviders': aiProviders.join(','),
-        if (playable) 'playable': 'true',
-      };
-
-      final uri = Uri.parse(
-        '$kApiUrl/$kGetAllAiFacts',
-      ).replace(queryParameters: queryParameters);
-
-      final response = await HttpService.get(uri.toString());
-
-      if (response.statusCode == 200) {
-        final aiFactResponseDto = AiFactResponseDto.fromJson(
-          json.decode(response.data),
+  }) {
+    final effectiveSeed = seed ?? PaginationSeed.current;
+    return LocalFirst.load<AiFactResponseDto>(
+      key:
+          'facts:${factCategories.join(',')}:${aiProviders.join(',')}:'
+          '$playable:$pageNumber:$pageSize',
+      local: () async {
+        // Providers aren't stored locally; a provider-filtered page is
+        // backend only.
+        if (aiProviders.isNotEmpty) return _empty();
+        final rows = await DriftFactService.getLocalFactsWithPagination(
+          pageNumber: pageNumber,
+          pageSize: pageSize,
+          categories: factCategories,
+          seed: effectiveSeed,
+          playable: playable,
         );
-
-        // Save new facts to the local database before returning
-        if (aiFactResponseDto.aiFacts.isNotEmpty) {
-          await DriftFactService.saveNewFactsToDatabase(
-            aiFactResponseDto.aiFacts,
-          );
+        final favorites = await DriftFactService.getAllFavoriteFactIds();
+        return AiFactResponseDto(
+          aiFacts: [
+            for (final row in rows)
+              AiFactDto.fromDrift(row)..isFavorite = favorites.contains(row.id),
+          ],
+          pagination: PaginationDto(
+            pageNumber: 0,
+            pageSize: 0,
+            totalItemCount: 0,
+          ),
+        );
+      },
+      remote: () async {
+        final uri = Uri.parse('$kApiUrl/$kGetAllAiFacts').replace(
+          queryParameters: {
+            'pageNumber': pageNumber.toString(),
+            'pageSize': pageSize.toString(),
+            'seed': effectiveSeed.toString(),
+            if (factCategories.isNotEmpty)
+              'factCategories': factCategories.join(','),
+            if (aiProviders.isNotEmpty) 'aiProviders': aiProviders.join(','),
+            if (playable) 'playable': 'true',
+          },
+        );
+        final response = await HttpService.get(uri.toString());
+        if (response.statusCode != 200) {
+          throw Exception('Facts request failed: ${response.statusCode}');
         }
-
-        // --- EFFICIENT FAVORITE CHECK (for Online Data) ---
-        // Get all favorite IDs in one go for efficiency.
-        final favoriteIds = await DriftFactService.getAllFavoriteFactIds();
-        // Set the favorite status for each fact from the API response in memory.
-        for (final fact in aiFactResponseDto.aiFacts) {
-          fact.isFavorite = favoriteIds.contains(fact.id);
+        final dto = AiFactResponseDto.fromJson(json.decode(response.data));
+        if (dto.aiFacts.isNotEmpty) {
+          await DriftFactService.saveNewFactsToDatabase(dto.aiFacts);
         }
-
-        return aiFactResponseDto;
-      }
-      throw Exception(
-        'API request failed with status code: ${response.statusCode}',
-      );
-    } catch (e) {
-      // Fallback to local database if the API call fails
-      final localFacts = await DriftFactService.getLocalFactsWithPagination(
-        pageNumber: pageNumber,
-        pageSize: pageSize,
-        // Pass the categories to the local query
-        categories: factCategories,
-      );
-
-      // --- EFFICIENT FAVORITE CHECK (for Offline Data) ---
-      final favoriteIds = await DriftFactService.getAllFavoriteFactIds();
-
-      // --- Convert Drift entities to DTOs and set favorite status ---
-      final factDtos = localFacts.map((fact) {
-        final isFavorite = favoriteIds.contains(fact.id);
-        // Create DTO from Drift model
-        final dto = AiFactDto.fromDrift(fact);
-        // Update its favorite status
-        dto.isFavorite = isFavorite;
+        final favorites = await DriftFactService.getAllFavoriteFactIds();
+        for (final fact in dto.aiFacts) {
+          fact.isFavorite = favorites.contains(fact.id);
+        }
         return dto;
-      }).toList();
-
-      // Return the locally fetched data wrapped in the response DTO
-      return AiFactResponseDto(
-        aiFacts: factDtos,
-        pagination: PaginationDto(
-          pageNumber: 0,
-          pageSize: 0,
-          totalItemCount: 0,
-        ),
-      );
-    }
+      },
+      isEmpty: (r) => r.aiFacts.isEmpty,
+    );
   }
 
-  // Renamed for clarity, as it no longer exclusively uses the database
-  static Future<List<String>> getAllFactsCategories() async {
-    // Define a key for storing the categories in SharedPreferences
-    const String kCategoriesCacheKey = 'fact_categories_cache';
+  static const _kCategoriesCacheKey = 'fact_categories_cache';
 
-    try {
-      // --- ONLINE PATH: Try to get fresh data from the API first ---
-
-      // We fetch all categories at once, so pagination is removed.
-      final url = '$kApiUrl/$kGetAllAiFactCategories';
-      final response = await HttpService.get(url);
-
-      if (response.statusCode == 200) {
-        final dynamic data = response.data is String
+  /// Fact categories, most used first. Local first from the saved list.
+  static Future<List<String>> getAllFactsCategories() {
+    return LocalFirst.load<List<String>>(
+      key: 'fact-categories',
+      local: () async {
+        final prefs = await SharedPreferences.getInstance();
+        return prefs.getStringList(_kCategoriesCacheKey) ?? const [];
+      },
+      remote: () async {
+        final response = await HttpService.get(
+          '$kApiUrl/$kGetAllAiFactCategories',
+        );
+        if (response.statusCode != 200) {
+          throw Exception('Categories request failed: ${response.statusCode}');
+        }
+        final data = response.data is String
             ? jsonDecode(response.data)
             : response.data;
-
-        if (data is List) {
-          final categories = data.map((item) => item.toString()).toList();
-
-          // --- CACHING: Save the fresh list to SharedPreferences ---
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setStringList(kCategoriesCacheKey, categories);
-
-          debugPrint(
-            "Successfully fetched and cached ${categories.length} fact categories.",
-          );
-          return categories;
+        if (data is! List) {
+          throw const FormatException('Categories response was not a list.');
         }
-        // If the data is not a list, it's an unexpected format.
-        throw const FormatException(
-          'API response for categories was not a list.',
-        );
-      }
-      // If the status code is not 200, throw to trigger the catch block.
-      throw Exception('API request failed with status ${response.statusCode}');
-    } catch (e) {
-      if (kDebugMode) {
-        print(
-          'API call for categories failed, falling back to SharedPreferences. Error: $e',
-        );
-      }
-
-      // --- OFFLINE FALLBACK ---
-
-      // --- RETRIEVAL: Load the cached list from SharedPreferences ---
-      final prefs = await SharedPreferences.getInstance();
-      final cachedCategories = prefs.getStringList(kCategoriesCacheKey);
-
-      if (cachedCategories != null) {
-        debugPrint("Loaded ${cachedCategories.length} categories from cache.");
-        return cachedCategories;
-      } else {
-        // If there's no cache and the API failed, return an empty list.
-        debugPrint("No categories in cache, returning empty list.");
-        return [];
-      }
-    }
+        final categories = [for (final item in data) item.toString()];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setStringList(_kCategoriesCacheKey, categories);
+        return categories;
+      },
+      isEmpty: (c) => c.isEmpty,
+    );
   }
+
+  static AiFactResponseDto _empty() => AiFactResponseDto(
+    aiFacts: const [],
+    pagination: PaginationDto(pageNumber: 0, pageSize: 0, totalItemCount: 0),
+  );
 }

@@ -7,6 +7,7 @@ import '../dtos/scene_quote_dto.dart';
 import '../util/pagination_seed.dart';
 import '../util/profanity.dart';
 import 'drift_scene_service.dart';
+import 'local_first.dart';
 import 'scene_service.dart';
 
 /// Flip to false to run Scenes entirely from the bundled seed + local cache
@@ -14,7 +15,8 @@ import 'scene_service.dart';
 const bool kScenesApiEnabled = true;
 
 /// Everything the app needs from Scenes. Two implementations: the API one
-/// (network first, cached to Drift, local fallback) and a local-only one.
+/// (local first, refreshed from the backend, see [LocalFirst]) and a
+/// local-only one.
 abstract class SceneRepository {
   static final SceneRepository instance = kScenesApiEnabled
       ? ApiSceneRepository()
@@ -159,8 +161,10 @@ class LocalSceneRepository implements SceneRepository {
   Future<int> downloadAll() => DriftSceneService.countSceneQuotes();
 }
 
-/// Network first; every response is cached to Drift so the same screens work
-/// offline. Any failure falls through to [LocalSceneRepository].
+/// Local first: lists come from Drift (which always holds the bundled seed)
+/// and the backend refreshes them in the background. The daily picks and
+/// archives have no table; [SceneService] serves their saved responses.
+/// Any backend failure falls through to [LocalSceneRepository].
 class ApiSceneRepository implements SceneRepository {
   final LocalSceneRepository _local = LocalSceneRepository();
 
@@ -188,8 +192,22 @@ class ApiSceneRepository implements SceneRepository {
     String? titleId,
     String? characterId,
     SceneSort sort = SceneSort.random,
-  }) => _try(
-    () async {
+  }) => LocalFirst.load(
+    key:
+        'scenes:${types.map((t) => t.name).join(',')}:$titleId:$characterId:'
+        '${sort.name}:$pageNumber:$pageSize',
+    local: () async => [
+      for (final q in await _local.sceneQuotes(
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+        types: types,
+        titleId: titleId,
+        characterId: characterId,
+        sort: sort,
+      ))
+        if (isClean(q.content)) q,
+    ],
+    remote: () async {
       final res = await SceneService.getSceneQuotes(
         pageNumber: pageNumber,
         pageSize: pageSize,
@@ -205,15 +223,7 @@ class ApiSceneRepository implements SceneRepository {
           if (isClean(q.content)) q,
       ];
     },
-    () => _local.sceneQuotes(
-      pageNumber: pageNumber,
-      pageSize: pageSize,
-      types: types,
-      titleId: titleId,
-      characterId: characterId,
-      sort: sort,
-    ),
-    isEmpty: (v) => v.isEmpty && pageNumber == 1,
+    isEmpty: (v) => v.isEmpty,
   );
 
   @override
@@ -221,12 +231,17 @@ class ApiSceneRepository implements SceneRepository {
     List<MediaType> types = const [],
     int pageNumber = 1,
     int pageSize = 12,
-  }) => _try(
-    () async {
-      // The network refreshes the cache and the list is read from it, so
-      // API titles and the bundled seed show together while the API
-      // catalogue is still small (seed rows for the same slug are dropped
-      // on save).
+  }) => LocalFirst.load(
+    key: 'titles:${types.map((t) => t.name).join(',')}:$pageNumber:$pageSize',
+    local: () => _local.trendingTitles(
+      types: types,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+    ),
+    remote: () async {
+      // The backend refreshes the cache and the list is read from it, so
+      // API titles and the bundled seed show together (seed rows for the
+      // same slug are dropped on save).
       final res = await SceneService.getTitles(
         pageNumber: pageNumber,
         pageSize: pageSize,
@@ -240,42 +255,53 @@ class ApiSceneRepository implements SceneRepository {
         pageSize: pageSize,
       );
     },
-    () => _local.trendingTitles(
-      types: types,
-      pageNumber: pageNumber,
-      pageSize: pageSize,
-    ),
-    isEmpty: (v) => v.isEmpty && pageNumber == 1,
+    isEmpty: (v) => v.isEmpty,
   );
 
   @override
-  Future<List<MediaTitleDto>> searchTitles(String search) => _try(() async {
-    final res = await SceneService.getTitles(
-      pageNumber: 1,
-      pageSize: 20,
-      search: search,
-    );
-    await DriftSceneService.saveTitles(res.titles);
-    // Read back from the cache so seed titles match too.
-    return _local.searchTitles(search);
-  }, () => _local.searchTitles(search));
+  Future<List<MediaTitleDto>> searchTitles(String search) => LocalFirst.load(
+    key: 'title-search:${search.toLowerCase()}',
+    local: () => _local.searchTitles(search),
+    remote: () async {
+      final res = await SceneService.getTitles(
+        pageNumber: 1,
+        pageSize: 20,
+        search: search,
+      );
+      await DriftSceneService.saveTitles(res.titles);
+      // Read back from the cache so seed titles match too.
+      return _local.searchTitles(search);
+    },
+    isEmpty: (v) => v.isEmpty,
+  );
 
   @override
-  Future<TitleDetailDto?> titleDetail(String idOrSlug) => _try(() async {
-    final detail = await SceneService.getTitleDetail(idOrSlug);
-    if (detail == null) return _local.titleDetail(idOrSlug);
-    await DriftSceneService.saveTitles([detail.title]);
-    await DriftSceneService.saveCharacters(detail.characters);
-    return detail;
-  }, () => _local.titleDetail(idOrSlug));
+  Future<TitleDetailDto?> titleDetail(String idOrSlug) => LocalFirst.load(
+    key: 'title:$idOrSlug',
+    local: () => _local.titleDetail(idOrSlug),
+    remote: () async {
+      final detail = await SceneService.getTitleDetail(idOrSlug);
+      if (detail == null) return _local.titleDetail(idOrSlug);
+      await DriftSceneService.saveTitles([detail.title]);
+      await DriftSceneService.saveCharacters(detail.characters);
+      return detail;
+    },
+    isEmpty: (v) => v == null,
+  );
 
   @override
   Future<List<CharacterDto>> characters({
     String? search,
     int pageNumber = 1,
     int pageSize = 20,
-  }) => _try(
-    () async {
+  }) => LocalFirst.load(
+    key: 'characters:${search ?? ''}:$pageNumber:$pageSize',
+    local: () => _local.characters(
+      search: search,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+    ),
+    remote: () async {
       final res = await SceneService.getCharacters(
         pageNumber: pageNumber,
         pageSize: pageSize,
@@ -289,11 +315,7 @@ class ApiSceneRepository implements SceneRepository {
         pageSize: pageSize,
       );
     },
-    () => _local.characters(
-      search: search,
-      pageNumber: pageNumber,
-      pageSize: pageSize,
-    ),
+    isEmpty: (v) => v.isEmpty,
   );
 
   @override

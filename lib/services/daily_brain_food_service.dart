@@ -3,14 +3,14 @@ import 'dart:convert';
 import '../constants/urls.dart';
 import '../dtos/daily_brain_food_dto.dart';
 import '../dtos/daily_brain_food_response_dto.dart';
-import 'http_service.dart';
+import 'local_first.dart';
 
 class DailyBrainFoodService {
   Future<DailyBrainFoodResponseDto> getAllDailyBrainFoodFromDatabase({
     required int pageNumber,
     required int pageSize,
   }) async {
-    final response = await HttpService.get(
+    final response = await LocalFirst.get(
       '$kApiUrl/$kGetAllDailyBrainFood?pageNumber=$pageNumber&pageSize=$pageSize',
     );
     if (response.statusCode == 200) {
@@ -20,7 +20,10 @@ class DailyBrainFoodService {
   }
 
   Future<DailyBrainFoodDto> getTodayDailyBrainFoodFromDatabase() async {
-    final response = await HttpService.get('$kApiUrl/$kGetTodayDailyBrainFood');
+    final response = await LocalFirst.get(
+      '$kApiUrl/$kGetTodayDailyBrainFood',
+      todayOnly: true,
+    );
     if (response.statusCode == 200) {
       return DailyBrainFoodDto.fromJson(json.decode(response.data));
     }

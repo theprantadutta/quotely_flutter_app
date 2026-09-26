@@ -191,6 +191,7 @@ import 'package:quotely_flutter_app/dtos/ai_fact_dto.dart'; // Your DTO for fact
 import 'package:quotely_flutter_app/service_locator/init_service_locators.dart';
 
 import '../database/database.dart';
+import '../database/seeded_order.dart';
 
 class DriftFactService {
   DriftFactService._(); // Private constructor
@@ -329,16 +330,33 @@ class DriftFactService {
     required int pageNumber,
     required int pageSize,
     required List<String> categories,
+    int? seed,
+    bool playable = false,
   }) async {
     final db = getIt.get<AppDatabase>();
     final offset = (pageNumber - 1) * pageSize;
 
     var query = db.select(db.facts)..limit(pageSize, offset: offset);
+    if (seed != null) query.orderBy([(_) => seededOrder(seed)]);
 
     if (categories.isNotEmpty) {
       query.where((tbl) => tbl.aiFactCategory.isIn(categories));
     }
+    // "True or false?" only deals facts that have a false twin.
+    if (playable) {
+      query.where((tbl) => tbl.falseVariant.isNotNull());
+    }
 
     return await query.get();
+  }
+
+  /// After a full download: drops local facts the backend no longer has,
+  /// except saved ones.
+  static Future<int> pruneMissing(Set<int> keepIds) async {
+    final db = getIt.get<AppDatabase>();
+    return (db.delete(db.facts)..where(
+          (f) => f.isFavorite.equals(false) & f.id.isNotIn(keepIds.toList()),
+        ))
+        .go();
   }
 }
