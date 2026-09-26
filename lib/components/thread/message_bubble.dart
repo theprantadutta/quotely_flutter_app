@@ -89,49 +89,34 @@ class MessageBubble extends ConsumerWidget {
       BubbleVariant.regular => qt.quoteBody,
       BubbleVariant.compact => qt.quoteCompact,
     };
-    final radius = variant == BubbleVariant.compact ? 20.0 : 22.0;
-    final padding = switch (variant) {
-      BubbleVariant.hero => const EdgeInsets.fromLTRB(17, 16, 17, 16),
-      BubbleVariant.regular => const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      BubbleVariant.compact => const EdgeInsets.fromLTRB(15, 13, 15, 13),
-    };
-
     final scene = m.scene;
     final spoilerHidden = scene != null && isSpoilerHidden(ref, scene);
 
-    Widget bubbleBody = Column(
+    // Editorial entry: the line itself on the page, no bubble. Hierarchy
+    // comes from the serif and the space around it.
+    Widget entry = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           m.text,
           style: style,
-          textWidthBasis: TextWidthBasis.longestLine,
           textScaler: MediaQuery.textScalerOf(context),
         ),
         if (scene != null && showTitleChip) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           TitleChip(scene: scene),
         ],
       ],
     );
 
-    Widget bubble = Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: t.surf,
-        borderRadius: bubbleRadius(radius),
-      ),
-      child: bubbleBody,
-    );
-
     if (scene != null && scene.isSpoiler) {
-      bubble = SpoilerBubble(
+      entry = SpoilerBubble(
         hidden: spoilerHidden,
         onReveal: () =>
             ref.read(revealedSpoilersProvider.notifier).reveal(scene.id),
-        radius: bubbleRadius(radius),
-        child: bubble,
+        radius: BorderRadius.circular(12),
+        child: entry,
       );
     }
 
@@ -139,59 +124,69 @@ class MessageBubble extends ConsumerWidget {
         ? 'Spoiler hidden, double-tap to reveal'
         : '${m.sender}: ${m.text}';
 
-    final column = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
+    final avatar = m.kind == MessageKind.fact
+        ? BrandAvatar(size: avatarSize.clamp(18, 26))
+        : QAvatar(
+            name: m.sender,
+            imageUrl: watchSenderImage(ref, m),
+            size: avatarSize.clamp(18, 26),
+          );
+
+    final attribution = Row(
       children: [
-        if (showSender)
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
+        if (showAvatar) ...[
+          GestureDetector(
+            onTap: m.kind == MessageKind.fact
+                ? null
+                : () => openSender(context, m),
+            child: avatar,
+          ),
+          const SizedBox(width: 9),
+        ],
+        Flexible(
+          child: GestureDetector(
+            onTap: m.kind == MessageKind.fact
+                ? null
+                : () => openSender(context, m),
             child: Text(
               senderLabel ?? m.sender,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: qt.label,
+              style: qt.label.copyWith(color: t.ink),
             ),
-          ),
-        Semantics(
-          label: semanticsLabel,
-          excludeSemantics: true,
-          onLongPressHint: 'More actions',
-          child: Pressable(
-            pressedScale: 0.985,
-            onLongPress: () => showMessageActions(context, ref, m),
-            child: bubble,
           ),
         ),
         if (showReactions) ...[
-          const SizedBox(height: 6),
+          const SizedBox(width: 8),
           ReactionRow(message: m),
         ],
       ],
     );
 
-    // Short lines make short bubbles (longestLine + min main axis); long
-    // ones take the width left beside the avatar column.
-    if (!showAvatar) {
-      return Align(alignment: Alignment.centerLeft, child: column);
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTap: m.kind == MessageKind.fact
-              ? null
-              : () => openSender(context, m),
-          child: m.kind == MessageKind.fact
-              ? BrandAvatar(size: avatarSize)
-              : QAvatar(
-                  name: m.sender,
-                  imageUrl: watchSenderImage(ref, m),
-                  size: avatarSize,
-                ),
+        Semantics(
+          label: semanticsLabel,
+          excludeSemantics: true,
+          onLongPressHint: 'More actions',
+          child: Pressable(
+            pressedScale: 0.99,
+            onLongPress: () => showMessageActions(context, ref, m),
+            child: SizedBox(width: double.infinity, child: entry),
+          ),
         ),
-        const SizedBox(width: 10),
-        Flexible(child: column),
+        if (showSender || showReactions) ...[
+          SizedBox(height: variant == BubbleVariant.compact ? 10 : 14),
+          if (showSender)
+            attribution
+          else
+            Align(
+              alignment: Alignment.centerRight,
+              child: ReactionRow(message: m),
+            ),
+        ],
       ],
     );
   }
@@ -219,9 +214,8 @@ class ReactionRow extends ConsumerWidget {
     final saved = watchIsSaved(ref, message);
     final base = message.scene?.likes ?? 0;
     final count = base + (saved ? 1 : 0);
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         ReactionPill.like(
           liked: saved,
@@ -243,7 +237,7 @@ class ReactionRow extends ConsumerWidget {
   }
 }
 
-/// 12/700 pill. Liked = `accSoft`/`accInk` with a filled heart that pops.
+/// Bare icon (+ count) action. Liked = `accInk` with a filled heart that pops.
 class ReactionPill extends StatefulWidget {
   final IconData? icon;
   final String? label;
@@ -309,23 +303,19 @@ class _ReactionPillState extends State<ReactionPill>
   @override
   Widget build(BuildContext context) {
     final t = context.q;
-    final fg = widget.active ? t.accInk : t.ink;
+    final fg = widget.active ? t.accInk : t.mute;
     return HitTarget(
       onTap: widget.onTap,
       semanticLabel: widget.semanticLabel ?? widget.label,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: widget.active ? t.accSoft : t.surf,
-          borderRadius: BorderRadius.circular(999),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (widget.icon != null)
               ScaleTransition(
                 scale: _scale,
-                child: Icon(widget.icon, size: 16, color: fg),
+                child: Icon(widget.icon, size: 19, color: fg),
               ),
             if (widget.icon != null && widget.label != null)
               const SizedBox(width: 5),
@@ -338,8 +328,8 @@ class _ReactionPillState extends State<ReactionPill>
   }
 }
 
-/// Poster + title + "Movie · 1994" attached inside a scene bubble. Taps
-/// through to the title page.
+/// Small poster + title + "Movie · 1994" under a scene line. Taps through
+/// to the title page.
 class TitleChip extends StatelessWidget {
   final SceneQuoteDto scene;
 
@@ -354,16 +344,12 @@ class TitleChip extends StatelessWidget {
       excludeSemantics: true,
       child: Pressable(
         onTap: () => openSender(context, ThreadMessage.fromScene(scene)),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(7, 7, 12, 7),
-          decoration: BoxDecoration(
-            color: t.bg,
-            borderRadius: BorderRadius.circular(14),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              QPoster(url: scene.posterUrl, width: 26, height: 38, radius: 5),
+              QPoster(url: scene.posterUrl, width: 24, height: 35, radius: 3),
               const SizedBox(width: 10),
               Flexible(
                 child: Column(
@@ -375,16 +361,19 @@ class TitleChip extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: context.qt.chip.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 1),
-                    Text(scene.chipMeta, style: context.qt.caption),
+                    Text(
+                      scene.chipMeta.toUpperCase(),
+                      style: context.qt.overline.copyWith(fontSize: 9.5),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded, size: 18, color: t.mute),
+              Icon(Icons.arrow_forward_rounded, size: 15, color: t.mute),
             ],
           ),
         ),
@@ -463,7 +452,7 @@ class SpoilerBubble extends StatelessWidget {
                         softWrap: false,
                         style: context.qt.label.copyWith(
                           color: t.bg,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -506,14 +495,8 @@ class _TypingIndicatorState extends State<TypingIndicator>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          const BrandAvatar(),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              color: t.surf,
-              borderRadius: bubbleRadius(20),
-            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: AnimatedBuilder(
               animation: _c,
               builder: (context, _) => Row(

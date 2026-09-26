@@ -305,7 +305,7 @@ class _TitleDetailScreenState extends ConsumerState<TitleDetailScreen> {
                               shield ? 'Shield on' : 'Shield off',
                               style: context.qt.caption.copyWith(
                                 color: shield ? t.accInk : t.mute,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -413,7 +413,7 @@ class _Hero extends ConsumerWidget {
                     Text(
                       meta,
                       style: context.qt.label.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -446,7 +446,7 @@ class _Hero extends ConsumerWidget {
                               child: Text(
                                 following ? '✓ Following' : 'Follow',
                                 style: context.qt.chip.copyWith(
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   color: following ? t.accInk : t.onAcc,
                                 ),
                               ),
@@ -465,7 +465,7 @@ class _Hero extends ConsumerWidget {
                           child: Text(
                             '${title.quoteCount} quotes',
                             style: context.qt.chip.copyWith(
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -544,7 +544,7 @@ class _Characters extends StatelessWidget {
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       style: context.qt.caption.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: isSelected ? t.accInk : t.ink,
                       ),
                     ),

@@ -83,8 +83,8 @@ class _ComposerState extends State<Composer> {
           child: Container(
             padding: const EdgeInsets.fromLTRB(18, 6, 6, 6),
             decoration: BoxDecoration(
-              color: t.surf,
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: t.line),
             ),
             child: Row(
               children: [
@@ -124,7 +124,7 @@ class _ComposerState extends State<Composer> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: t.acc,
+                          color: t.ink,
                           shape: BoxShape.circle,
                         ),
                         child: widget.busy
@@ -132,13 +132,13 @@ class _ComposerState extends State<Composer> {
                                 padding: const EdgeInsets.all(11),
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.2,
-                                  color: t.onAcc,
+                                  color: t.bg,
                                 ),
                               )
                             : Icon(
                                 Icons.arrow_upward_rounded,
                                 size: 20,
-                                color: t.onAcc,
+                                color: t.bg,
                               ),
                       ),
                     ),

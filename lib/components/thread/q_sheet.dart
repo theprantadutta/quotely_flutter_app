@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
 
-/// Opens a Thread bottom sheet: `surf`, 30 top radius, drag handle, `scrim`
+/// Opens a bottom sheet: paper `bg`, 24 top radius, drag handle, `scrim`
 /// barrier. Keyboard-aware and capped at 90% of the screen.
 Future<T?> showQSheet<T>(
   BuildContext context, {
@@ -14,11 +14,11 @@ Future<T?> showQSheet<T>(
     context: context,
     useRootNavigator: useRootNavigator,
     isScrollControlled: true,
-    backgroundColor: t.surf,
+    backgroundColor: t.bg,
     barrierColor: t.scrim,
     constraints: const BoxConstraints(maxWidth: 560),
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (context) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -73,8 +73,8 @@ class QSheetFrame extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 5,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
                 color: t.line,
                 borderRadius: BorderRadius.circular(3),
@@ -121,14 +121,15 @@ class SheetAction extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           child: Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(color: t.bg, shape: BoxShape.circle),
-                child: Icon(icon, size: 18, color: color),
+              Icon(icon, size: 20, color: destructive ? color : t.mute),
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: context.qt.rowTitle.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(width: 14),
-              Text(label, style: context.qt.rowTitle.copyWith(color: color)),
             ],
           ),
         ),

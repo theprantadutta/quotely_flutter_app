@@ -92,7 +92,8 @@ class _PressableState extends State<Pressable> {
   }
 }
 
-/// 42px circle on `surf` with an 18px icon (search, back, more, share).
+/// Bare 20px icon in a 42px hit area (search, back, more, share). Pass
+/// [background] for the rare filled circle, e.g. over an image.
 class CircleIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
@@ -124,17 +125,21 @@ class CircleIconButton extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: background ?? t.surf,
+            color: background ?? Colors.transparent,
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 18, color: foreground ?? t.ink),
+          child: Icon(
+            icon,
+            size: background == null ? 21 : 18,
+            color: foreground ?? t.ink,
+          ),
         ),
       ),
     );
   }
 }
 
-/// Filled pill, 56 tall, `acc` / `onAcc`. [expand] makes it full width.
+/// Filled ink pill, 52 tall, paper text. [expand] makes it full width.
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -150,32 +155,33 @@ class PrimaryButton extends StatelessWidget {
     this.loading = false,
     this.expand = true,
     this.icon,
-    this.height = 56,
+    this.height = 52,
   });
 
   @override
   Widget build(BuildContext context) {
     final t = context.q;
     final enabled = onPressed != null && !loading;
+    final label = context.qt.button.copyWith(color: t.bg);
     final content = loading
         ? SizedBox(
             width: 20,
             height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2.4, color: t.onAcc),
+            child: CircularProgressIndicator(strokeWidth: 2.2, color: t.bg),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 18, color: t.onAcc),
+                Icon(icon, size: 18, color: t.bg),
                 const SizedBox(width: 8),
               ],
               Flexible(
                 child: Text(
-                  label,
+                  this.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.qt.button,
+                  style: label,
                 ),
               ),
             ],
@@ -183,7 +189,7 @@ class PrimaryButton extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: enabled,
-      label: label,
+      label: this.label,
       excludeSemantics: true,
       child: Pressable(
         onTap: enabled ? onPressed : null,
@@ -196,7 +202,7 @@ class PrimaryButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             alignment: Alignment.center,
             decoration: ShapeDecoration(
-              color: t.acc,
+              color: t.ink,
               shape: const StadiumBorder(),
             ),
             child: content,
@@ -207,7 +213,7 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
-/// Outlined pill, 52 tall, 1.5px `line` border, `ink` 15/800.
+/// Outlined pill, 52 tall, hairline `line` border, `ink` text.
 class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -246,9 +252,11 @@ class SecondaryButton extends StatelessWidget {
             color: filled ? t.surf : Colors.transparent,
             shape: filled
                 ? RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(14),
                   )
-                : StadiumBorder(side: BorderSide(color: t.line, width: 1.5)),
+                : StadiumBorder(
+                    side: BorderSide(color: t.ink.withValues(alpha: 0.28)),
+                  ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -305,7 +313,7 @@ class QTextButton extends StatelessWidget {
   }
 }
 
-/// 44×26 switch (46×28 when [large]); `acc` on, `line` off, white knob.
+/// 44×26 switch (46×28 when [large]); `ink` on, `line` off, paper knob.
 class QToggle extends StatelessWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
@@ -351,7 +359,7 @@ class QToggle extends StatelessWidget {
             height: h,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: value ? t.acc : t.line,
+              color: value ? t.ink : t.line,
               borderRadius: BorderRadius.circular(h),
             ),
             child: AnimatedAlign(
@@ -362,15 +370,8 @@ class QToggle extends StatelessWidget {
                 width: knob,
                 height: knob,
                 decoration: BoxDecoration(
-                  color: t.knob,
+                  color: value ? t.bg : t.surf,
                   shape: BoxShape.circle,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x26000000),
-                      blurRadius: 3,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
                 ),
               ),
             ),
@@ -381,7 +382,7 @@ class QToggle extends StatelessWidget {
   }
 }
 
-/// 20px radio: 2px `line` ring off, 6px `acc` ring on.
+/// 20px radio: 1.5px `line` ring off, 6px `ink` ring on.
 class QRadio extends StatelessWidget {
   final bool selected;
 
@@ -396,10 +397,10 @@ class QRadio extends StatelessWidget {
       height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: selected ? t.knob : Colors.transparent,
+        color: selected ? t.bg : Colors.transparent,
         border: Border.all(
-          color: selected ? t.acc : t.line,
-          width: selected ? 6 : 2,
+          color: selected ? t.ink : t.line,
+          width: selected ? 6 : 1.5,
         ),
       ),
     );
@@ -442,7 +443,7 @@ class QRadioRow extends StatelessWidget {
                 child: Text(
                   label,
                   style: context.qt.rowTitle.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),

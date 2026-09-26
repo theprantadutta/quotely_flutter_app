@@ -214,7 +214,7 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
                             '$quiet ›',
                             style: context.qt.meta.copyWith(
                               color: t.accInk,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],

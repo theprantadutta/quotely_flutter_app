@@ -172,7 +172,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Nelson Mandela'), findsOneWidget);
       expect(find.text('The Shawshank Redemption'), findsOneWidget);
-      expect(find.text('Movie · 1994'), findsOneWidget);
+      expect(find.text('MOVIE · 1994'), findsOneWidget);
       expect(find.text('Share'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

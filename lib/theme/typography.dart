@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'tokens.dart';
 
-/// Bundled families (see pubspec.yaml). Manrope is the whole UI; the other
-/// two only ever render quote and fact text, via [ReadingFont].
-const kFontManrope = 'Manrope';
-const kFontSerif = 'Newsreader';
-const kFontMono = 'FiraCode';
+/// Bundled families (see pubspec.yaml). Spotlight/Folio: a grotesk for the
+/// interface, a display serif for the words people read, and a mono for
+/// small uppercase labels.
+const kFontUi = 'SchibstedGrotesk';
+const kFontSerif = 'InstrumentSerif';
+const kFontMono = 'IBMPlexMono';
 
-/// Appearance → Reading font. Changes quote/fact bubble text only.
+/// Appearance → Reading font. Changes quote/fact text only. Serif is the
+/// default in this design.
 enum ReadingFont { sans, serif, mono }
 
 extension ReadingFontLabel on ReadingFont {
@@ -19,18 +21,22 @@ extension ReadingFontLabel on ReadingFont {
   };
 
   String get family => switch (this) {
-    ReadingFont.sans => kFontManrope,
+    ReadingFont.sans => kFontUi,
     ReadingFont.serif => kFontSerif,
     ReadingFont.mono => kFontMono,
   };
 
-  /// Serif and mono are set lighter: 800 Newsreader or Fira Code reads as
-  /// shouting, and neither family ships that weight anyway.
-  FontWeight weight(FontWeight sansWeight) => switch (this) {
-    ReadingFont.sans => sansWeight,
-    ReadingFont.serif =>
-      sansWeight.value >= 700 ? FontWeight.w600 : FontWeight.w500,
-    ReadingFont.mono => FontWeight.w500,
+  /// Instrument Serif ships a single weight; the others read best at 500.
+  FontWeight get weight => switch (this) {
+    ReadingFont.serif => FontWeight.w400,
+    _ => FontWeight.w500,
+  };
+
+  /// A display serif needs more size than a grotesk to read the same.
+  double get sizeFactor => switch (this) {
+    ReadingFont.serif => 1.0,
+    ReadingFont.sans => 0.82,
+    ReadingFont.mono => 0.74,
   };
 }
 
@@ -42,9 +48,10 @@ TextStyle _ui(
   FontWeight weight,
   Color color, {
   double em = 0,
-  double height = 1.3,
+  double height = 1.35,
+  String family = kFontUi,
 }) => TextStyle(
-  fontFamily: kFontManrope,
+  fontFamily: family,
   fontSize: size,
   fontWeight: weight,
   letterSpacing: _em(size, em),
@@ -53,16 +60,12 @@ TextStyle _ui(
   leadingDistribution: TextLeadingDistribution.even,
 );
 
-/// Weights sit one step above the brief's table: the design screenshots were
-/// rendered in a heavier fallback face than Manrope, and matching their
-/// density on device needs the extra weight (titles are already at 800).
+/// Every text style in the design, with its default color applied. Screens
+/// `copyWith` only when a different color is called for.
 ///
-/// Every text style in the Thread design, with its default color already
-/// applied. Screens `copyWith` only when the design calls for a different
-/// color (e.g. `accInk` on an `accSoft` pill).
-///
-/// The quote styles carry the reading font and the Appearance text-size
-/// multiplier, so changing either restyles every bubble live.
+/// Headings are the display serif at a single weight: hierarchy comes from
+/// size and space, not boldness. The quote styles carry the reading font and
+/// the Appearance text-size multiplier, so changing either restyles live.
 @immutable
 class QuotelyText extends ThemeExtension<QuotelyText> {
   final ReadingFont readingFont;
@@ -84,6 +87,8 @@ class QuotelyText extends ThemeExtension<QuotelyText> {
   final TextStyle button;
   final TextStyle buttonSecondary;
 
+  /// Full-screen feed: the one line on screen.
+  final TextStyle quoteSpotlight;
   final TextStyle quoteHero;
   final TextStyle quoteFeature;
   final TextStyle quoteFact;
@@ -108,6 +113,7 @@ class QuotelyText extends ThemeExtension<QuotelyText> {
     required this.badge,
     required this.button,
     required this.buttonSecondary,
+    required this.quoteSpotlight,
     required this.quoteHero,
     required this.quoteFeature,
     required this.quoteFact,
@@ -117,53 +123,52 @@ class QuotelyText extends ThemeExtension<QuotelyText> {
 
   factory QuotelyText.build(
     QuotelyTokens t, {
-    ReadingFont readingFont = ReadingFont.sans,
+    ReadingFont readingFont = ReadingFont.serif,
     double quoteScale = 1.0,
   }) {
-    TextStyle quote(double size, FontWeight weight, double em, double h) =>
-        TextStyle(
-          fontFamily: readingFont.family,
-          fontSize: size * quoteScale,
-          fontWeight: readingFont.weight(weight),
-          // Negative tracking suits heavy Manrope; the serif and mono faces
-          // are drawn with their own spacing and look cramped with it.
-          letterSpacing: readingFont == ReadingFont.sans
-              ? _em(size * quoteScale, em)
-              : 0,
-          height: h,
-          color: t.ink,
-          leadingDistribution: TextLeadingDistribution.even,
-        );
+    TextStyle quote(double size, double h, {double em = -0.01}) {
+      final s = size * quoteScale * readingFont.sizeFactor;
+      return TextStyle(
+        fontFamily: readingFont.family,
+        fontSize: s,
+        fontWeight: readingFont.weight,
+        letterSpacing: readingFont == ReadingFont.mono ? 0 : _em(s, em),
+        height: h,
+        color: t.ink,
+        leadingDistribution: TextLeadingDistribution.even,
+      );
+    }
+
+    TextStyle display(double size, {double h = 1.05, double em = -0.01}) =>
+        _ui(size, FontWeight.w400, t.ink,
+            em: em, height: h, family: kFontSerif);
 
     return QuotelyText._(
       readingFont: readingFont,
       quoteScale: quoteScale,
-      displayOnboarding: _ui(
-        31,
-        FontWeight.w800,
-        t.ink,
-        em: -0.035,
-        height: 1.08,
-      ),
-      titleScreen: _ui(26, FontWeight.w800, t.ink, em: -0.03, height: 1.1),
-      titlePush: _ui(24, FontWeight.w800, t.ink, em: -0.03, height: 1.15),
-      titleDetail: _ui(26, FontWeight.w800, t.ink, em: -0.03, height: 1.0),
-      sectionTitle: _ui(20, FontWeight.w800, t.ink, em: -0.02, height: 1.2),
-      rowTitle: _ui(15, FontWeight.w800, t.ink),
-      body: _ui(14, FontWeight.w700, t.mute, height: 1.45),
-      meta: _ui(13, FontWeight.w700, t.mute, height: 1.35),
-      label: _ui(12, FontWeight.w800, t.mute),
-      chip: _ui(13, FontWeight.w800, t.ink),
-      overline: _ui(12, FontWeight.w800, t.mute, height: 1.2),
-      caption: _ui(11, FontWeight.w700, t.mute),
-      badge: _ui(9.5, FontWeight.w800, t.accInk, height: 1),
-      button: _ui(16, FontWeight.w800, t.onAcc, height: 1),
-      buttonSecondary: _ui(15, FontWeight.w800, t.ink, height: 1),
-      quoteHero: quote(21.5, FontWeight.w800, -0.02, 1.22),
-      quoteFeature: quote(20, FontWeight.w800, -0.02, 1.22),
-      quoteFact: quote(25, FontWeight.w800, -0.025, 1.18),
-      quoteBody: quote(17, FontWeight.w800, -0.01, 1.30),
-      quoteCompact: quote(15.5, FontWeight.w800, -0.01, 1.30),
+      displayOnboarding: display(40, h: 1.02, em: -0.015),
+      titleScreen: display(38),
+      titlePush: display(32),
+      titleDetail: display(34, h: 1.0),
+      sectionTitle: display(24, h: 1.15),
+      rowTitle: _ui(15, FontWeight.w600, t.ink),
+      body: _ui(14, FontWeight.w400, t.mute, height: 1.5),
+      meta: _ui(13, FontWeight.w400, t.mute),
+      label: _ui(12.5, FontWeight.w500, t.mute),
+      chip: _ui(13.5, FontWeight.w500, t.ink),
+      overline: _ui(10.5, FontWeight.w500, t.mute,
+          em: 0.14, height: 1.2, family: kFontMono),
+      caption: _ui(11.5, FontWeight.w400, t.mute),
+      badge: _ui(9.5, FontWeight.w600, t.accInk,
+          em: 0.08, height: 1, family: kFontMono),
+      button: _ui(15, FontWeight.w600, t.onAcc, height: 1),
+      buttonSecondary: _ui(15, FontWeight.w600, t.ink, height: 1),
+      quoteSpotlight: quote(44, 1.02, em: -0.015),
+      quoteHero: quote(32, 1.08),
+      quoteFeature: quote(28, 1.1),
+      quoteFact: quote(32, 1.08),
+      quoteBody: quote(24, 1.15),
+      quoteCompact: quote(21, 1.2),
     );
   }
 
@@ -192,6 +197,7 @@ class QuotelyText extends ThemeExtension<QuotelyText> {
       badge: l(badge, other.badge),
       button: l(button, other.button),
       buttonSecondary: l(buttonSecondary, other.buttonSecondary),
+      quoteSpotlight: l(quoteSpotlight, other.quoteSpotlight),
       quoteHero: l(quoteHero, other.quoteHero),
       quoteFeature: l(quoteFeature, other.quoteFeature),
       quoteFact: l(quoteFact, other.quoteFact),

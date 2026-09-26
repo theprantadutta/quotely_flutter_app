@@ -16,3 +16,4 @@ export 'report_sheet.dart';
 export 'thread_message.dart';
 export 'quote_card.dart';
 export 'legal.dart';
+export 'spotlight.dart';

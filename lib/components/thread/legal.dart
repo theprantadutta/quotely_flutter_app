@@ -35,8 +35,8 @@ Future<void> showLegalSheet(
             h2: qt.rowTitle.copyWith(fontSize: 17),
             h3: qt.rowTitle,
             listBullet: qt.body.copyWith(color: t.ink),
-            strong: qt.body.copyWith(color: t.ink, fontWeight: FontWeight.w800),
-            a: qt.body.copyWith(color: t.accInk, fontWeight: FontWeight.w700),
+            strong: qt.body.copyWith(color: t.ink, fontWeight: FontWeight.w600),
+            a: qt.body.copyWith(color: t.accInk, fontWeight: FontWeight.w600),
             blockSpacing: 12,
           ),
         ),
@@ -99,7 +99,7 @@ class _ConsentSheetState extends State<_ConsentSheet> {
       text: text,
       style: qt.body.copyWith(
         color: t.accInk,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w600,
         decoration: TextDecoration.underline,
       ),
       recognizer: TapGestureRecognizer()

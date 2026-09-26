@@ -471,8 +471,8 @@ class _SavedCard extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 14, 8, 8),
           decoration: BoxDecoration(
-            color: t.surf,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: t.line),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

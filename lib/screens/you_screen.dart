@@ -247,7 +247,7 @@ class _YouScreenState extends ConsumerState<YouScreen> {
                   : null,
               child: Text(
                 'Made by Pranta Dutta',
-                style: context.qt.label.copyWith(fontWeight: FontWeight.w700),
+                style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
           ),

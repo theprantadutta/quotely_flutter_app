@@ -9,9 +9,8 @@ import 'q_controls.dart';
 import 'q_image.dart';
 import 'thread_message.dart';
 
-/// Appearance → Default layout = Cards: one full-width `surf` card per item
-/// (radius 28, `quoteHero` text), the restyled successor of the old
-/// carousel card.
+/// Appearance → Default layout = Cards: one hairline-framed card per item
+/// with the line large in the reading font.
 class QuoteCard extends ConsumerWidget {
   final ThreadMessage message;
 
@@ -33,10 +32,10 @@ class QuoteCard extends ConsumerWidget {
         onLongPress: () => showMessageActions(context, ref, m),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+          padding: const EdgeInsets.fromLTRB(22, 22, 14, 12),
           decoration: BoxDecoration(
-            color: t.surf,
-            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: t.line),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,13 +43,9 @@ class QuoteCard extends ConsumerWidget {
               if (eyebrow != null) ...[
                 Text(
                   eyebrow!.toUpperCase(),
-                  style: context.qt.caption.copyWith(
-                    color: t.accInk,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 11 * 0.04,
-                  ),
+                  style: context.qt.overline.copyWith(color: t.accInk),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
               ],
               if (scene != null && scene.isSpoiler)
                 SpoilerBubble(
@@ -67,17 +62,17 @@ class QuoteCard extends ConsumerWidget {
                 const SizedBox(height: 14),
                 TitleChip(scene: scene),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Row(
                 children: [
                   GestureDetector(
                     onTap: () => openSender(context, m),
                     child: m.kind == MessageKind.fact
-                        ? const BrandAvatar(size: 28)
+                        ? const BrandAvatar(size: 24)
                         : QAvatar(
                             name: m.sender,
                             imageUrl: watchSenderImage(ref, m),
-                            size: 28,
+                            size: 24,
                           ),
                   ),
                   const SizedBox(width: 8),
@@ -85,19 +80,15 @@ class QuoteCard extends ConsumerWidget {
                     child: Text(
                       m.kind == MessageKind.fact
                           ? m.fact!.aiFactCategory
-                          : '— ${m.sender}',
+                          : m.sender,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: context.qt.meta.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: context.qt.label.copyWith(color: t.ink),
                     ),
                   ),
+                  ReactionRow(message: m),
                 ],
               ),
-              // Own line, so a long name is never squeezed by the pills.
-              const SizedBox(height: 12),
-              ReactionRow(message: m),
             ],
           ),
         ),

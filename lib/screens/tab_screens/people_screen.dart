@@ -241,8 +241,8 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     decoration: BoxDecoration(
-                      color: t.surf,
                       borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: t.line),
                     ),
                     child: TextField(
                       controller: _search,
@@ -258,7 +258,7 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
                             : 'Search characters',
                         hintStyle: context.qt.body.copyWith(
                           fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: t.mute,
                         ),
                         prefixIcon: Icon(

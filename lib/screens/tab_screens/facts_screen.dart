@@ -318,16 +318,20 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: const EdgeInsets.fromLTRB(22, 14, 22, 0),
           sliver: SliverList.separated(
             itemCount: _facts.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 14),
+            separatorBuilder: (_, _) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 22),
+              child: Divider(height: 1, color: context.q.line),
+            ),
             itemBuilder: (context, i) => Entrance(
               key: ValueKey(_facts[i].id),
               index: i % 8,
               child: MessageBubble(
                 message: ThreadMessage.fromFact(_facts[i]),
-                senderLabel: 'Quotely · ${_facts[i].aiFactCategory}',
+                senderLabel: _facts[i].aiFactCategory,
+                variant: BubbleVariant.compact,
                 showReactions: true,
               ),
             ),
@@ -363,192 +367,269 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     return const SizedBox(height: 24);
   }
 
+  /// "Keep" on the back of the card: save it, then deal the next one.
+  Future<void> _keep(AiFactDto fact) async {
+    final m = ThreadMessage.fromFact(fact);
+    if (!readIsSaved(ref, m)) await toggleSaved(ref, m);
+    if (mounted) _next();
+  }
+
   Widget _buildPlay() {
-    final t = context.q;
     final fact = _current;
-    return ListView(
-      controller: _scroll,
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-      children: [
-        SegmentedProgress(
-          total: kFactsPerDay,
-          done: min(_answered, kFactsPerDay),
-        ),
-        const SizedBox(height: 14),
-        if (fact == null)
-          _loading ? const ThreadSkeleton(count: 1) : _footer()
-        else ...[
-          Container(
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: t.surf,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SoftPill(fact.aiFactCategory),
-                const SizedBox(height: 14),
-                Semantics(
+    if (fact == null) {
+      return ListView(
+        controller: _scroll,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: [_loading ? const ThreadSkeleton(count: 1) : _footer()],
+      );
+    }
+    final answered = _lastAnswerRight != null;
+    final done = _answered == kFactsPerDay && answered;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 6, 22, 16),
+      child: Column(
+        children: [
+          SegmentedProgress(
+            total: kFactsPerDay,
+            done: min(_answered, kFactsPerDay),
+          ),
+          const SizedBox(height: 18),
+          Expanded(
+            child: _FlipDeck(
+              key: ValueKey('${fact.id}:$_deckIndex'),
+              flipped: answered,
+              front: _CardFace(
+                eyebrow: fact.aiFactCategory,
+                child: Semantics(
                   liveRegion: true,
                   child: Text(
                     _showingFalse ? fact.falseVariant! : fact.content,
                     style: context.qt.quoteFact,
                   ),
                 ),
-                const SizedBox(height: 20),
-                if (_lastAnswerRight == null)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: PrimaryButton(
-                          label: 'True',
-                          height: 52,
-                          onPressed: () => _answer(true),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: SecondaryButton(
-                          label: 'False',
-                          onPressed: () => _answer(false),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  PrimaryButton(
-                    label:
-                        _answered >= kFactsPerDay &&
-                            _answered % kFactsPerDay == 0
-                        ? 'Keep playing'
-                        : 'Next',
-                    height: 52,
-                    icon: Icons.arrow_forward_rounded,
-                    onPressed: _next,
-                  ),
-              ],
-            ),
-          ),
-          if (_lastAnswerRight != null) ...[
-            const SizedBox(height: 14),
-            Entrance(
-              child: _AnswerCard(
+              ),
+              back: _AnswerFace(
                 fact: fact,
-                right: _lastAnswerRight!,
+                right: _lastAnswerRight ?? false,
                 wasFalse: _showingFalse,
+                footnote: done
+                    ? 'That\u2019s today\u2019s $kFactsPerDay. $_correct right. See you tomorrow.'
+                    : null,
               ),
             ),
-          ],
-          if (_answered == kFactsPerDay && _lastAnswerRight != null) ...[
-            const SizedBox(height: 16),
-            SystemPill(
-              'That’s today’s $kFactsPerDay. $_correct right — see you tomorrow!',
+          ),
+          const SizedBox(height: 18),
+          if (!answered)
+            Row(
+              children: [
+                Expanded(
+                  child: SecondaryButton(
+                    label: 'False',
+                    onPressed: () => _answer(false),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: PrimaryButton(
+                    label: 'True',
+                    onPressed: () => _answer(true),
+                  ),
+                ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: SecondaryButton(label: 'Skip', onPressed: _next),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: PrimaryButton(
+                    label: 'Keep',
+                    icon: Icons.favorite_border_rounded,
+                    onPressed: () => _keep(fact),
+                  ),
+                ),
+              ],
             ),
-          ],
         ],
-      ],
+      ),
     );
   }
 }
 
-class _AnswerCard extends ConsumerWidget {
-  final AiFactDto fact;
-  final bool right;
-  final bool wasFalse;
+/// A card that turns over (around the vertical axis) when [flipped], with
+/// two blank cards peeking out beneath it so it reads as a deck.
+class _FlipDeck extends StatelessWidget {
+  final bool flipped;
+  final Widget front;
+  final Widget back;
 
-  const _AnswerCard({
-    required this.fact,
-    required this.right,
-    required this.wasFalse,
+  const _FlipDeck({
+    super.key,
+    required this.flipped,
+    required this.front,
+    required this.back,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final t = context.q;
-    final message = ThreadMessage.fromFact(fact);
-    final saved = watchIsSaved(ref, message);
+    Widget under(double inset, double drop, double alpha) => Positioned(
+      left: inset,
+      right: inset,
+      top: drop,
+      bottom: -drop,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: t.surf.withValues(alpha: alpha),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: t.line),
+        ),
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          under(24, 14, 0.5),
+          under(12, 7, 0.8),
+          Positioned.fill(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(end: flipped ? pi : 0),
+              duration: context.reduceMotion
+                  ? Duration.zero
+                  : const Duration(milliseconds: 520),
+              curve: Curves.easeInOutCubic,
+              builder: (context, angle, _) {
+                final showBack = angle > pi / 2;
+                return Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.0012)
+                    ..rotateY(angle),
+                  child: showBack
+                      ? Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity()..rotateY(pi),
+                          child: back,
+                        )
+                      : front,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The card surface both faces share.
+class _CardFace extends StatelessWidget {
+  final String eyebrow;
+  final Widget child;
+  final Color? color;
+  final Color? eyebrowColor;
+  final Widget? footer;
+
+  const _CardFace({
+    required this.eyebrow,
+    required this.child,
+    this.color,
+    this.eyebrowColor,
+    this.footer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 18),
+      decoration: BoxDecoration(
+        color: color ?? t.surf,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: t.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            eyebrow.toUpperCase(),
+            style: context.qt.overline.copyWith(color: eyebrowColor),
+          ),
+          const SizedBox(height: 18),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SingleChildScrollView(child: child),
+            ),
+          ),
+          ?footer,
+        ],
+      ),
+    );
+  }
+}
+
+/// The back of the card: the verdict, the real fact, and Share.
+class _AnswerFace extends StatelessWidget {
+  final AiFactDto fact;
+  final bool right;
+  final bool wasFalse;
+  final String? footnote;
+
+  const _AnswerFace({
+    required this.fact,
+    required this.right,
+    required this.wasFalse,
+    this.footnote,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    final qt = context.qt;
     final verdict = wasFalse ? 'False' : 'True';
-    final headline = right
-        ? '✓ $verdict. You got it.'
-        : '✗ Actually, that’s ${verdict.toLowerCase()}.';
     return Semantics(
       liveRegion: true,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
-        decoration: BoxDecoration(
-          color: t.accSoft,
-          borderRadius: BorderRadius.circular(28),
+      child: _CardFace(
+        color: t.accSoft,
+        eyebrow: right
+            ? 'Right \u00b7 $verdict'
+            : 'Not quite \u00b7 it\u2019s $verdict',
+        eyebrowColor: t.accInk,
+        footer: Row(
+          children: [
+            Expanded(
+              child: Text(
+                footnote ?? (wasFalse ? 'The real fact' : fact.aiFactCategory),
+                style: qt.meta.copyWith(color: t.accInk),
+              ),
+            ),
+            CircleIconButton(
+              icon: kShareIcon,
+              semanticLabel: 'Share',
+              foreground: t.accInk,
+              onTap: () => shareMessage(ThreadMessage.fromFact(fact)),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              headline,
-              style: context.qt.chip.copyWith(
-                color: t.accInk,
-                fontWeight: FontWeight.w800,
-              ),
+              right
+                  ? 'You got it.'
+                  : 'Actually, that\u2019s ${verdict.toLowerCase()}.',
+              style: qt.sectionTitle.copyWith(color: t.accInk),
             ),
-            const SizedBox(height: 8),
-            if (wasFalse)
-              Text(
-                'The real fact:',
-                style: context.qt.label.copyWith(color: t.accInk),
-              ),
-            Text(
-              fact.content,
-              style: context.qt.quoteCompact.copyWith(
-                fontSize: 16 * context.qt.quoteScale,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                HitTarget(
-                  semanticLabel: saved ? 'Remove from saved' : 'Save',
-                  onTap: () => toggleSaved(ref, message),
-                  child: Row(
-                    children: [
-                      Icon(
-                        saved
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        size: 18,
-                        color: t.accInk,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        saved ? 'Saved' : 'Save',
-                        style: context.qt.chip.copyWith(
-                          color: t.accInk,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 18),
-                HitTarget(
-                  semanticLabel: 'Share',
-                  onTap: () => shareMessage(message),
-                  child: Row(
-                    children: [
-                      Icon(kShareIcon, size: 18, color: t.accInk),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Share',
-                        style: context.qt.chip.copyWith(
-                          color: t.accInk,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 14),
+            Text(fact.content, style: qt.quoteBody),
           ],
         ),
       ),

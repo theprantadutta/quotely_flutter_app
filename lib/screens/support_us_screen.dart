@@ -318,7 +318,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
             Center(
               child: Text(
                 'One-time payment. No subscription.',
-                style: context.qt.label.copyWith(fontWeight: FontWeight.w700),
+                style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -452,7 +452,7 @@ class _TierCard extends StatelessWidget {
                       Text(
                         tagline,
                         style: context.qt.label.copyWith(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

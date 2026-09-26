@@ -29,7 +29,7 @@ class AppearanceSettings {
     this.themeMode = ThemeMode.system,
     this.accent = QAccent.violet,
     this.quoteScale = 1.0,
-    this.readingFont = ReadingFont.sans,
+    this.readingFont = ReadingFont.serif,
     this.layout = ThreadLayout.thread,
   });
 
@@ -51,6 +51,7 @@ class AppearanceSettings {
   /// updating user keeps their dark mode (and, where it maps, their color).
   static Future<AppearanceSettings> load(SharedPreferences prefs) async {
     await _migrateLegacy(prefs);
+    await _migrateSpotlightFont(prefs);
     T pick<T extends Enum>(List<T> values, String key, T fallback) {
       final name = prefs.getString(key);
       return values.firstWhere((v) => v.name == name, orElse: () => fallback);
@@ -66,7 +67,7 @@ class AppearanceSettings {
       readingFont: pick(
         ReadingFont.values,
         kAppearanceReadingFontKey,
-        ReadingFont.sans,
+        ReadingFont.serif,
       ),
       layout: pick(
         ThreadLayout.values,
@@ -124,6 +125,17 @@ class AppearanceSettings {
       await prefs.remove(key);
     }
     await prefs.setBool(kAppearanceMigratedKey, true);
+  }
+
+  /// Sans was the default before this design, so a saved "sans" is almost
+  /// always that old default rather than a choice. Move it to the serif
+  /// once; anything picked after this sticks.
+  static Future<void> _migrateSpotlightFont(SharedPreferences prefs) async {
+    if (prefs.getBool(kSpotlightFontMigratedKey) ?? false) return;
+    if (prefs.getString(kAppearanceReadingFontKey) == ReadingFont.sans.name) {
+      await prefs.remove(kAppearanceReadingFontKey);
+    }
+    await prefs.setBool(kSpotlightFontMigratedKey, true);
   }
 
   /// Maps a FlexScheme name onto the closest of the five hues. Anything

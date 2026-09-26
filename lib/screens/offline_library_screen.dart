@@ -254,7 +254,7 @@ class _OfflineLibraryScreenState extends State<OfflineLibraryScreen> {
                       '$saved of ${OfflinePack.values.length} packs · '
                       '${NumberFormat.compact().format(items)} items',
                       style: context.qt.meta.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -311,7 +311,7 @@ class _OfflineLibraryScreenState extends State<OfflineLibraryScreen> {
           Text(
             'Images aren’t downloaded; portraits and posters load when you’re online.',
             textAlign: TextAlign.center,
-            style: context.qt.label.copyWith(fontWeight: FontWeight.w700),
+            style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -346,7 +346,7 @@ class _OfflineLibraryScreenState extends State<OfflineLibraryScreen> {
                 _states[pack] == _PackState.failed ? 'Retry' : 'Get',
                 style: context.qt.chip.copyWith(
                   color: t.onAcc,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

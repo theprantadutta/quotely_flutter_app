@@ -205,7 +205,7 @@ class _Profile extends ConsumerWidget {
             Text(
               text,
               style: context.qt.chip.copyWith(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: filled ? t.onAcc : t.ink,
               ),
             ),

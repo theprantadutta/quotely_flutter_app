@@ -308,7 +308,7 @@ class _ArchiveRow extends ConsumerWidget {
                 Text(
                   DateFormat('EEE').format(local).toUpperCase(),
                   style: context.qt.caption.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
@@ -335,11 +335,10 @@ class _ArchiveRow extends ConsumerWidget {
                 duration: const Duration(milliseconds: 600),
                 padding: const EdgeInsets.fromLTRB(15, 13, 15, 13),
                 decoration: BoxDecoration(
-                  color: t.surf,
-                  borderRadius: bubbleRadius(18),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: highlighted ? t.acc : Colors.transparent,
-                    width: 2,
+                    color: highlighted ? t.acc : t.line,
+                    width: highlighted ? 2 : 1,
                   ),
                 ),
                 child: Column(

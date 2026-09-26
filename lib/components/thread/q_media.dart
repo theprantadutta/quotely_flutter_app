@@ -57,7 +57,7 @@ class StoryAvatar extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.qt.caption.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: isNew ? t.ink : t.mute,
                 ),
               ),
@@ -121,7 +121,7 @@ class PosterCard extends StatelessWidget {
                         title.type.label.toUpperCase(),
                         style: context.qt.badge.copyWith(
                           color: t.mute,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 0.4,
                         ),
                       ),
@@ -136,7 +136,7 @@ class PosterCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: context.qt.label.copyWith(
                   color: t.ink,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 2),
@@ -189,7 +189,7 @@ class StreakCard extends StatelessWidget {
               summary,
               style: context.qt.meta.copyWith(
                 color: t.accInk,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 14),
@@ -205,7 +205,7 @@ class StreakCard extends StatelessWidget {
                         _letters[i],
                         style: context.qt.caption.copyWith(
                           color: t.accInk,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

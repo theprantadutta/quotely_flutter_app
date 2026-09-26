@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,7 +12,10 @@ import '../../riverpods/scene_providers.dart';
 import '../../service_locator/init_service_locators.dart';
 import '../../state_providers/scene_state.dart';
 
-/// Scenes: lines from movies, shows, anime and games.
+enum _Mode { watch, browse }
+
+/// Scenes: lines from movies, shows, anime and games. "Watch" is the
+/// full-screen feed over the title's poster; "Browse" lists titles.
 class ScenesScreen extends ConsumerStatefulWidget {
   const ScenesScreen({super.key});
 
@@ -21,6 +25,9 @@ class ScenesScreen extends ConsumerStatefulWidget {
 
 class _ScenesScreenState extends ConsumerState<ScenesScreen> {
   final _scroll = ScrollController();
+  final _pager = PageController();
+  _Mode _mode = _Mode.watch;
+  int _index = 0;
 
   /// null = All.
   MediaType? _type;
@@ -56,6 +63,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
   @override
   void dispose() {
     _scroll.dispose();
+    _pager.dispose();
     super.dispose();
   }
 
@@ -92,7 +100,9 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
       _lines.clear();
       _page = 1;
       _hasMore = true;
+      _index = 0;
     });
+    if (_pager.hasClients) _pager.jumpToPage(0);
     getIt.get<FirebaseAnalytics>().logEvent(
       name: 'scenes_type_changed',
       parameters: {'type': type?.name ?? 'all'},
@@ -115,33 +125,104 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
   @override
   Widget build(BuildContext context) {
     final shield = ref.watch(spoilerShieldProvider);
+    final t = context.q;
+    final sotd = ref.watch(sceneOfTheDayProvider).value?.sceneQuote;
+    final feed = [
+      ?sotd,
+      for (final l in _lines)
+        if (l.id != sotd?.id) l,
+    ];
+    final index = _index.clamp(0, feed.isEmpty ? 0 : feed.length - 1);
+    final current = feed.isEmpty ? null : feed[index];
+
+    final header = Padding(
+      padding: const EdgeInsets.fromLTRB(22, 4, 10, 0),
+      child: Row(
+        children: [
+          Semantics(
+            header: true,
+            child: Text(
+              'Scenes',
+              style: context.qt.titlePush.copyWith(fontSize: 28),
+            ),
+          ),
+          const SizedBox(width: 16),
+          MiniSegmented<_Mode>(
+            options: const [
+              ChipOption(_Mode.watch, 'Watch'),
+              ChipOption(_Mode.browse, 'Browse'),
+            ],
+            value: _mode,
+            onChanged: (m) => setState(() => _mode = m),
+          ),
+          const Spacer(),
+          CircleIconButton(
+            icon: shield ? Icons.shield_rounded : Icons.shield_outlined,
+            semanticLabel: shield ? 'Spoiler shield on' : 'Spoiler shield off',
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ref.read(spoilerShieldProvider.notifier).toggle();
+            },
+          ),
+          CircleIconButton(
+            icon: Icons.search_rounded,
+            semanticLabel: 'Search titles',
+            onTap: () => context.push(Routes.search),
+          ),
+        ],
+      ),
+    );
+
+    final types = FilterChips<MediaType?>(
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      options: [
+        const ChipOption(null, 'All'),
+        for (final t in MediaType.values) ChipOption(t, t.plural),
+      ],
+      isSelected: (t) => t == _type,
+      onSelected: _setType,
+    );
+
+    if (_mode == _Mode.watch) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          SpotlightBackdrop(
+            tint: t.tintFor(DateTime.now().add(const Duration(days: 2))),
+            imageUrl: current?.posterUrl,
+          ),
+          SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                header,
+                types,
+                Expanded(child: _watch(feed, sotd)),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 6,
+            bottom: 18,
+            child: SpotlightRail(
+              message: current == null
+                  ? null
+                  : ThreadMessage.fromScene(current),
+            ),
+          ),
+        ],
+      );
+    }
+
     final followed = ref.watch(followedTitlesProvider);
     final trending = ref.watch(trendingTitlesProvider(_typesCsv));
-
     return SafeArea(
       bottom: false,
       child: ThreadColumn(
         child: Column(
           children: [
-            ScreenHeader(
-              title: 'Scenes',
-              subtitle: 'Lines from movies, shows, anime & games',
-              actions: [
-                CircleIconButton(
-                  icon: Icons.search_rounded,
-                  semanticLabel: 'Search titles',
-                  onTap: () => context.push(Routes.search),
-                ),
-              ],
-            ),
-            FilterChips<MediaType?>(
-              options: [
-                const ChipOption(null, 'All'),
-                for (final t in MediaType.values) ChipOption(t, t.plural),
-              ],
-              isSelected: (t) => t == _type,
-              onSelected: _setType,
-            ),
+            header,
+            types,
             const SizedBox(height: 6),
             Expanded(
               child: RefreshIndicator.adaptive(
@@ -150,42 +231,8 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
                   controller: _scroll,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    const SliverPadding(
-                      padding: EdgeInsets.fromLTRB(16, 6, 16, 0),
-                      sliver: SliverToBoxAdapter(child: _SceneOfTheDayCard()),
-                    ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 16, 10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Trending titles',
-                                style: context.qt.sectionTitle.copyWith(
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                            Semantics(
-                              toggled: shield,
-                              label: 'Spoiler shield',
-                              excludeSemantics: true,
-                              child: SoftPill(
-                                shield
-                                    ? 'Spoiler shield on'
-                                    : 'Spoiler shield off',
-                                icon: shield
-                                    ? Icons.shield_rounded
-                                    : Icons.shield_outlined,
-                                onTap: () => ref
-                                    .read(spoilerShieldProvider.notifier)
-                                    .toggle(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    const SliverToBoxAdapter(
+                      child: _SectionTitle('Trending titles'),
                     ),
                     SliverToBoxAdapter(
                       child: _PosterRow(
@@ -212,46 +259,53 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
                         SliverToBoxAdapter(child: _SectionTitle(t.plural)),
                         SliverToBoxAdapter(child: _TypeRow(type: t)),
                       ],
-                    const SliverToBoxAdapter(
-                      child: _SectionTitle('Popular lines'),
-                    ),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      sliver: SliverList.separated(
-                        itemCount: _lines.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 14),
-                        itemBuilder: (context, i) => Entrance(
-                          key: ValueKey(_lines[i].id),
-                          index: i % 8,
-                          child: MessageBubble(
-                            message: ThreadMessage.fromScene(_lines[i]),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: _loading
-                          ? (_lines.isEmpty
-                                ? const Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: ThreadSkeleton(count: 2),
-                                  )
-                                : const LoadMoreIndicator())
-                          : _lines.isEmpty
-                          ? EmptyState(
-                              pill: 'No lines here yet',
-                              message: _type == null
-                                  ? 'New scenes arrive every week.'
-                                  : 'No ${_type!.plural.toLowerCase()} yet. New scenes arrive every week.',
-                            )
-                          : const SizedBox(height: 24),
-                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 32)),
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _watch(List<SceneQuoteDto> feed, SceneQuoteDto? sotd) {
+    if (feed.isEmpty) {
+      if (_loading || !_typeInitialized) {
+        return const Center(child: CircularProgressIndicator.adaptive());
+      }
+      return EmptyState(
+        pill: 'No lines here yet',
+        message: _type == null
+            ? 'New scenes arrive every week.'
+            : 'No ${_type!.plural.toLowerCase()} yet. New scenes arrive every week.',
+      );
+    }
+    return RefreshIndicator.adaptive(
+      onRefresh: _refresh,
+      child: PageView.builder(
+        controller: _pager,
+        scrollDirection: Axis.vertical,
+        itemCount: feed.length + (_hasMore ? 1 : 0),
+        onPageChanged: (i) {
+          HapticFeedback.selectionClick();
+          setState(() => _index = i);
+          if (i >= feed.length - 3) _fetch();
+        },
+        itemBuilder: (context, i) {
+          if (i >= feed.length) {
+            return const Center(child: CircularProgressIndicator.adaptive());
+          }
+          final scene = feed[i];
+          return SpotlightEntry(
+            key: ValueKey(scene.id),
+            message: ThreadMessage.fromScene(scene),
+            eyebrow: scene.id == sotd?.id
+                ? 'Scene of the day'
+                : scene.titleType.label,
+          );
+        },
       ),
     );
   }
@@ -269,120 +323,6 @@ class _SectionTitle extends StatelessWidget {
       child: Text(text, style: context.qt.sectionTitle.copyWith(fontSize: 18)),
     ),
   );
-}
-
-/// "SCENE OF THE DAY": poster + title block, the line, character, reactions.
-class _SceneOfTheDayCard extends ConsumerWidget {
-  const _SceneOfTheDayCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.q;
-    final async = ref.watch(sceneOfTheDayProvider);
-    final dto = async.value;
-    if (dto == null) {
-      return async.isLoading
-          ? const BubbleSkeleton(avatar: false, width: 1, lines: 3)
-          : const SizedBox.shrink();
-    }
-    final scene = dto.sceneQuote;
-    final message = ThreadMessage.fromScene(scene);
-    final hidden = isSpoilerHidden(ref, scene);
-    // Genre lives on the title, not the line (line tags are topics).
-    final genre = ref
-        .watch(titleDetailProvider(scene.titleId))
-        .value
-        ?.title
-        .primaryGenre;
-    return Pressable(
-      pressedScale: 0.985,
-      onTap: () => openSender(context, message),
-      onLongPress: () => showMessageActions(context, ref, message),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: t.surf,
-          borderRadius: BorderRadius.circular(26),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                QPoster(url: scene.posterUrl, width: 44, height: 64, radius: 8),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'SCENE OF THE DAY',
-                        style: context.qt.caption.copyWith(
-                          color: t.accInk,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 11 * 0.04,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        scene.titleName,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.qt.rowTitle.copyWith(fontSize: 16),
-                      ),
-                      Text(
-                        [scene.chipMeta, ?genre].join(' · '),
-                        style: context.qt.caption,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            SpoilerBubble(
-              hidden: hidden,
-              onReveal: () =>
-                  ref.read(revealedSpoilersProvider.notifier).reveal(scene.id),
-              radius: BorderRadius.circular(12),
-              child: Text(scene.content, style: context.qt.quoteFeature),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '— ${scene.characterName}',
-                    style: context.qt.meta.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final saved = watchIsSaved(ref, message);
-                    return ReactionPill.like(
-                      liked: saved,
-                      count: scene.likes + (saved ? 1 : 0),
-                      onTap: () => toggleSaved(ref, message),
-                    );
-                  },
-                ),
-                const SizedBox(width: 4),
-                CircleIconButton(
-                  icon: kShareIcon,
-                  semanticLabel: 'Share',
-                  size: 38,
-                  background: t.bg,
-                  onTap: () => shareMessage(message),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _PosterRow extends StatelessWidget {

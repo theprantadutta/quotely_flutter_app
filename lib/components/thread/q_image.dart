@@ -70,7 +70,7 @@ class ImageFallback extends StatelessWidget {
                 initials!,
                 style: context.qt.label.copyWith(
                   fontSize: fontSize,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: t.mute,
                 ),
               ),

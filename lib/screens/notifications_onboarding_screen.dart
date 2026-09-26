@@ -118,7 +118,7 @@ class _NotificationsOnboardingScreenState
                       'Step 3 of 3',
                       style: context.qt.label.copyWith(
                         color: t.accInk,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -218,7 +218,7 @@ class _PreviewNotification extends StatelessWidget {
                         child: Text(
                           'QUOTELY',
                           style: context.qt.caption.copyWith(
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: 0.4,
                           ),
                         ),

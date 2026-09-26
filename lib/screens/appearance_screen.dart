@@ -142,7 +142,7 @@ class AppearanceScreen extends ConsumerWidget {
                     'A',
                     style: context.qt.chip.copyWith(
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Expanded(
@@ -165,7 +165,7 @@ class AppearanceScreen extends ConsumerWidget {
                     'A',
                     style: context.qt.chip.copyWith(
                       fontSize: 20,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -182,7 +182,7 @@ class AppearanceScreen extends ConsumerWidget {
               onChanged: c.setReadingFont,
               labelStyle: (f, base) => base.copyWith(
                 fontFamily: f.family,
-                fontWeight: f.weight(FontWeight.w800),
+                fontWeight: f.weight,
                 fontSize: f == ReadingFont.sans ? base.fontSize : 15,
               ),
             ),

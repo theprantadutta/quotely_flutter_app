@@ -48,7 +48,7 @@ class ScreenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 6, 16, 10),
+      padding: const EdgeInsets.fromLTRB(22, 14, 12, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -62,8 +62,8 @@ class ScreenHeader extends StatelessWidget {
                   child: Text(title, style: context.qt.titleScreen),
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 3),
-                  Text(subtitle!, style: context.qt.meta),
+                  const SizedBox(height: 6),
+                  Text(subtitle!.toUpperCase(), style: context.qt.overline),
                 ],
               ],
             ),
@@ -189,7 +189,7 @@ class ThreadPage extends StatelessWidget {
   }
 }
 
-/// Rounded `surf` card with no border (separation comes from the surface).
+/// Quiet card: a hairline outline on the page, no fill unless [color].
 class QCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
@@ -201,7 +201,7 @@ class QCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
-    this.radius = 24,
+    this.radius = 18,
     this.color,
     this.onTap,
   });
@@ -212,8 +212,9 @@ class QCard extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? context.q.surf,
+        color: color ?? Colors.transparent,
         borderRadius: BorderRadius.circular(radius),
+        border: color == null ? Border.all(color: context.q.line) : null,
       ),
       child: child,
     );
@@ -221,7 +222,8 @@ class QCard extends StatelessWidget {
   }
 }
 
-/// Rows in a `surf` container (radius 22) with hairlines between them.
+/// Rows between hairlines, straight on the page (Folio's quiet list).
+/// [color] brings back a filled container where one is really needed.
 class GroupedList extends StatelessWidget {
   final List<Widget> children;
   final Color? color;
@@ -236,11 +238,19 @@ class GroupedList extends StatelessWidget {
       if (i > 0) rows.add(Divider(height: 1, thickness: 1, color: t.line));
       rows.add(children[i]);
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    if (color != null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(children: rows),
+      );
+    }
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: color ?? t.surf,
-        borderRadius: BorderRadius.circular(22),
+        border: Border.symmetric(horizontal: BorderSide(color: t.line)),
       ),
       child: Column(children: rows),
     );
@@ -275,7 +285,7 @@ class GroupedRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.q;
     final content = Padding(
-      padding: const EdgeInsets.symmetric(vertical: 13),
+      padding: const EdgeInsets.symmetric(vertical: 15),
       child: Row(
         children: [
           Expanded(
@@ -290,7 +300,10 @@ class GroupedRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: context.qt.rowTitle.copyWith(color: titleColor),
+                      style: context.qt.rowTitle.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: titleColor,
+                      ),
                     ),
                     if (isNew) const NewBadge(),
                   ],
@@ -301,10 +314,7 @@ class GroupedRow extends StatelessWidget {
                     description!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: context.qt.label.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: descriptionColor,
-                    ),
+                    style: context.qt.meta.copyWith(color: descriptionColor),
                   ),
                 ],
               ],

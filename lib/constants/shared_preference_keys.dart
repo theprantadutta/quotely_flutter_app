@@ -65,6 +65,7 @@ const kAppearanceQuoteScaleKey = 'appearance-quote-scale';
 const kAppearanceReadingFontKey = 'appearance-reading-font';
 const kAppearanceLayoutKey = 'appearance-layout';
 const kAppearanceMigratedKey = 'appearance-migrated-v1';
+const kSpotlightFontMigratedKey = 'appearance-spotlight-font-v1';
 
 /// Interests → SCREEN picks (movie, tv, anime, game, cartoon). Kept apart from
 /// [kInterestsKey] because those strings filter quote tags and fact

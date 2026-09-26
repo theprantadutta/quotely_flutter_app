@@ -86,8 +86,8 @@ class BottomNavigationLayout extends StatelessWidget {
   }
 }
 
-/// Five text tabs; the active one sits in an `accSoft` pill that slides
-/// between items. `bg` background, no border, no elevation.
+/// Five plain text tabs over a hairline: the active one is ink with a small
+/// dot beneath it that slides between items. No pill, no elevation.
 class ThreadBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -102,14 +102,15 @@ class ThreadBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.q;
     final showIcons = isTablet(context);
-    final style = context.qt.label;
-    final scaler = MediaQuery.textScalerOf(context);
-    return ColoredBox(
-      color: t.bg,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: t.bg,
+        border: Border(top: BorderSide(color: t.line)),
+      ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 14),
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
           child: Center(
             heightFactor: 1,
             child: ConstrainedBox(
@@ -117,14 +118,7 @@ class ThreadBottomNav extends StatelessWidget {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final slot = constraints.maxWidth / kTabDestinations.length;
-                  final label = kTabDestinations[currentIndex].label;
-                  final painter = TextPainter(
-                    text: TextSpan(text: label, style: style),
-                    textDirection: TextDirection.ltr,
-                    textScaler: scaler,
-                  )..layout();
-                  final pillW = (painter.width + 24).clamp(0.0, slot);
-                  final height = showIcons ? 52.0 : 34.0;
+                  final height = showIcons ? 56.0 : 44.0;
                   return SizedBox(
                     height: height,
                     child: Stack(
@@ -134,14 +128,14 @@ class ThreadBottomNav extends StatelessWidget {
                               ? Duration.zero
                               : const Duration(milliseconds: 200),
                           curve: Curves.easeOutCubic,
-                          left: slot * currentIndex + (slot - pillW) / 2,
-                          width: pillW,
-                          top: 0,
-                          bottom: 0,
+                          left: slot * currentIndex + slot / 2 - 2,
+                          width: 4,
+                          height: 4,
+                          bottom: 2,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: t.accSoft,
-                              borderRadius: BorderRadius.circular(999),
+                              color: t.acc,
+                              shape: BoxShape.circle,
                             ),
                           ),
                         ),
@@ -187,7 +181,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.q;
-    final color = selected ? t.accInk : t.mute;
+    final color = selected ? t.ink : t.mute;
     return Tooltip(
       message: destination.tooltip,
       excludeFromSemantics: true,
@@ -210,7 +204,11 @@ class _NavItem extends StatelessWidget {
                 ],
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
-                  style: context.qt.label.copyWith(color: color),
+                  style: context.qt.label.copyWith(
+                    fontSize: 13.5,
+                    color: color,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  ),
                   child: Text(
                     destination.label,
                     maxLines: 1,

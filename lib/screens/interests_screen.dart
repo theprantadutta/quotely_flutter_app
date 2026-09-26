@@ -204,7 +204,7 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                         'Step 2 of 3',
                         style: context.qt.label.copyWith(
                           color: t.accInk,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     const SizedBox(height: 6),

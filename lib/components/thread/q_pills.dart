@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 import 'q_controls.dart';
 
-/// Centered "8:00 AM · Quote of the day" separator between thread groups.
+/// Quiet separator label ("8:00 AM · QUOTE OF THE DAY"), mono and uppercase.
 class TimeDivider extends StatelessWidget {
   final String text;
 
@@ -16,16 +16,17 @@ class TimeDivider extends StatelessWidget {
       padding: const EdgeInsets.only(top: 6, bottom: 2),
       child: Center(
         child: Text(
-          text,
+          text.toUpperCase(),
           textAlign: TextAlign.center,
-          style: context.qt.meta.copyWith(fontSize: 12),
+          style: context.qt.overline,
         ),
       ),
     );
   }
 }
 
-/// Centered `accSoft` pill: streaks, "tap to play" prompts, empty states.
+/// A notice in the flow: plain accent text with an arrow when tappable.
+/// (Spotlight/Folio replace filled pills with text.)
 class SystemPill extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
@@ -36,64 +37,47 @@ class SystemPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.q;
-    final pill = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: t.accSoft,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 16, color: t.accInk),
-            const SizedBox(width: 6),
-          ],
-          Flexible(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: context.qt.label.copyWith(
-                color: t.accInk,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+    final color = onTap == null ? t.mute : t.accInk;
+    final content = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 6),
         ],
-      ),
+        Flexible(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: context.qt.chip.copyWith(color: color),
+          ),
+        ),
+        if (onTap != null) ...[
+          const SizedBox(width: 4),
+          Icon(Icons.arrow_forward_rounded, size: 15, color: color),
+        ],
+      ],
     );
     return Center(
       child: onTap == null
-          ? pill
-          : Semantics(
-              button: true,
-              child: Pressable(onTap: onTap, child: pill),
-            ),
+          ? content
+          : HitTarget(onTap: onTap, semanticLabel: text, child: content),
     );
   }
 }
 
-/// Small "NEW" marker after a row title or section overline.
+/// Small "NEW" marker, mono in the accent.
 class NewBadge extends StatelessWidget {
   final String text;
 
   const NewBadge({super.key, this.text = 'NEW'});
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.q;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: t.accSoft,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(text, style: context.qt.badge),
-    );
-  }
+  Widget build(BuildContext context) => Text(text, style: context.qt.badge);
 }
 
-/// Compact `accSoft`/`accInk` pill ("Anime", "✓ Saved", "Spoiler shield on").
+/// Small accent label ("ANIME", "SAVED", "SPOILER SHIELD ON"), mono,
+/// uppercase, no fill.
 class SoftPill extends StatelessWidget {
   final String text;
   final IconData? icon;
@@ -106,33 +90,29 @@ class SoftPill extends StatelessWidget {
     super.key,
     this.icon,
     this.onTap,
-    this.fontSize = 12,
-    this.padding = const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+    this.fontSize = 11,
+    this.padding = EdgeInsets.zero,
   });
 
   @override
   Widget build(BuildContext context) {
     final t = context.q;
-    final pill = Container(
+    final pill = Padding(
       padding: padding,
-      decoration: BoxDecoration(
-        color: t.accSoft,
-        borderRadius: BorderRadius.circular(999),
-      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: fontSize + 2, color: t.accInk),
-            const SizedBox(width: 4),
+            Icon(icon, size: fontSize + 3, color: t.accInk),
+            const SizedBox(width: 5),
           ],
           Text(
-            text,
+            text.toUpperCase(),
             maxLines: 1,
-            style: context.qt.label.copyWith(
+            style: context.qt.overline.copyWith(
               fontSize: fontSize,
-              fontWeight: FontWeight.w800,
               color: t.accInk,
+              letterSpacing: fontSize * 0.12,
             ),
           ),
         ],
@@ -143,7 +123,7 @@ class SoftPill extends StatelessWidget {
   }
 }
 
-/// Uppercase section header ("QUOTES", "THEME", "ALL").
+/// Uppercase mono section header ("QUOTES", "THEME").
 class SectionOverline extends StatelessWidget {
   final String text;
   final Widget? trailing;
@@ -153,7 +133,7 @@ class SectionOverline extends StatelessWidget {
     this.text, {
     super.key,
     this.trailing,
-    this.padding = const EdgeInsets.only(left: 4, bottom: 6),
+    this.padding = const EdgeInsets.only(left: 2, bottom: 10),
   });
 
   @override
@@ -165,7 +145,7 @@ class SectionOverline extends StatelessWidget {
         child: Row(
           children: [
             Text(text.toUpperCase(), style: context.qt.overline),
-            if (trailing != null) ...[const SizedBox(width: 6), trailing!],
+            if (trailing != null) ...[const SizedBox(width: 8), trailing!],
           ],
         ),
       ),
@@ -173,15 +153,15 @@ class SectionOverline extends StatelessWidget {
   }
 }
 
-/// One option for [FilterChips].
+/// One option for [FilterChips] and the segmented controls.
 class ChipOption<T> {
   final T value;
   final String label;
   const ChipOption(this.value, this.label);
 }
 
-/// Horizontally scrolling single-select pills. Selected = `ink` bg + `bg`
-/// text; unselected = `surf` + `ink`.
+/// Horizontally scrolling text tabs: the selected one is ink and medium,
+/// the rest muted. No backgrounds (Folio's "text tabs replace chips").
 class FilterChips<T> extends StatelessWidget {
   final List<ChipOption<T>> options;
   final bool Function(T value) isSelected;
@@ -194,55 +174,26 @@ class FilterChips<T> extends StatelessWidget {
     required this.options,
     required this.isSelected,
     required this.onSelected,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+    this.padding = const EdgeInsets.symmetric(horizontal: 20),
     this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-    final t = context.q;
     return SizedBox(
-      height: 44,
+      height: 40,
       child: ListView.separated(
         controller: controller,
         scrollDirection: Axis.horizontal,
         padding: padding,
         itemCount: options.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 6),
+        separatorBuilder: (_, _) => const SizedBox(width: 18),
         itemBuilder: (context, i) {
           final o = options[i];
-          final selected = isSelected(o.value);
-          return Semantics(
-            selected: selected,
-            button: true,
+          return _TextTab(
             label: o.label,
-            excludeSemantics: true,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                onSelected(o.value);
-              },
-              child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 13,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: selected ? t.ink : t.surf,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    o.label,
-                    style: context.qt.chip.copyWith(
-                      color: selected ? t.bg : t.ink,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            selected: isSelected(o.value),
+            onTap: () => onSelected(o.value),
           );
         },
       ),
@@ -250,7 +201,48 @@ class FilterChips<T> extends StatelessWidget {
   }
 }
 
-/// Outlined suggestion chip above the composer ("courage").
+class _TextTab extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TextTab({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    return Semantics(
+      selected: selected,
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 160),
+            style: context.qt.chip.copyWith(
+              fontSize: 14.5,
+              color: selected ? t.ink : t.mute,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            ),
+            child: Text(label),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Suggestion ("courage") in the ask sheet: a hairline-outlined word.
 class SuggestionChip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
@@ -267,19 +259,19 @@ class SuggestionChip extends StatelessWidget {
       child: Pressable(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: t.line),
           ),
-          child: Text(label, style: context.qt.label.copyWith(color: t.ink)),
+          child: Text(label, style: context.qt.chip),
         ),
       ),
     );
   }
 }
 
-/// Wrap chip for the interests picker. Selected = `acc` + ✓.
+/// Wrap chip for the interests picker: hairline when off, ink when on.
 class InterestChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -307,29 +299,18 @@ class InterestChip extends StatelessWidget {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
-          padding: EdgeInsets.fromLTRB(selected ? 12 : 14, 9, 14, 9),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
           decoration: BoxDecoration(
-            color: selected ? t.acc : t.surf,
+            color: selected ? t.ink : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: selected ? t.acc : t.line),
+            border: Border.all(color: selected ? t.ink : t.line),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (selected) ...[
-                Icon(Icons.check_rounded, size: 14, color: t.onAcc),
-                const SizedBox(width: 4),
-              ],
-              Flexible(
-                child: Text(
-                  label,
-                  style: context.qt.chip.copyWith(
-                    fontSize: 14,
-                    color: selected ? t.onAcc : t.ink,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            label,
+            style: context.qt.chip.copyWith(
+              fontSize: 14,
+              color: selected ? t.bg : t.ink,
+            ),
           ),
         ),
       ),
@@ -337,10 +318,10 @@ class InterestChip extends StatelessWidget {
   }
 }
 
-/// Equal-width pill switcher with an animated `acc` indicator
-/// ("Quotes 24 · Scenes 11 · Facts 9", "Light / Dark / System").
+/// Equal-width text tabs with a thin ink underline that slides to the
+/// selected one ("Quotes 24 · Scenes 11 · Facts 9", "Light / Dark / System").
 ///
-/// [labelBuilder] lets an option render in its own font (reading font).
+/// [labelStyle] lets an option render in its own font (reading font).
 class SegmentedPill<T> extends StatelessWidget {
   final List<ChipOption<T>> options;
   final T value;
@@ -361,31 +342,28 @@ class SegmentedPill<T> extends StatelessWidget {
     final index = options.indexWhere((o) => o.value == value).clamp(0, 99);
     final duration = context.reduceMotion
         ? Duration.zero
-        : const Duration(milliseconds: 200);
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: t.surf,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final w = constraints.maxWidth / options.length;
-          return Stack(
+        : const Duration(milliseconds: 220);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth / options.length;
+        return SizedBox(
+          height: 44,
+          child: Stack(
             children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(height: 1, color: t.line),
+              ),
               AnimatedPositioned(
                 duration: duration,
                 curve: Curves.easeOutCubic,
-                left: w * index,
-                top: 0,
+                left: w * index + w * 0.2,
+                width: w * 0.6,
                 bottom: 0,
-                width: w,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: t.acc,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
+                height: 2,
+                child: ColoredBox(color: t.ink),
               ),
               Row(
                 children: [
@@ -403,19 +381,16 @@ class SegmentedPill<T> extends StatelessWidget {
                             HapticFeedback.selectionClick();
                             onChanged(o.value);
                           },
-                          child: Container(
-                            constraints: const BoxConstraints(minHeight: 40),
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 9,
-                              horizontal: 4,
-                            ),
+                          child: Center(
                             child: AnimatedDefaultTextStyle(
                               duration: duration,
                               style: () {
                                 final base = context.qt.chip.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: o.value == value ? t.onAcc : t.ink,
+                                  fontSize: 14.5,
+                                  fontWeight: o.value == value
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                  color: o.value == value ? t.ink : t.mute,
                                 );
                                 return labelStyle?.call(o.value, base) ?? base;
                               }(),
@@ -432,14 +407,14 @@ class SegmentedPill<T> extends StatelessWidget {
                 ],
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-/// Header-sized toggle (Thread/Cards, Play/Browse): selected = `ink` pill.
+/// Header-sized text toggle ("Play · Browse"): selected ink, others muted.
 class MiniSegmented<T> extends StatelessWidget {
   final List<ChipOption<T>> options;
   final T value;
@@ -454,59 +429,28 @@ class MiniSegmented<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.q;
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: t.surf,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final o in options)
-            Semantics(
-              selected: o.value == value,
-              button: true,
-              label: o.label,
-              excludeSemantics: true,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  if (o.value == value) return;
-                  HapticFeedback.selectionClick();
-                  onChanged(o.value);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  constraints: const BoxConstraints(minHeight: 34),
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: o.value == value ? t.ink : Colors.transparent,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    o.label,
-                    style: context.qt.label.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: o.value == value ? t.bg : t.mute,
-                    ),
-                  ),
-                ),
-              ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < options.length; i++) ...[
+          if (i > 0) const SizedBox(width: 14),
+          SizedBox(
+            height: 44,
+            child: _TextTab(
+              label: options[i].label,
+              selected: options[i].value == value,
+              onTap: () {
+                if (options[i].value != value) onChanged(options[i].value);
+              },
             ),
+          ),
         ],
-      ),
+      ],
     );
   }
 }
 
-/// n segments, 4 tall, 4 apart. Done = `acc`, remaining = `line`.
+/// n segments, 3 tall. Done = ink, remaining = `line`.
 class SegmentedProgress extends StatelessWidget {
   final int total;
   final int done;
@@ -525,9 +469,9 @@ class SegmentedProgress extends StatelessWidget {
             Expanded(
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
-                height: 4,
+                height: 3,
                 decoration: BoxDecoration(
-                  color: i < done ? t.acc : t.line,
+                  color: i < done ? t.ink : t.line,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -539,12 +483,12 @@ class SegmentedProgress extends StatelessWidget {
   }
 }
 
-/// Thin rounded progress bar (Offline library): `line` track, `acc` fill.
+/// Thin progress bar: `line` track, ink fill.
 class QProgressBar extends StatelessWidget {
   final double value;
   final double height;
 
-  const QProgressBar({super.key, required this.value, this.height = 8});
+  const QProgressBar({super.key, required this.value, this.height = 4});
 
   @override
   Widget build(BuildContext context) {
@@ -561,7 +505,7 @@ class QProgressBar extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 decoration: BoxDecoration(
-                  color: t.acc,
+                  color: t.ink,
                   borderRadius: BorderRadius.circular(height / 2),
                 ),
               ),

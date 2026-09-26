@@ -66,7 +66,7 @@ ThemeData buildQuotelyTheme(Brightness brightness, AppearanceSettings s) {
   );
 
   final baseText = ThemeData(brightness: brightness).textTheme.apply(
-    fontFamily: kFontManrope,
+    fontFamily: kFontUi,
     bodyColor: t.ink,
     displayColor: t.ink,
   );
@@ -75,7 +75,7 @@ ThemeData buildQuotelyTheme(Brightness brightness, AppearanceSettings s) {
     useMaterial3: true,
     brightness: brightness,
     colorScheme: scheme,
-    fontFamily: kFontManrope,
+    fontFamily: kFontUi,
     textTheme: baseText,
     scaffoldBackgroundColor: t.bg,
     canvasColor: t.bg,
