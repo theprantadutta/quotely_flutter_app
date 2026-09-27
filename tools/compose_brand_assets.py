@@ -29,23 +29,30 @@ def hexc(h, a=255):
     h = h.lstrip('#')
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), a)
 
-def glow(img, color, center, radius, strength):
+def glow(img, color, center, radius, strength, window=None):
+    """[center] and [radius] are in 1024-tile units. [window] is
+    (offset, size) of the visible tile inside [img]: Android's adaptive layer
+    shows only its middle 72/108, so the glows are placed in that window, not
+    at the layer's cropped-away corners."""
     w, h = img.size
-    k = w / S
+    off, vis = window if window else (0, w)
+    k = vis / S
     layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
-    cx, cy, r = center[0] * k, center[1] * k, radius * k
+    cx, cy, r = off + center[0] * k, off + center[1] * k, radius * k
     ImageDraw.Draw(layer).ellipse([cx - r, cy - r, cx + r, cy + r], fill=hexc(color, int(255 * strength)))
     layer = layer.filter(ImageFilter.GaussianBlur(r * 0.55))
     return Image.alpha_composite(img, layer)
 
-def ground(dark=False, size=S):
+def ground(dark=False, size=S, adaptive=False):
+    # Adaptive layers show the middle 72/108: lay the design out in that window.
+    win = (size * 18 / 108, size * 72 / 108) if adaptive else None
     if dark:
         img = Image.new('RGBA', (size, size), hexc(NIGHT))
-        img = glow(img, '#C0643F', (820, 180), 520, 0.55)
-        return glow(img, '#3F7EC4', (120, 960), 420, 0.22)
+        img = glow(img, '#C0643F', (820, 180), 520, 0.55, win)
+        return glow(img, '#3F7EC4', (120, 960), 420, 0.22, win)
     img = Image.new('RGBA', (size, size), hexc(PAPER))
-    img = glow(img, '#F2A07E', (820, 180), 520, 0.45)
-    return glow(img, '#9CCBFF', (140, 950), 420, 0.25)
+    img = glow(img, '#F2A07E', (820, 180), 520, 0.45, win)
+    return glow(img, '#9CCBFF', (140, 950), 420, 0.25, win)
 
 _ink_cache = {}
 def mark_ink(color):
@@ -111,7 +118,7 @@ save(place(bare, CREAM, 0.70, 0), r'master\quotely-mark-cream-1024.png')
 
 # android
 A = 432
-save(ground(size=A), r'android\adaptive\ic_launcher_background.png')
+save(ground(size=A, adaptive=True), r'android\adaptive\ic_launcher_background.png')
 fg_bare = Image.new('RGBA', (A, A), (0, 0, 0, 0))
 # Adaptive safe zone is the central 66/108; keep the mark well inside it.
 save(place(fg_bare, INK, ADAPTIVE_W), r'android\adaptive\ic_launcher_foreground.png')

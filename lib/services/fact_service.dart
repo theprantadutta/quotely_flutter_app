@@ -10,6 +10,7 @@ import '../dtos/ai_fact_response_dto.dart';
 import 'drift_fact_service.dart';
 import 'http_service.dart';
 import 'local_first.dart';
+import '../util/profanity.dart';
 
 /// Facts, local first (see [LocalFirst]).
 class FactService {
@@ -45,7 +46,9 @@ class FactService {
         return AiFactResponseDto(
           aiFacts: [
             for (final row in rows)
-              AiFactDto.fromDrift(row)..isFavorite = favorites.contains(row.id),
+              if (isClean(row.content))
+                AiFactDto.fromDrift(row)
+                  ..isFavorite = favorites.contains(row.id),
           ],
           pagination: PaginationDto(
             pageNumber: 0,
@@ -70,7 +73,15 @@ class FactService {
         if (response.statusCode != 200) {
           throw Exception('Facts request failed: ${response.statusCode}');
         }
-        final dto = AiFactResponseDto.fromJson(json.decode(response.data));
+        final parsed = AiFactResponseDto.fromJson(json.decode(response.data));
+        // Broken or profane rows are neither cached nor shown.
+        final dto = AiFactResponseDto(
+          aiFacts: [
+            for (final f in parsed.aiFacts)
+              if (isClean(f.content)) f,
+          ],
+          pagination: parsed.pagination,
+        );
         if (dto.aiFacts.isNotEmpty) {
           await DriftFactService.saveNewFactsToDatabase(dto.aiFacts);
         }
