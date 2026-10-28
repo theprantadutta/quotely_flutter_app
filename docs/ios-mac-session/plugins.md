@@ -13,7 +13,7 @@ App Store build. Until they are done, Xcode Cloud will fail: its committed
 | firebase_analytics | 12.5.0 | 13.0.1 | FirebaseAnalytics / GoogleAppMeasurement 13.x |
 | firebase_crashlytics | 5.3.0 | 6.0.1 | FirebaseCrashlytics 13.x |
 | firebase_messaging | 16.6.0 | 17.0.1 | FirebaseMessaging 13.x, plus iOS fixes for UIScene apps (see below) |
-| flutter_inapp_purchase | 10.6.1 | 10.7.3 | openiap (Swift package) `from: "3.6.1"`, which is already the pinned version. No change expected |
+| flutter_inapp_purchase | 10.6.1 | **11.2.0** (raised from 10.7.3 by the later `pub upgrade --major-versions`) | openiap **4.x** Swift package: a new pin is expected. Wherever this file says openiap should stay 3.6.1, read 4.x |
 
 There are no Dart API changes to make. `flutter analyze` and `flutter test`
 are clean on Windows.
