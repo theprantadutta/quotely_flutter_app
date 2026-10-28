@@ -67,6 +67,9 @@ const kAppearanceLayoutKey = 'appearance-layout';
 /// Legacy on/off for the glow; read once to seed [kAppearanceBackdropKey].
 const kAppearanceGlowKey = 'appearance-background-glow';
 const kAppearanceBackdropKey = 'appearance-backdrop';
+/// The last scene poster shown behind the app; the Poster background falls
+/// back to it on a day with no scene (see backdrop_poster_provider.dart).
+const kLastBackdropPosterKey = 'backdrop-last-poster-url';
 const kAppearanceMigratedKey = 'appearance-migrated-v1';
 const kSpotlightFontMigratedKey = 'appearance-spotlight-font-v1';
 

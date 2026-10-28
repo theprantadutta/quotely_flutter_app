@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../riverpods/backdrop_poster_provider.dart';
 import '../../riverpods/scene_providers.dart';
 import '../../services/activity_service.dart';
 import '../../state_providers/scene_state.dart';
@@ -323,8 +324,9 @@ class PosterWash extends StatelessWidget {
 }
 
 /// The app's background, per Appearance → Background:
-/// - Poster: the day's scene poster as a [PosterWash] (the Scenes look),
-///   falling back to Glow until the poster is known;
+/// - Poster: the day's scene poster as a [PosterWash] (the Scenes look);
+///   with no scene today, the last poster shown or a seed title's poster,
+///   and Glow until one is known;
 /// - Glow: the page colour with soft gradients of the day's hue;
 /// - Plain: the page colour.
 /// Every screen sits on this (the tab shell, [ThreadPage] and the
@@ -346,12 +348,13 @@ class PageBackdrop extends ConsumerWidget {
       );
     }
     if (style == BackdropStyle.poster) {
-      final url = ref.watch(sceneOfTheDayProvider).value?.sceneQuote.posterUrl;
+      final url = _posterUrl(ref);
       if (url != null && url.isNotEmpty) {
         return Stack(
           fit: StackFit.expand,
           children: [
-            PosterWash(url: url),
+            // Crossfades when today's poster replaces the fallback.
+            SpotlightBackdrop(tint: t.bg, imageUrl: url),
             content,
           ],
         );
@@ -386,6 +389,17 @@ class PageBackdrop extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Today's scene poster, else the last one shown, else a seed title's
+/// poster for the day ([fallbackPosterProvider]).
+String? _posterUrl(WidgetRef ref) {
+  final today = ref.watch(sceneOfTheDayProvider).value?.sceneQuote.posterUrl;
+  if (today != null && today.isNotEmpty) {
+    rememberBackdropPoster(today);
+    return today;
+  }
+  return ref.watch(fallbackPosterProvider).value;
 }
 
 /// Small "3 / 7" position marker for the top of the feed.
