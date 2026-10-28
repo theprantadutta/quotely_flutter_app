@@ -50,8 +50,9 @@ ImageProvider sharePosterProvider(String url) => ResizeImage(
 );
 
 /// Renders [m] as a [ShareCard] offscreen and returns the PNG bytes at
-/// 1080x1350, or null if anything fails. The poster is loaded before the
-/// capture; if it doesn't arrive in time the card falls back to the glow.
+/// 1080x1350, or null if anything fails. The card follows Appearance →
+/// Background. With Poster, the poster is loaded before the capture; if it
+/// doesn't arrive in time the card falls back to the glow.
 Future<Uint8List?> renderShareCard(
   BuildContext context,
   ThreadMessage m, {
@@ -60,8 +61,15 @@ Future<Uint8List?> renderShareCard(
   final theme = Theme.of(context);
   final overlay = Overlay.of(context, rootOverlay: true);
 
+  final backdrop = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(appearanceProvider).backdrop;
+
   ImageProvider? poster;
-  final url = await sharePosterUrlFor(context, m);
+  final url = backdrop == BackdropStyle.poster
+      ? await sharePosterUrlFor(context, m)
+      : null;
   if (!context.mounted) return null;
   final pending = <Future<void>>[
     precacheImage(
@@ -105,6 +113,7 @@ Future<Uint8List?> renderShareCard(
                   child: ShareCard(
                     message: m,
                     eyebrow: shareEyebrowFor(m, hint: eyebrow),
+                    backdrop: backdrop,
                     poster: poster,
                   ),
                 ),
@@ -139,7 +148,8 @@ Future<Uint8List?> renderShareCard(
 }
 
 /// The portrait card behind "Share as image", in the Spotlight look: the
-/// poster washed into the page colour (or the day's glow), a mono overline,
+/// background per Appearance → Background (the poster washed into the page
+/// colour, the day's glow, or the plain page colour), a mono overline,
 /// the line large in the serif, who said it, and the Quotely mark.
 ///
 /// Laid out at [size] and captured at 3x, so 1080x1350 on every device.
@@ -150,7 +160,10 @@ class ShareCard extends StatelessWidget {
   final ThreadMessage message;
   final String eyebrow;
 
-  /// Already-loaded poster to wash the card with; null paints the glow.
+  /// Appearance → Background. Poster without a [poster] paints the glow.
+  final BackdropStyle backdrop;
+
+  /// Already-loaded poster to wash the card with.
   final ImageProvider? poster;
 
   /// Picks the glow hue; defaults to today.
@@ -160,6 +173,7 @@ class ShareCard extends StatelessWidget {
     super.key,
     required this.message,
     required this.eyebrow,
+    this.backdrop = BackdropStyle.poster,
     this.poster,
     this.day,
   });
@@ -188,9 +202,13 @@ class ShareCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              poster == null
-                  ? _Glow(day: day ?? DateTime.now())
-                  : _Wash(poster: poster!),
+              switch (backdrop) {
+                BackdropStyle.plain => ColoredBox(color: t.bg),
+                BackdropStyle.poster when poster != null => _Wash(
+                  poster: poster!,
+                ),
+                _ => _Glow(day: day ?? DateTime.now()),
+              },
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 34, 30, 26),
                 child: Column(
