@@ -13,6 +13,7 @@ export 'q_pills.dart';
 export 'q_sheet.dart';
 export 'q_states.dart';
 export 'report_sheet.dart';
+export 'share_card.dart';
 export 'thread_message.dart';
 export 'quote_card.dart';
 export 'legal.dart';

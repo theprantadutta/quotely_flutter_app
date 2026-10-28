@@ -643,7 +643,7 @@ class _AnswerFace extends StatelessWidget {
               icon: kShareIcon,
               semanticLabel: 'Share',
               foreground: t.mute,
-              onTap: () => shareMessage(ThreadMessage.fromFact(fact)),
+              onTap: () => shareMessage(context, ThreadMessage.fromFact(fact)),
             ),
           ],
         ),

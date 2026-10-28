@@ -173,7 +173,15 @@ class SpotlightRail extends ConsumerWidget {
   final ThreadMessage? message;
   final VoidCallback? onAsk;
 
-  const SpotlightRail({super.key, required this.message, this.onAsk});
+  /// The entry's overline ("Quote of the day"), reused on the share card.
+  final String? eyebrow;
+
+  const SpotlightRail({
+    super.key,
+    required this.message,
+    this.onAsk,
+    this.eyebrow,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -198,7 +206,7 @@ class SpotlightRail extends ConsumerWidget {
           _RailButton(
             icon: kShareIcon,
             label: 'Share',
-            onTap: () => shareMessage(m),
+            onTap: () => shareMessage(context, m, eyebrow: eyebrow),
           ),
           _RailButton(
             icon: Icons.more_horiz_rounded,
