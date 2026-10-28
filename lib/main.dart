@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
+import 'components/maintenance_gate.dart';
 import 'firebase_options.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
@@ -177,7 +178,7 @@ class _QuotelyAppState extends ConsumerState<QuotelyApp> {
         maxScaleFactor: 1.4,
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: quotelyOverlayStyle(context.q),
-          child: child ?? const SizedBox.shrink(),
+          child: MaintenanceGate(child: child ?? const SizedBox.shrink()),
         ),
       ),
       // Two sets of delegates on purpose. The first three satisfy
