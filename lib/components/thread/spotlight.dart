@@ -338,26 +338,24 @@ class PageBackdrop extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.q;
     final style = ref.watch(appearanceProvider.select((a) => a.backdrop));
-    final content = child ?? const SizedBox.expand();
-    if (style == BackdropStyle.plain) {
-      return DecoratedBox(
-        decoration: BoxDecoration(color: t.bg),
-        child: content,
-      );
-    }
+    // One tree shape for every style: changing the style, or the poster
+    // arriving, swaps only the bottom layer. A different shape remounted
+    // [child], resetting the whole screen below it (scroll, feed position).
+    return Stack(
+      fit: StackFit.expand,
+      children: [_layer(context, ref, style), child ?? const SizedBox.expand()],
+    );
+  }
+
+  Widget _layer(BuildContext context, WidgetRef ref, BackdropStyle style) {
+    final t = context.q;
+    if (style == BackdropStyle.plain) return ColoredBox(color: t.bg);
     if (style == BackdropStyle.poster) {
       final url = _posterUrl(ref);
       if (url != null && url.isNotEmpty) {
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            // Crossfades when today's poster replaces the fallback.
-            SpotlightBackdrop(tint: t.bg, imageUrl: url),
-            content,
-          ],
-        );
+        // Crossfades when today's poster replaces the fallback.
+        return SpotlightBackdrop(tint: t.bg, imageUrl: url);
       }
     }
     final hue = t.glowFor(DateTime.now());
@@ -384,7 +382,7 @@ class PageBackdrop extends ConsumerWidget {
           decoration: BoxDecoration(
             gradient: glow(const Alignment(-1.1, 1.0), 1.4, 0.7),
           ),
-          child: content,
+          child: const SizedBox.expand(),
         ),
       ),
     );
