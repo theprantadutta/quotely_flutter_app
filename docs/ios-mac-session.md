@@ -1,6 +1,6 @@
 # iOS work for the next Mac session
 
-Start here. Version 3.0.2 (22) was built and tested on Android from Windows,
+Start here. Version 3.1.0 (23) was built and tested on Android from Windows,
 where iOS cannot be built. Everything below needs a Mac with **Xcode 26.2 or
 newer** and a human for the Apple Developer portal steps. The details are in
 the per-topic files in `docs/ios-mac-session/`; this file gives the order.
@@ -52,7 +52,7 @@ signing profile yet. Don't ship an iOS build from master before then.
      bring the app back to the foreground.
    - **Ask.** Ask a question online (an answer from the server), then offline
      (the local search, with no error).
-6. **App Store:** submit 3.0.2 (22) with the release notes used for Play.
+6. **App Store:** submit 3.1.0 (23) with the release notes used for Play.
 
 ## Already done on Windows (no Mac needed)
 
