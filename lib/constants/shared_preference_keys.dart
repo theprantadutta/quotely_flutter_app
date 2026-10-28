@@ -120,3 +120,7 @@ const kFactsGameProgressKey = 'facts-game-progress';
 /// opens that reached Today, so it never interrupts a first launch.
 const kQuoteWidgetIntroShownKey = 'quote-widget-intro-shown';
 const kAppOpenCountKey = 'app-open-count';
+
+/// When this device's supporter first supported Quotely (ISO 8601), from the
+/// store's transaction date when known. Shown as "Supporter since ...".
+const kSupporterSinceKey = 'supporter-since';

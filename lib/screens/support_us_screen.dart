@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../components/supporter_thanks.dart';
 import '../components/thread/thread.dart';
 import '../constants/shared_preference_keys.dart';
 import '../navigation/routes.dart';
@@ -42,6 +43,9 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   /// is true the donation tiles are hidden so we stop asking.
   bool _isSupporter = false;
 
+  /// When they first supported, for "Supporter since ...". Null if unknown.
+  DateTime? _supporterSince;
+
   String _statusMessage = 'Loading support options...';
 
   /// The tier the sticky button will buy.
@@ -71,8 +75,12 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     // Show the supporter state we already know about before the store answers.
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getBool(kIsSupporterKey) ?? false;
+    final since = DateTime.tryParse(prefs.getString(kSupporterSinceKey) ?? '');
     if (mounted && cached) {
-      setState(() => _isSupporter = true);
+      setState(() {
+        _isSupporter = true;
+        _supporterSince = since;
+      });
     }
 
     try {
@@ -118,17 +126,37 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   Future<void> _syncSupporterFromStore() async {
     try {
       final purchases = await _iap.getAvailablePurchases();
-      final owned = purchases.any((p) => _productIds.contains(p.productId));
-      if (owned) await _markSupporter();
+      final owned = purchases
+          .where((p) => _productIds.contains(p.productId))
+          .toList();
+      if (owned.isNotEmpty) await _markSupporter(_purchaseTime(owned.first));
     } catch (_) {
       // Non-fatal: the cached flag still applies.
     }
   }
 
-  Future<void> _markSupporter() async {
+  /// The store's transaction time, when it reports a plausible one.
+  DateTime? _purchaseTime(Purchase purchase) {
+    final ms = purchase.transactionDate.toInt();
+    return ms > 0 ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
+  }
+
+  /// Records supporter status, and the date they first supported unless one
+  /// is already stored ([at] when the store knows it, otherwise now).
+  Future<void> _markSupporter([DateTime? at]) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(kIsSupporterKey, true);
-    if (mounted) setState(() => _isSupporter = true);
+    var since = DateTime.tryParse(prefs.getString(kSupporterSinceKey) ?? '');
+    if (since == null) {
+      since = at ?? DateTime.now();
+      await prefs.setString(kSupporterSinceKey, since.toIso8601String());
+    }
+    if (mounted) {
+      setState(() {
+        _isSupporter = true;
+        _supporterSince = since;
+      });
+    }
   }
 
   Future<void> _onPurchase(Purchase purchase) async {
@@ -143,7 +171,8 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     }
     if (purchase.purchaseState != PurchaseState.Purchased) return;
 
-    await _markSupporter();
+    final wasSupporter = _isSupporter;
+    await _markSupporter(_purchaseTime(purchase));
 
     // Must be finalized or Google auto-refunds after 3 days and iOS replays the
     // transaction on every launch. isConsumable: false acknowledges without
@@ -154,10 +183,10 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
       // Already finished, or the store will replay it; the flag is set anyway.
     }
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Thank you for your generous support!')),
-    );
+    // The store can replay a finished purchase (e.g. on launch); thank them
+    // properly once, not every time it echoes.
+    if (!mounted || wasSupporter) return;
+    await showThankYouMoment(context);
   }
 
   void _onPurchaseError(PurchaseError error) {
@@ -169,12 +198,12 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     // Expected on a second attempt, since these are non-consumable. Treat it as
     // confirmation they already supported us rather than as an error.
     if (error.code == ErrorCode.AlreadyOwned) {
-      _markSupporter();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You have already supported us. Thank you!'),
-        ),
-      );
+      final wasSupporter = _isSupporter;
+      _markSupporter().then((_) {
+        if (mounted && !wasSupporter) {
+          showThankYouMoment(context, restored: true);
+        }
+      });
       return;
     }
 
@@ -207,14 +236,20 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
       const SnackBar(content: Text('Restoring your purchases...')),
     );
     try {
+      final wasSupporter = _isSupporter;
       await _iap.restorePurchases();
       await _syncSupporterFromStore();
       if (!mounted) return;
+      if (_isSupporter && !wasSupporter) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        await showThankYouMoment(context, restored: true);
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             _isSupporter
-                ? 'Your support has been restored. Thank you!'
+                ? 'You are already a supporter. Thank you!'
                 : 'No previous support found on this account.',
           ),
         ),
@@ -282,7 +317,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     );
 
     return ThreadPage(
-      title: 'Support Quotely',
+      title: _isSupporter ? null : 'Support Quotely',
       bottom: selected == null
           ? null
           : PrimaryButton(
@@ -291,38 +326,43 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
               onPressed: () => _buyProduct(selected),
             ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
         children: [
-          const _MakerMessage(),
-          const SizedBox(height: 16),
           if (_isSupporter)
-            const SystemPill(
-              'You’re a supporter. Thank you!',
-              icon: Icons.verified_rounded,
-            )
-          else if (_loading)
-            const ThreadSkeleton(count: 1)
-          else if (products.isEmpty)
-            ErrorBubble(message: _statusMessage)
+            SupporterLetter(since: _supporterSince)
           else ...[
-            for (final p in products) ...[
-              _TierCard(
-                title: _cleanTitle(p.title),
-                tagline: p.description,
-                price: p.displayPrice,
-                selected: p.id == selected?.id,
-                onTap: () => setState(() => _selectedSku = p.id),
+            const _Invitation(),
+            const SizedBox(height: 22),
+            if (_loading)
+              const ThreadSkeleton(count: 1)
+            else if (products.isEmpty)
+              ErrorBubble(message: _statusMessage)
+            else ...[
+              for (final p in products) ...[
+                _TierCard(
+                  title: _cleanTitle(p.title),
+                  tagline: p.description,
+                  price: p.displayPrice,
+                  selected: p.id == selected?.id,
+                  onTap: () => setState(() => _selectedSku = p.id),
+                ),
+                const SizedBox(height: 10),
+              ],
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  'One-time. No subscription. Thanked properly.',
+                  style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
+                ),
               ),
-              const SizedBox(height: 10),
             ],
-            Center(
-              child: Text(
-                'One-time payment. No subscription.',
-                style: context.qt.label.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 28),
+          Text(
+            _isSupporter ? 'Another way to help' : 'Other ways to help',
+            style: context.qt.overline,
+          ),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -361,6 +401,32 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
   }
 }
 
+/// The top of the page for someone who hasn't supported yet: a big serif
+/// line and the maker's own note, never a sales pitch.
+class _Invitation extends StatelessWidget {
+  const _Invitation();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    final qt = context.qt;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Entrance(
+          child: Text(
+            'Made by one person, free for everyone.',
+            style: qt.quoteSpotlight.copyWith(color: t.ink),
+          ),
+        ),
+        const SizedBox(height: 22),
+        const Entrance(index: 1, child: _MakerMessage()),
+      ],
+    );
+  }
+}
+
 class _MakerMessage extends StatelessWidget {
   const _MakerMessage();
 
@@ -385,8 +451,10 @@ class _MakerMessage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: Text(
-                  'Hey! I build Quotely on my own. No ads, no tracking. If it '
-                  'made your day a bit better, a coffee keeps it going.',
+                  'Hey! I build Quotely on my own. No ads, no tracking, no '
+                  'paywall, and it will stay that way. If it has given you a '
+                  'good moment, you can give one back. Every supporter gets '
+                  'a proper thank-you.',
                   style: context.qt.quoteBody,
                 ),
               ),
