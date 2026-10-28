@@ -180,6 +180,12 @@ class PushNotifications {
           return null;
         }
       }
+      // firebase_messaging 17 deprecates getToken() in favour of register()
+      // and onRegistered, which hand back a Firebase Installation ID for
+      // direct-send messaging. That is a different identity from the FCM
+      // registration token, and Quotely delivers through topics, so keep the
+      // token call (still supported) until a deliberate FID migration.
+      // ignore: deprecated_member_use
       final token = await _firebaseMessaging.getToken();
       if (kDebugMode && token != null) {
         debugPrint("Firebase FCM Token: $token");
