@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quote of the Day widget, dark mode: night page, parchment text. -->
+<resources>
+    <color name="qotd_widget_bg">#15120F</color>
+    <color name="qotd_widget_ink">#EEE7DB</color>
+    <color name="qotd_widget_mute">#9B9184</color>
+    <!-- bg at 72%, PosterWash's dark wash. -->
+    <color name="qotd_widget_wash">#B815120F</color>
+</resources>

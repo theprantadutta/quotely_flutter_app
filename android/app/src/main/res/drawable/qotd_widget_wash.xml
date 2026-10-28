@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The page colour at 70% (72% at night) over the poster, as PosterWash
+     does in the app. Rounded itself so it matches before Android 12, where
+     clipToOutline on the root is ignored. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/qotd_widget_wash" />
+    <corners android:radius="@dimen/qotd_widget_radius" />
+</shape>
