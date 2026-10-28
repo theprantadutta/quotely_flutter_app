@@ -79,51 +79,60 @@ class SpotlightEntry extends ConsumerWidget {
     }
 
     final tappableSender = m.kind != MessageKind.fact;
-    final attribution = GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: tappableSender ? () => openSender(context, m) : null,
-      child: Row(
-        children: [
-          if (m.kind == MessageKind.fact)
-            const BrandAvatar(size: 34)
-          else
-            QAvatar(
-              name: m.sender,
-              imageUrl: watchSenderImage(ref, m),
-              size: 34,
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  m.kind == MessageKind.fact ? 'Quotely' : m.sender,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: qt.rowTitle,
+    final attribution = MergeSemantics(
+      child: Semantics(
+        button: tappableSender,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: tappableSender ? () => openSender(context, m) : null,
+          child: Row(
+            children: [
+              // The name follows; the avatar would only repeat it.
+              ExcludeSemantics(
+                child: m.kind == MessageKind.fact
+                    ? const BrandAvatar(size: 34)
+                    : QAvatar(
+                        name: m.sender,
+                        imageUrl: watchSenderImage(ref, m),
+                        size: 34,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      m.kind == MessageKind.fact ? 'Quotely' : m.sender,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: qt.rowTitle,
+                    ),
+                    if (_detail(m) case final d?) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        d,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: qt.meta,
+                      ),
+                    ],
+                  ],
                 ),
-                if (_detail(m) case final d?) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    d,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: qt.meta,
-                  ),
-                ],
-              ],
-            ),
+              ),
+              if (tappableSender)
+                Icon(Icons.arrow_forward_rounded, size: 16, color: t.mute),
+            ],
           ),
-          if (tappableSender)
-            Icon(Icons.arrow_forward_rounded, size: 16, color: t.mute),
-        ],
+        ),
       ),
     );
 
+    // Screen readers walk the children in reading order: the eyebrow, the
+    // line, then who said it (a button to their page).
     return Semantics(
-      label: '${m.sender}: ${m.text}',
+      container: true,
       onLongPressHint: 'More actions',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

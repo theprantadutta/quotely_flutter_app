@@ -120,9 +120,13 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
+    // The line first, then who said it; the attribution row below names
+    // them when it's shown.
     final semanticsLabel = spoilerHidden
         ? 'Spoiler hidden, double-tap to reveal'
-        : '${m.sender}: ${m.text}';
+        : showSender
+        ? m.text
+        : '${m.text}. ${m.sender}';
 
     final avatar = m.kind == MessageKind.fact
         ? BrandAvatar(size: avatarSize.clamp(18, 26))
@@ -135,24 +139,30 @@ class MessageBubble extends ConsumerWidget {
     final attribution = Row(
       children: [
         if (showAvatar) ...[
-          GestureDetector(
-            onTap: m.kind == MessageKind.fact
-                ? null
-                : () => openSender(context, m),
-            child: avatar,
+          // The name beside it is the screen-reader target.
+          ExcludeSemantics(
+            child: GestureDetector(
+              onTap: m.kind == MessageKind.fact
+                  ? null
+                  : () => openSender(context, m),
+              child: avatar,
+            ),
           ),
           const SizedBox(width: 9),
         ],
         Flexible(
-          child: GestureDetector(
-            onTap: m.kind == MessageKind.fact
-                ? null
-                : () => openSender(context, m),
-            child: Text(
-              senderLabel ?? m.sender,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: qt.label.copyWith(color: t.ink),
+          child: Semantics(
+            button: m.kind != MessageKind.fact,
+            child: GestureDetector(
+              onTap: m.kind == MessageKind.fact
+                  ? null
+                  : () => openSender(context, m),
+              child: Text(
+                senderLabel ?? m.sender,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: qt.label.copyWith(color: t.ink),
+              ),
             ),
           ),
         ),
@@ -424,39 +434,45 @@ class SpoilerBubble extends StatelessWidget {
             // short (entries have no bubble around them to pad it out).
             IgnorePointer(
               ignoring: hidden,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: hidden ? 230 : 0,
-                  minHeight: hidden ? 56 : 0,
+              child: ExcludeSemantics(
+                excluding: hidden,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: hidden ? 230 : 0,
+                    minHeight: hidden ? 56 : 0,
+                  ),
+                  child: blurred,
                 ),
-                child: blurred,
               ),
             ),
             if (hidden)
               Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    onReveal();
-                  },
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: t.ink,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        'Tap to reveal spoiler',
-                        maxLines: 1,
-                        softWrap: false,
-                        style: context.qt.label.copyWith(
-                          color: t.bg,
-                          fontWeight: FontWeight.w600,
+                child: Semantics(
+                  button: true,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onReveal();
+                    },
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: t.ink,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'Tap to reveal spoiler',
+                          maxLines: 1,
+                          softWrap: false,
+                          style: context.qt.label.copyWith(
+                            color: t.bg,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
