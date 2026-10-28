@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
+import 'message_bubble.dart' show TypingIndicator;
 
 /// Loading skeletons, one per screen shape, sharing one [Shimmer].
 ///
@@ -432,6 +435,60 @@ class DetailSkeleton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The Ask sheet while an answer loads: the typing dots, then, if the
+/// server takes a moment over a new question, the shape of the answer
+/// fading in under them. A quick answer never shows the skeleton.
+class AskAnswerSkeleton extends StatefulWidget {
+  final Duration delay;
+
+  const AskAnswerSkeleton({
+    super.key,
+    this.delay = const Duration(milliseconds: 900),
+  });
+
+  @override
+  State<AskAnswerSkeleton> createState() => _AskAnswerSkeletonState();
+}
+
+class _AskAnswerSkeletonState extends State<AskAnswerSkeleton> {
+  late final Timer _timer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.delay, () => setState(() => _slow = true));
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const TypingIndicator(),
+        AnimatedSwitcher(
+          duration: context.reduceMotion
+              ? Duration.zero
+              : const Duration(milliseconds: 300),
+          child: _slow
+              ? const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Shimmer(child: EntrySkeleton(lines: 3, width: 0.9)),
+                )
+              : const SizedBox(width: double.infinity),
+        ),
+      ],
     );
   }
 }

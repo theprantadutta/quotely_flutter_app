@@ -762,7 +762,7 @@ class _AskSheetState extends State<_AskSheet> {
             ),
             const SizedBox(height: 14),
             if (_answers == null)
-              const TypingIndicator()
+              const AskAnswerSkeleton()
             else if (_answers!.isEmpty)
               Text(
                 'I couldn’t find one for that yet. Try a topic like courage, love or starting over.',
