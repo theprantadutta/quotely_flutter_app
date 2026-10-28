@@ -71,7 +71,8 @@ class _SearchScreenState extends State<SearchScreen> {
       SceneRepository.instance
           .searchTitles(q)
           .catchError((_) => <MediaTitleDto>[]),
-      ComposerSearchService.ask(q, limit: 6),
+      // Typed search stays on the device; the Ask sheet asks the server.
+      ComposerSearchService.ask(q, limit: 6, useServer: false),
     ]);
     if (!mounted || q != _query) return;
     setState(() {

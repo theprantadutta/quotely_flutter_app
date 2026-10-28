@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 
 import '../components/thread/thread_message.dart';
 import '../constants/default_interests.dart';
@@ -8,19 +9,27 @@ import '../database/database.dart';
 import '../dtos/media_title_dto.dart';
 import '../dtos/quote_dto.dart';
 import '../service_locator/init_service_locators.dart';
+import 'ask_service.dart';
 import 'drift_scene_service.dart';
 import 'quote_service.dart';
 import '../util/profanity.dart';
 
 /// Answers the Today composer ("Ask for a quote about…").
 ///
-/// TODO(backend): semantic quote search. The API has no search or AI
-/// endpoint for quotes yet, so this matches the prompt locally: known tag
-/// names go to the regular quotes endpoint (which falls back to the Drift
-/// cache offline), media words ("anime", "movie") route to Scenes, and
-/// anything else is a keyword match over cached quote text and authors.
+/// Online, the question goes to the backend's Ask endpoint ([AskService]),
+/// which understands it ("something to get me through a breakup") and
+/// answers with quotes, sometimes a fact. Offline, on any error, or when
+/// the server finds nothing, it falls back silently to the local search:
+/// known tag names go to the regular quotes endpoint (which falls back to
+/// the Drift cache offline), media words ("anime", "movie") route to
+/// Scenes, and anything else is a keyword match over cached quote text and
+/// authors. Questions about scenes go straight to the local search, since
+/// the server answers with quotes only.
 class ComposerSearchService {
   ComposerSearchService._();
+
+  /// Longer than the HTTP timeout; a last guard so the sheet never hangs.
+  static const serverTimeout = Duration(seconds: 25);
 
   static const _stopWords = {
     'a',
@@ -93,13 +102,69 @@ class ComposerSearchService {
 
   /// Up to [limit] messages answering [prompt]. Never throws; an empty list
   /// means nothing matched.
-  static Future<List<ThreadMessage>> ask(String prompt, {int limit = 3}) async {
-    final results = await _ask(prompt, limit);
+  ///
+  /// [useServer]: false keeps it on the device (search-as-you-type, where
+  /// every keystroke pause would otherwise be a new question to the server).
+  static Future<List<ThreadMessage>> ask(
+    String prompt, {
+    int limit = 3,
+    bool useServer = true,
+  }) => askWith(
+    prompt,
+    limit: limit,
+    server: useServer && !_wantsScenes(prompt) ? _server : null,
+    local: _ask,
+  );
+
+  /// [ask] with its two sources passed in: [server] first when given, then
+  /// [local] if the server fails, times out or has nothing clean.
+  @visibleForTesting
+  static Future<List<ThreadMessage>> askWith(
+    String prompt, {
+    required int limit,
+    Future<List<ThreadMessage>> Function(String prompt, int limit)? server,
+    required Future<List<ThreadMessage>> Function(String prompt, int limit)
+    local,
+    Duration timeout = serverTimeout,
+  }) async {
+    if (server != null) {
+      try {
+        final answers = await server(prompt, limit).timeout(timeout);
+        final clean = [
+          for (final m in answers)
+            if (isClean(m.text)) m,
+        ];
+        if (clean.isNotEmpty) return clean.take(limit).toList();
+      } catch (e) {
+        debugPrint('ComposerSearchService: server ask failed, local search: $e');
+      }
+    }
+    try {
+      final results = await local(prompt, limit);
+      return [
+        for (final m in results)
+          if (isClean(m.text)) m,
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// The backend's answer: its quotes, with one fact in the last place when
+  /// a fact category matched and there is room for more than one message.
+  static Future<List<ThreadMessage>> _server(String prompt, int limit) async {
+    final answer = await AskService.answer(prompt, limit: limit);
+    final fact = limit > 1 && answer.facts.isNotEmpty ? answer.facts.first : null;
     return [
-      for (final m in results)
-        if (isClean(m.text)) m,
+      for (final q in answer.quotes.take(fact == null ? limit : limit - 1))
+        ThreadMessage.fromQuote(q),
+      if (fact != null) ThreadMessage.fromFact(fact),
     ];
   }
+
+  static bool _wantsScenes(String prompt) =>
+      prompt.toLowerCase().contains('scene') ||
+      _tokens(prompt).any(_mediaWords.containsKey);
 
   static Future<List<ThreadMessage>> _ask(String prompt, int limit) async {
     final tokens = _tokens(prompt);
@@ -109,8 +174,7 @@ class ComposerSearchService {
       for (final w in tokens)
         if (_mediaWords.containsKey(w)) _mediaWords[w]!,
     };
-    final wantsScenes =
-        types.isNotEmpty || prompt.toLowerCase().contains('scene');
+    final wantsScenes = _wantsScenes(prompt);
     final topical = tokens.where((w) => !_mediaWords.containsKey(w)).toList();
 
     try {

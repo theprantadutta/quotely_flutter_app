@@ -12,6 +12,9 @@ const kGetAuthorDetails = 'Author/GetAuthorDetails';
 const kGetAllQuotes = 'Quote/GetAllQuotes';
 const kGetAllQuotesByAuthor = 'Quote/GetAllQuotesByAuthor';
 
+// The composer's "Ask": a question answered by tags the backend picks
+const kGetAskAnswer = 'Ask/GetAnswer';
+
 const kGetAllAiFacts = 'Fact/GetAllAiFacts';
 const kGetAllAiFactCategories = 'Fact/GetAllAiFactCategories';
 const kGetAllAiFactProviders = 'Fact/GetAllAiFactProviders';
