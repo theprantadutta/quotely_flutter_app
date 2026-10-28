@@ -225,7 +225,7 @@ class ReactionRow extends ConsumerWidget {
         ReactionPill(
           icon: kShareIcon,
           label: 'Share',
-          onTap: () => shareMessage(message),
+          onTap: () => shareMessage(context, message),
         ),
         ReactionPill(
           icon: Icons.more_horiz_rounded,

@@ -384,7 +384,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Positioned(
           right: 6,
           bottom: 18 + navInset,
-          child: SpotlightRail(message: current, onAsk: _openAsk),
+          child: SpotlightRail(
+            message: current,
+            onAsk: _openAsk,
+            eyebrow: _tab == _Tab.today && todayIndex < today.length
+                ? today[todayIndex].eyebrow
+                : null,
+          ),
         ),
       ],
     );

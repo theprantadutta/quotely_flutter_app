@@ -1,8 +1,5 @@
-import 'dart:ui' as ui;
-
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,9 +17,9 @@ import '../../state_providers/favorite_quote_ids.dart';
 import '../../state_providers/scene_state.dart';
 import '../../theme/app_theme.dart';
 import 'q_controls.dart';
-import 'q_image.dart';
 import 'q_sheet.dart';
 import 'report_sheet.dart';
+import 'share_card.dart';
 import 'thread_message.dart';
 
 void _log(String name, Map<String, Object> params) {
@@ -88,69 +85,116 @@ String shareTextFor(ThreadMessage m) => switch (m.kind) {
   MessageKind.scene => m.scene!.shareText,
 };
 
-Future<void> shareMessage(ThreadMessage m) async {
+String _shareSubject(ThreadMessage m) => switch (m.kind) {
+  MessageKind.quote => 'Amazing quote by ${m.sender}',
+  MessageKind.scene => '${m.sender} in ${m.scene!.titleName}',
+  MessageKind.fact => 'Amazing fact from Quotely',
+};
+
+/// Where the iPad share popover points: the tapped widget, else the middle
+/// of the screen. iPadOS throws without one.
+Rect shareOriginOf(BuildContext context) {
+  final box = context.findRenderObject();
+  if (box is RenderBox && box.hasSize && box.attached) {
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    if (!rect.isEmpty) return rect;
+  }
+  final screen = MediaQuery.maybeSizeOf(context) ?? const Size(2, 2);
+  return Rect.fromCenter(
+    center: screen.center(Offset.zero),
+    width: 1,
+    height: 1,
+  );
+}
+
+/// Share: a small sheet with "Share as image" (first) and "Share as text".
+/// [eyebrow] labels the card ("Quote of the day") when the screen knows it.
+Future<void> shareMessage(
+  BuildContext context,
+  ThreadMessage m, {
+  String? eyebrow,
+}) {
+  HapticFeedback.selectionClick();
+  final origin = shareOriginOf(context);
+  return showQSheet(
+    context,
+    builder: (sheet) {
+      void run(VoidCallback action) {
+        Navigator.of(sheet).pop();
+        action();
+      }
+
+      return QSheetFrame(
+        title: 'Share',
+        child: Column(
+          children: [
+            SheetAction(
+              icon: Icons.image_outlined,
+              label: 'Share as image',
+              onTap: () => run(
+                () => shareMessageAsImage(
+                  context,
+                  m,
+                  eyebrow: eyebrow,
+                  origin: origin,
+                ),
+              ),
+            ),
+            SheetAction(
+              icon: Icons.notes_rounded,
+              label: 'Share as text',
+              onTap: () => run(() => shareMessageAsText(m, origin: origin)),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<void> shareMessageAsText(ThreadMessage m, {Rect? origin}) async {
   _log('content_shared', {'kind': m.kind.name, 'format': 'text'});
   await SharePlus.instance.share(
     ShareParams(
       text: shareTextFor(m),
-      subject: switch (m.kind) {
-        MessageKind.quote => 'Amazing quote by ${m.sender}',
-        MessageKind.scene => '${m.sender} in ${m.scene!.titleName}',
-        MessageKind.fact => 'Amazing fact from Quotely',
-      },
-      sharePositionOrigin: const Rect.fromLTRB(0, 0, 1, 1),
+      subject: _shareSubject(m),
+      sharePositionOrigin: origin ?? const Rect.fromLTRB(0, 0, 1, 1),
     ),
   );
 }
 
-/// Renders [m] as a branded card offscreen and shares the PNG.
-Future<void> shareMessageAsImage(BuildContext context, ThreadMessage m) async {
-  final key = GlobalKey();
-  final overlay = Overlay.of(context, rootOverlay: true);
-  final theme = Theme.of(context);
-  final entry = OverlayEntry(
-    builder: (_) => Positioned(
-      left: 0,
-      top: 0,
-      child: Transform.translate(
-        // Painted, but well outside the visible viewport.
-        offset: const Offset(-5000, 0),
-        child: Theme(
-          data: theme,
-          child: RepaintBoundary(
-            key: key,
-            child: _ShareCard(message: m),
-          ),
-        ),
-      ),
-    ),
-  );
-  overlay.insert(entry);
+bool _renderingCard = false;
+
+/// Renders [m] as a [ShareCard] and shares the PNG with the text alongside.
+/// Falls back to a text share if the card can't be rendered.
+Future<void> shareMessageAsImage(
+  BuildContext context,
+  ThreadMessage m, {
+  String? eyebrow,
+  Rect? origin,
+}) async {
+  if (_renderingCard) return;
+  _renderingCard = true;
+  final where = origin ?? shareOriginOf(context);
   try {
-    await WidgetsBinding.instance.endOfFrame;
-    await WidgetsBinding.instance.endOfFrame;
-    final boundary =
-        key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary == null) return;
-    final image = await boundary.toImage(pixelRatio: 3);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (bytes == null) return;
+    final bytes = await renderShareCard(context, m, eyebrow: eyebrow);
+    if (bytes == null) {
+      await shareMessageAsText(m, origin: where);
+      return;
+    }
+    final name = 'quotely-${m.kind.name}.png';
     _log('content_shared', {'kind': m.kind.name, 'format': 'image'});
     await SharePlus.instance.share(
       ShareParams(
-        files: [
-          XFile.fromData(
-            bytes.buffer.asUint8List(),
-            mimeType: 'image/png',
-            name: 'quotely-${m.kind.name}.png',
-          ),
-        ],
+        files: [XFile.fromData(bytes, mimeType: 'image/png', name: name)],
+        fileNameOverrides: [name],
         text: shareTextFor(m),
-        sharePositionOrigin: const Rect.fromLTRB(0, 0, 1, 1),
+        subject: _shareSubject(m),
+        sharePositionOrigin: where,
       ),
     );
   } finally {
-    entry.remove();
+    _renderingCard = false;
   }
 }
 
@@ -175,6 +219,7 @@ Future<void> showMessageActions(
   ThreadMessage m,
 ) {
   HapticFeedback.selectionClick();
+  final origin = shareOriginOf(context);
   return showQSheet(
     context,
     builder: (sheet) {
@@ -205,14 +250,15 @@ Future<void> showMessageActions(
               }),
             ),
             SheetAction(
-              icon: kShareIcon,
-              label: 'Share',
-              onTap: () => run(() => shareMessage(m)),
-            ),
-            SheetAction(
               icon: Icons.image_outlined,
               label: 'Share as image',
-              onTap: () => run(() => shareMessageAsImage(context, m)),
+              onTap: () =>
+                  run(() => shareMessageAsImage(context, m, origin: origin)),
+            ),
+            SheetAction(
+              icon: kShareIcon,
+              label: 'Share as text',
+              onTap: () => run(() => shareMessageAsText(m, origin: origin)),
             ),
             SheetAction(
               icon: Icons.collections_bookmark_outlined,
@@ -407,66 +453,6 @@ class _CollectionPickerState extends State<_CollectionPicker> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-/// The card rendered for "Share as image".
-class _ShareCard extends StatelessWidget {
-  final ThreadMessage message;
-
-  const _ShareCard({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.q;
-    final m = message;
-    return Material(
-      color: t.bg,
-      child: Container(
-        width: 360,
-        padding: const EdgeInsets.all(24),
-        color: t.bg,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(m.sender, style: context.qt.label),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-              decoration: BoxDecoration(
-                color: t.surf,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(22),
-                  topRight: Radius.circular(22),
-                  bottomRight: Radius.circular(22),
-                  bottomLeft: Radius.circular(6),
-                ),
-              ),
-              child: Text(m.text, style: context.qt.quoteHero),
-            ),
-            if (m.kind == MessageKind.scene) ...[
-              const SizedBox(height: 8),
-              Text(
-                '${m.scene!.titleName} · ${m.scene!.chipMeta}',
-                style: context.qt.label,
-              ),
-            ],
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                const BrandIcon(size: 22, radius: 6),
-                const SizedBox(width: 8),
-                Text(
-                  'Quotely',
-                  style: context.qt.rowTitle.copyWith(fontSize: 14),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
