@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../components/quote_widget_intro.dart';
 import '../components/thread/thread.dart';
 import '../constants/notification_types.dart';
 import '../constants/shared_preference_keys.dart';
@@ -180,6 +181,13 @@ class _YouScreenState extends ConsumerState<YouScreen> {
                 chevron: true,
                 onTap: () => _go(Routes.appearance),
               ),
+              if (QuoteWidgetIntro.platformSupported)
+                GroupedRow(
+                  title: 'Home-screen widget',
+                  description: 'Add Quote of the Day to your home screen',
+                  chevron: true,
+                  onTap: () => addQuoteWidget(context),
+                ),
               GroupedRow(
                 title: 'Notifications',
                 description: _notificationSummary,

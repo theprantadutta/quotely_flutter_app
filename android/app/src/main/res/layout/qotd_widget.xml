@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quote of the Day home-screen widget. QuoteOfTheDayWidgetProvider fills it
+     from what the app saved (QuoteWidgetService in Dart). The sample text
+     below is what the widget picker shows as the preview (previewLayout) on
+     Android 12+.
+
+     Layers, bottom to top: the page colour, the day's poster (pre-blurred in
+     Dart, rounded in Kotlin), the page-colour wash that keeps the type
+     readable, then the text. Colours flip with the system's dark mode via
+     values-night. Only RemoteViews-safe classes are used (no plain View). -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/qotd_widget_background"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/qotd_poster"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/qotd_wash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/qotd_widget_wash"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="14dp">
+
+        <TextView
+            android:id="@+id/qotd_eyebrow"
+            style="@style/QotdWidget.Eyebrow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/qotd_widget_eyebrow" />
+
+        <TextView
+            android:id="@+id/qotd_text"
+            style="@style/QotdWidget.Quote"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_weight="1"
+            android:text="@string/qotd_widget_sample_quote" />
+
+        <TextView
+            android:id="@+id/qotd_author"
+            style="@style/QotdWidget.Author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/qotd_widget_sample_author" />
+    </LinearLayout>
+</FrameLayout>

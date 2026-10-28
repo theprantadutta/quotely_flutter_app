@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget's page colour (paper, or night in dark mode). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/qotd_widget_bg" />
+    <corners android:radius="@dimen/qotd_widget_radius" />
+</shape>

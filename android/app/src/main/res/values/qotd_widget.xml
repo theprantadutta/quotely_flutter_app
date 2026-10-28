@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quote of the Day home-screen widget: colours, sizes, text and type.
+     Colours are the app's Spotlight tokens (lib/theme/tokens.dart); the night
+     values are in values-night/qotd_widget.xml. -->
+<resources>
+    <color name="qotd_widget_bg">#F3EEE5</color>
+    <color name="qotd_widget_ink">#1D1915</color>
+    <color name="qotd_widget_mute">#6F665B</color>
+    <!-- bg at 70%, PosterWash's light wash. -->
+    <color name="qotd_widget_wash">#B3F3EEE5</color>
+
+    <dimen name="qotd_widget_radius">16dp</dimen>
+
+    <string name="qotd_widget_name">Quote of the Day</string>
+    <string name="qotd_widget_description">Today\'s quote on your home screen, over the day\'s poster.</string>
+    <string name="qotd_widget_eyebrow" translatable="false">QUOTE OF THE DAY</string>
+    <string name="qotd_widget_empty">Open Quotely to bring today\'s quote here.</string>
+    <string name="qotd_widget_author">— %1$s</string>
+    <string name="qotd_widget_sample_quote">It always seems impossible until it\'s done.</string>
+    <string name="qotd_widget_sample_author">— Nelson Mandela</string>
+
+    <!-- Android 7 and below fall back to the system serif and monospace;
+         values-v26 swaps in the app's own fonts and auto-sizing. -->
+    <style name="QotdWidget" />
+
+    <style name="QotdWidget.Eyebrow">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">9sp</item>
+        <item name="android:letterSpacing">0.16</item>
+        <item name="android:textColor">@color/qotd_widget_mute</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="QotdWidget.Quote">
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineSpacingMultiplier">1.05</item>
+        <item name="android:textColor">@color/qotd_widget_ink</item>
+        <item name="android:gravity">center_vertical|start</item>
+        <item name="android:maxLines">6</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="QotdWidget.Author">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">11.5sp</item>
+        <item name="android:textColor">@color/qotd_widget_mute</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+</resources>

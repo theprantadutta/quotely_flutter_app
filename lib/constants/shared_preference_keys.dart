@@ -114,3 +114,9 @@ const kOfflinePackCountPrefix = 'offline-pack-count-';
 
 /// Facts game: answers today (JSON {date, answered, correct}).
 const kFactsGameProgressKey = 'facts-game-progress';
+
+/// Quote of the Day home-screen widget: the one-time introduction on Today
+/// (set once it has been shown, whatever the answer) and the number of app
+/// opens that reached Today, so it never interrupts a first launch.
+const kQuoteWidgetIntroShownKey = 'quote-widget-intro-shown';
+const kAppOpenCountKey = 'app-open-count';

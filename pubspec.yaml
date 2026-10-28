@@ -64,6 +64,7 @@ dependencies:
   async_queue: ^3.0.0
   # Offline library: honour the "Wi-Fi only" toggle before downloading.
   connectivity_plus: ^7.0.0
+  home_widget: 0.10.0
 
 dev_dependencies:
   flutter_test:
