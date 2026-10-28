@@ -6,10 +6,14 @@ import 'q_controls.dart';
 import 'q_pills.dart';
 import 'spotlight.dart';
 
-/// The thread column never stretches edge to edge on tablets.
-const double kThreadMaxWidth = 560;
+/// The reading column never stretches edge to edge on tablets: a
+/// comfortable measure for the line, centred, with the backdrop full-bleed
+/// around it. Wider than every phone, so it's a no-op there.
+const double kThreadMaxWidth = 680;
 
-/// Centers [child] in a column at most [kThreadMaxWidth] wide.
+/// Centers [child] in a column at most [kThreadMaxWidth] wide. The one
+/// width cap for every screen: tab screens, the full-screen feeds (inside
+/// their backdrop) and [ThreadPage].
 class ThreadColumn extends StatelessWidget {
   final Widget child;
   final double maxWidth;
