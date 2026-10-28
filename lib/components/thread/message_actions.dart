@@ -128,16 +128,13 @@ Future<void> shareMessage(
         title: 'Share',
         child: Column(
           children: [
-            SheetAction(
-              icon: Icons.image_outlined,
-              label: 'Share as image',
-              onTap: () => run(
-                () => shareMessageAsImage(
-                  context,
-                  m,
-                  eyebrow: eyebrow,
-                  origin: origin,
-                ),
+            ShareImageAction(
+              onShare: (onRendered) => shareMessageAsImage(
+                context,
+                m,
+                eyebrow: eyebrow,
+                origin: origin,
+                onRendered: onRendered,
               ),
             ),
             SheetAction(
@@ -167,17 +164,23 @@ bool _renderingCard = false;
 
 /// Renders [m] as a [ShareCard] and shares the PNG with the text alongside.
 /// Falls back to a text share if the card can't be rendered.
+///
+/// [onRendered] runs once the card is ready, just before the system share
+/// sheet opens; returning false cancels the share (the user closed the
+/// sheet that asked for it).
 Future<void> shareMessageAsImage(
   BuildContext context,
   ThreadMessage m, {
   String? eyebrow,
   Rect? origin,
+  bool Function()? onRendered,
 }) async {
   if (_renderingCard) return;
   _renderingCard = true;
   final where = origin ?? shareOriginOf(context);
   try {
     final bytes = await renderShareCard(context, m, eyebrow: eyebrow);
+    if (onRendered != null && !onRendered()) return;
     if (bytes == null) {
       await shareMessageAsText(m, origin: where);
       return;
@@ -195,6 +198,73 @@ Future<void> shareMessageAsImage(
     );
   } finally {
     _renderingCard = false;
+  }
+}
+
+/// The "Share as image" row of a sheet. While the card renders it shows a
+/// spinner and ignores taps; once the card is ready it closes its sheet and
+/// the system share sheet opens.
+class ShareImageAction extends StatefulWidget {
+  /// Starts the share; call the argument when the card is ready.
+  final Future<void> Function(bool Function() onRendered) onShare;
+
+  const ShareImageAction({super.key, required this.onShare});
+
+  @override
+  State<ShareImageAction> createState() => _ShareImageActionState();
+}
+
+class _ShareImageActionState extends State<ShareImageAction> {
+  bool _busy = false;
+
+  Future<void> _start() async {
+    final navigator = Navigator.of(context);
+    final route = ModalRoute.of(context);
+    setState(() => _busy = true);
+    try {
+      await widget.onShare(() {
+        // Dismissed while rendering: the user no longer wants the share.
+        if (route != null && !route.isCurrent) return false;
+        navigator.pop();
+        return true;
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    return Stack(
+      alignment: AlignmentDirectional.centerEnd,
+      children: [
+        IgnorePointer(
+          ignoring: _busy,
+          child: AnimatedOpacity(
+            opacity: _busy ? 0.55 : 1,
+            duration: const Duration(milliseconds: 150),
+            child: SheetAction(
+              icon: Icons.image_outlined,
+              label: 'Share as image',
+              onTap: _start,
+            ),
+          ),
+        ),
+        if (_busy)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: Semantics(
+              label: 'Preparing image',
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, color: t.mute),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 
@@ -249,11 +319,13 @@ Future<void> showMessageActions(
                 ).showSnackBar(const SnackBar(content: Text('Copied')));
               }),
             ),
-            SheetAction(
-              icon: Icons.image_outlined,
-              label: 'Share as image',
-              onTap: () =>
-                  run(() => shareMessageAsImage(context, m, origin: origin)),
+            ShareImageAction(
+              onShare: (onRendered) => shareMessageAsImage(
+                context,
+                m,
+                origin: origin,
+                onRendered: onRendered,
+              ),
             ),
             SheetAction(
               icon: kShareIcon,

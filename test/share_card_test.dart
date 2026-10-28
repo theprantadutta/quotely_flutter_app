@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
 
@@ -112,6 +113,108 @@ void main() {
       }
     }
   }
+
+  for (final style in BackdropStyle.values) {
+    testWidgets('share card follows the ${style.name} background', (
+      tester,
+    ) async {
+      final m = _quote(_short);
+      await tester.pumpWidget(
+        _host(
+          ShareCard(
+            message: m,
+            eyebrow: shareEyebrowFor(m),
+            backdrop: style,
+            poster: _poster,
+          ),
+          Brightness.light,
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      final washed = find.descendant(
+        of: find.byType(ShareCard),
+        matching: find.byType(ImageFiltered),
+      );
+      final glow = find.descendant(
+        of: find.byType(ShareCard),
+        matching: find.byWidgetPredicate(
+          (w) =>
+              w is DecoratedBox &&
+              (w.decoration as BoxDecoration).gradient is RadialGradient,
+        ),
+      );
+      expect(
+        washed,
+        style == BackdropStyle.poster ? findsOneWidget : findsNothing,
+      );
+      expect(glow, style == BackdropStyle.glow ? findsWidgets : findsNothing);
+    });
+  }
+
+  testWidgets('poster style without a poster falls back to the glow', (
+    tester,
+  ) async {
+    final m = _fact(_short);
+    await tester.pumpWidget(
+      _host(ShareCard(message: m, eyebrow: 'Fact'), Brightness.dark),
+    );
+    expect(find.byType(ImageFiltered), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w is DecoratedBox &&
+            w.decoration is BoxDecoration &&
+            (w.decoration as BoxDecoration).gradient is RadialGradient,
+      ),
+      findsWidgets,
+    );
+  });
+
+  testWidgets('Share as image shows a spinner and ignores taps until ready', (
+    tester,
+  ) async {
+    var calls = 0;
+    late bool Function() ready;
+    final rendering = Completer<void>();
+    await tester.pumpWidget(
+      _host(
+        Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showQSheet(
+              context,
+              builder: (_) => QSheetFrame(
+                child: ShareImageAction(
+                  onShare: (onRendered) {
+                    calls++;
+                    ready = onRendered;
+                    return rendering.future;
+                  },
+                ),
+              ),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+        Brightness.light,
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Share as image'));
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    await tester.tap(find.text('Share as image'), warnIfMissed: false);
+    await tester.pump();
+    expect(calls, 1);
+
+    // The card is ready: the sheet closes before the system sheet opens.
+    expect(ready(), isTrue);
+    rendering.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Share as image'), findsNothing);
+  });
 
   test('eyebrows name the kind', () {
     expect(shareEyebrowFor(_quote(_short)), 'Quote');
