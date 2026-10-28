@@ -15,7 +15,7 @@
     android:minResizeHeight="110dp"
     android:minResizeWidth="110dp"
     android:minWidth="250dp"
-    android:previewLayout="@layout/qotd_widget"
+    android:previewLayout="@layout/qotd_widget_preview"
     android:resizeMode="horizontal|vertical"
     android:targetCellHeight="2"
     android:targetCellWidth="4"

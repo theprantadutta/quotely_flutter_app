@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 8+: the app's own fonts (bundled in res/font) and a quote that
-     sizes itself to the widget, so a short line fills a 4x3 and a long one
-     still fits a 2x2, ellipsized only as a last resort. -->
+<!-- Android 8+ styles for the widget picker preview (layout/qotd_widget_preview.xml):
+     the app's own fonts where the launcher honours them, and a quote that
+     sizes itself. The live widget draws its text in Kotlin instead
+     (QuoteOfTheDayWidgetProvider), because launchers such as One UI ignore
+     an app's res/font fonts inside RemoteViews. -->
 <resources>
     <style name="QotdWidget.Eyebrow">
         <item name="android:fontFamily">@font/ibm_plex_mono_medium</item>
