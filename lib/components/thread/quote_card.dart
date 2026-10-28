@@ -65,15 +65,18 @@ class QuoteCard extends ConsumerWidget {
               const SizedBox(height: 18),
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => openSender(context, m),
-                    child: m.kind == MessageKind.fact
-                        ? const BrandAvatar(size: 24)
-                        : QAvatar(
-                            name: m.sender,
-                            imageUrl: watchSenderImage(ref, m),
-                            size: 24,
-                          ),
+                  Semantics(
+                    button: true,
+                    child: GestureDetector(
+                      onTap: () => openSender(context, m),
+                      child: m.kind == MessageKind.fact
+                          ? const BrandAvatar(size: 24)
+                          : QAvatar(
+                              name: m.sender,
+                              imageUrl: watchSenderImage(ref, m),
+                              size: 24,
+                            ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

@@ -200,28 +200,35 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
             tint: t.tintFor(DateTime.now().add(const Duration(days: 2))),
             imageUrl: current?.posterUrl,
           ),
-          SafeArea(
-            bottom: false,
-            child: Column(
+          ThreadColumn(
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                header,
-                types,
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: navInset),
-                    child: _watch(feed, sotd),
+                SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      header,
+                      types,
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: navInset),
+                          child: _watch(feed, sotd),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 6,
+                  bottom: 18 + navInset,
+                  child: SpotlightRail(
+                    message: current == null
+                        ? null
+                        : ThreadMessage.fromScene(current),
                   ),
                 ),
               ],
-            ),
-          ),
-          Positioned(
-            right: 6,
-            bottom: 18 + navInset,
-            child: SpotlightRail(
-              message: current == null
-                  ? null
-                  : ThreadMessage.fromScene(current),
             ),
           ),
         ],

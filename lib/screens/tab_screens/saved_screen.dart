@@ -491,8 +491,10 @@ class _SavedCard extends ConsumerWidget {
         fontSize: 16 * context.qt.quoteScale,
       ),
     );
+    // Read in order: the line, who said it, then the heart. The heart stays
+    // its own button, so the card can't be one excluded label.
     return Semantics(
-      label: '${m.sender}: ${m.text}',
+      container: true,
       onLongPressHint: 'More actions',
       child: Pressable(
         pressedScale: 0.985,
@@ -523,13 +525,15 @@ class _SavedCard extends ConsumerWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  m.kind == MessageKind.fact
-                      ? const BrandAvatar(size: 24)
-                      : QAvatar(
-                          name: m.sender,
-                          imageUrl: watchSenderImage(ref, m),
-                          size: 24,
-                        ),
+                  ExcludeSemantics(
+                    child: m.kind == MessageKind.fact
+                        ? const BrandAvatar(size: 24)
+                        : QAvatar(
+                            name: m.sender,
+                            imageUrl: watchSenderImage(ref, m),
+                            size: 24,
+                          ),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(

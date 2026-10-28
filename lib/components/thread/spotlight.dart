@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../riverpods/backdrop_poster_provider.dart';
 import '../../riverpods/scene_providers.dart';
 import '../../services/activity_service.dart';
 import '../../state_providers/scene_state.dart';
@@ -78,51 +79,60 @@ class SpotlightEntry extends ConsumerWidget {
     }
 
     final tappableSender = m.kind != MessageKind.fact;
-    final attribution = GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: tappableSender ? () => openSender(context, m) : null,
-      child: Row(
-        children: [
-          if (m.kind == MessageKind.fact)
-            const BrandAvatar(size: 34)
-          else
-            QAvatar(
-              name: m.sender,
-              imageUrl: watchSenderImage(ref, m),
-              size: 34,
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  m.kind == MessageKind.fact ? 'Quotely' : m.sender,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: qt.rowTitle,
+    final attribution = MergeSemantics(
+      child: Semantics(
+        button: tappableSender,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: tappableSender ? () => openSender(context, m) : null,
+          child: Row(
+            children: [
+              // The name follows; the avatar would only repeat it.
+              ExcludeSemantics(
+                child: m.kind == MessageKind.fact
+                    ? const BrandAvatar(size: 34)
+                    : QAvatar(
+                        name: m.sender,
+                        imageUrl: watchSenderImage(ref, m),
+                        size: 34,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      m.kind == MessageKind.fact ? 'Quotely' : m.sender,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: qt.rowTitle,
+                    ),
+                    if (_detail(m) case final d?) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        d,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: qt.meta,
+                      ),
+                    ],
+                  ],
                 ),
-                if (_detail(m) case final d?) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    d,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: qt.meta,
-                  ),
-                ],
-              ],
-            ),
+              ),
+              if (tappableSender)
+                Icon(Icons.arrow_forward_rounded, size: 16, color: t.mute),
+            ],
           ),
-          if (tappableSender)
-            Icon(Icons.arrow_forward_rounded, size: 16, color: t.mute),
-        ],
+        ),
       ),
     );
 
+    // Screen readers walk the children in reading order: the eyebrow, the
+    // line, then who said it (a button to their page).
     return Semantics(
-      label: '${m.sender}: ${m.text}',
+      container: true,
       onLongPressHint: 'More actions',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -331,8 +341,9 @@ class PosterWash extends StatelessWidget {
 }
 
 /// The app's background, per Appearance → Background:
-/// - Poster: the day's scene poster as a [PosterWash] (the Scenes look),
-///   falling back to Glow until the poster is known;
+/// - Poster: the day's scene poster as a [PosterWash] (the Scenes look);
+///   with no scene today, the last poster shown or a seed title's poster,
+///   and Glow until one is known;
 /// - Glow: the page colour with soft gradients of the day's hue;
 /// - Plain: the page colour.
 /// Every screen sits on this (the tab shell, [ThreadPage] and the
@@ -344,25 +355,24 @@ class PageBackdrop extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.q;
     final style = ref.watch(appearanceProvider.select((a) => a.backdrop));
-    final content = child ?? const SizedBox.expand();
-    if (style == BackdropStyle.plain) {
-      return DecoratedBox(
-        decoration: BoxDecoration(color: t.bg),
-        child: content,
-      );
-    }
+    // One tree shape for every style: changing the style, or the poster
+    // arriving, swaps only the bottom layer. A different shape remounted
+    // [child], resetting the whole screen below it (scroll, feed position).
+    return Stack(
+      fit: StackFit.expand,
+      children: [_layer(context, ref, style), child ?? const SizedBox.expand()],
+    );
+  }
+
+  Widget _layer(BuildContext context, WidgetRef ref, BackdropStyle style) {
+    final t = context.q;
+    if (style == BackdropStyle.plain) return ColoredBox(color: t.bg);
     if (style == BackdropStyle.poster) {
-      final url = ref.watch(sceneOfTheDayProvider).value?.sceneQuote.posterUrl;
+      final url = _posterUrl(ref);
       if (url != null && url.isNotEmpty) {
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            PosterWash(url: url),
-            content,
-          ],
-        );
+        // Crossfades when today's poster replaces the fallback.
+        return SpotlightBackdrop(tint: t.bg, imageUrl: url);
       }
     }
     final hue = t.glowFor(DateTime.now());
@@ -389,11 +399,22 @@ class PageBackdrop extends ConsumerWidget {
           decoration: BoxDecoration(
             gradient: glow(const Alignment(-1.1, 1.0), 1.4, 0.7),
           ),
-          child: content,
+          child: const SizedBox.expand(),
         ),
       ),
     );
   }
+}
+
+/// Today's scene poster, else the last one shown, else a seed title's
+/// poster for the day ([fallbackPosterProvider]).
+String? _posterUrl(WidgetRef ref) {
+  final today = ref.watch(sceneOfTheDayProvider).value?.sceneQuote.posterUrl;
+  if (today != null && today.isNotEmpty) {
+    rememberBackdropPoster(today);
+    return today;
+  }
+  return ref.watch(fallbackPosterProvider).value;
 }
 
 /// Small "3 / 7" position marker for the top of the feed.

@@ -352,44 +352,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           tint: t.tintFor(DateTime.now()),
           imageUrl: current?.scene?.posterUrl,
         ),
-        SafeArea(
-          bottom: false,
-          child: Column(
+        // Full-bleed backdrop; the line, header and rail keep to the
+        // reading column on tablets.
+        ThreadColumn(
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              _Header(tab: _tab, onTab: _setTab),
-              if (_tab == _Tab.today && todayCount > 1)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 2, 22, 0),
-                  child: SegmentedProgress(
-                    total: todayCount,
-                    done: todayIndex + 1,
-                  ),
+              SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    _Header(tab: _tab, onTab: _setTab),
+                    if (_tab == _Tab.today && todayCount > 1)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(22, 2, 22, 0),
+                        child: SegmentedProgress(
+                          total: todayCount,
+                          done: todayIndex + 1,
+                        ),
+                      ),
+                    const IosUpdateBanner(),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: navInset),
+                        child: IndexedStack(
+                          index: _tab.index,
+                          children: [
+                            _buildToday(today, qotdLoading),
+                            _buildFeed(feed),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              const IosUpdateBanner(),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: navInset),
-                  child: IndexedStack(
-                    index: _tab.index,
-                    children: [
-                      _buildToday(today, qotdLoading),
-                      _buildFeed(feed),
-                    ],
-                  ),
+              ),
+              Positioned(
+                right: 6,
+                bottom: 18 + navInset,
+                child: SpotlightRail(
+                  message: current,
+                  onAsk: _openAsk,
+                  eyebrow: _tab == _Tab.today && todayIndex < today.length
+                      ? today[todayIndex].eyebrow
+                      : null,
                 ),
               ),
             ],
-          ),
-        ),
-        Positioned(
-          right: 6,
-          bottom: 18 + navInset,
-          child: SpotlightRail(
-            message: current,
-            onAsk: _openAsk,
-            eyebrow: _tab == _Tab.today && todayIndex < today.length
-                ? today[todayIndex].eyebrow
-                : null,
           ),
         ),
       ],

@@ -308,18 +308,21 @@ Future<void> showAboutQuotely(BuildContext context) async {
               textAlign: TextAlign.center,
               style: sheet.qt.caption,
             ),
-            GestureDetector(
-              onTap: () => launchUrl(
-                Uri.parse('https://rawg.io'),
-                mode: LaunchMode.externalApplication,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  'Game data and images from RAWG',
-                  style: sheet.qt.caption.copyWith(
-                    color: t.accInk,
-                    decoration: TextDecoration.underline,
+            Semantics(
+              link: true,
+              child: GestureDetector(
+                onTap: () => launchUrl(
+                  Uri.parse('https://rawg.io'),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'Game data and images from RAWG',
+                    style: sheet.qt.caption.copyWith(
+                      color: t.accInk,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ),
