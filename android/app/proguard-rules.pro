@@ -97,3 +97,15 @@
 # ---------------------------------------------------------------------------
 -dontwarn dev.hyo.**
 -dontwarn io.github.hyochan.**
+
+# ---------------------------------------------------------------------------
+# Edge-to-edge: keep WindowCompat.enableEdgeToEdge as a real call.
+# MainActivity calls it on every Android version, but R8 inlined it, so the
+# release dex held only its body and no reference to the method. Play
+# Console looks for that reference, so it kept reporting "Edge-to-edge may
+# not display for all users" against releases that did opt in. A kept
+# (pinned) method is never inlined.
+# ---------------------------------------------------------------------------
+-keep class androidx.core.view.WindowCompat {
+    public static void enableEdgeToEdge(android.view.Window);
+}
