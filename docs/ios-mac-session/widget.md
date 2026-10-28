@@ -185,7 +185,27 @@ unreliable results". Then run `flutter build ios --config-only` once.
 4. To debug the extension itself: choose the QuotelyWidget scheme, Run, pick
    the Home Screen as the host. If the fonts are not applied, check the Copy
    Bundle Resources step and print `UIFont.familyNames` in the provider.
-5. If a tap opens the app but does **not** land on Today, register the URL
+5. Check the in-app UI that tells people about the widget
+   (`lib/components/quote_widget_intro.dart`):
+   - **You -> Home-screen widget** ("Add Quote of the Day to your home
+     screen"). iOS has no API to add a widget, so on iOS it always opens the
+     "Add the widget" sheet with these steps:
+     1. "Touch and hold an empty spot on your Home Screen until the apps jiggle."
+     2. "Tap + (or Edit, then Add Widget) in the top corner."
+     3. "Search for Quotely, pick a size and tap Add Widget."
+     **Follow them on the simulator and on the device's iOS version and make
+     sure they match what iOS actually shows** (button names and placement
+     changed in iOS 18: "Edit" -> "Add Widget"). If they don't, fix the
+     strings in `showQuoteWidgetHowTo` and the expectations in
+     `test/quote_widget_intro_test.dart`.
+   - The one-time introduction sheet on Today ("Put today's quote on your
+     home screen", Add widget / Not now). It appears once, only after
+     onboarding is complete, and only from the second app open on. To see it
+     again on a test install, delete the app (or clear its
+     `quote-widget-intro-shown` / `app-open-count` preferences) and open it
+     twice after finishing onboarding. "Add widget" on iOS leads to the same
+     instructions sheet.
+6. If a tap opens the app but does **not** land on Today, register the URL
    scheme in `ios/Runner/Info.plist` (normally not needed for widget URLs):
 
    ```xml

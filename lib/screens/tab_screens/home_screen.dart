@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../components/home_screen/ios_update_banner.dart';
+import '../../components/quote_widget_intro.dart';
 import '../../components/thread/thread.dart';
 import '../../constants/selectors.dart';
 import '../../dtos/of_the_day_adapters.dart';
@@ -100,6 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await showLegalConsentIfNeeded(context);
+      if (mounted) unawaited(maybeShowQuoteWidgetIntro(context));
       await PushNotifications.asyncQueue.start();
       // Local first: screens read the local database; this keeps it full.
       // At most once a day, respecting Offline library's Wi-Fi only switch.
