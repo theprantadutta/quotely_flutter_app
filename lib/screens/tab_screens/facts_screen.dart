@@ -418,8 +418,13 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
           : const LoadMoreIndicator();
     }
     if (_facts.isEmpty) {
+      // Offline-first: on a fresh install that has never been online there is
+      // nothing local yet, so say when facts arrive rather than "not found".
       return EmptyState(
-        pill: 'No facts found',
+        pill: 'No facts yet',
+        message:
+            "Facts download the first time you're online, then stay on "
+            'your phone for offline reading.',
         action: SecondaryButton(
           label: 'Try again',
           expand: false,

@@ -366,6 +366,9 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
               pill: _query.isEmpty
                   ? 'No authors yet'
                   : 'No one called “$_query”',
+              message: _query.isEmpty
+                  ? "They download the first time you're online."
+                  : null,
               action: _query.isEmpty
                   ? null
                   : AskForALinePrompt(prefill: _query),
@@ -404,6 +407,9 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
               pill: _query.isEmpty
                   ? 'No characters yet'
                   : 'No one called “$_query”',
+              message: _query.isEmpty
+                  ? "They download the first time you're online."
+                  : null,
               action: _query.isEmpty
                   ? null
                   : AskForALinePrompt(prefill: _query),
