@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../components/ask_sheet.dart';
 import '../components/thread/thread.dart';
 import '../dtos/author_dto.dart';
 import '../dtos/media_title_dto.dart';
@@ -83,6 +84,12 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  /// What's in the field now; [_query] lags it by the debounce.
+  String get _currentQuery {
+    final typed = _controller.text.trim();
+    return typed.isEmpty ? _query : typed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.q;
@@ -131,13 +138,28 @@ class _SearchScreenState extends State<SearchScreen> {
                   const EmptyState(
                     pill: 'Search Quotely',
                     message: 'Try “Mandela”, “One Piece” or “courage”.',
+                    action: AskForALinePrompt(
+                      text: 'Or ask for a line',
+                      source: AskSource.search,
+                    ),
                   )
-                else if (_loading)
-                  const ThreadSkeleton(count: 2)
-                else if (empty)
-                  EmptyState(pill: 'Nothing for “$_query”')
+                else if (!_loading && empty)
+                  EmptyState(
+                    pill: 'Nothing for “$_query”',
+                    action: AskForALinePrompt(prefill: _currentQuery),
+                  )
                 else ...[
-                  if (_people.isNotEmpty) ...[
+                  // Right under the field: carry the query into Ask.
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: AskForALinePrompt(
+                      text: 'Ask for a line about “$_query”',
+                      prefill: _currentQuery,
+                      source: AskSource.search,
+                    ),
+                  ),
+                  if (_loading) const ThreadSkeleton(count: 2),
+                  if (!_loading && _people.isNotEmpty) ...[
                     const SectionOverline('People'),
                     GroupedList(
                       children: [
@@ -152,7 +174,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     const SizedBox(height: 18),
                   ],
-                  if (_titles.isNotEmpty) ...[
+                  if (!_loading && _titles.isNotEmpty) ...[
                     const SectionOverline('Titles'),
                     GroupedList(
                       children: [
@@ -167,7 +189,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     const SizedBox(height: 18),
                   ],
-                  if (_lines.isNotEmpty) ...[
+                  if (!_loading && _lines.isNotEmpty) ...[
                     const SectionOverline('Lines'),
                     for (final m in _lines)
                       Padding(

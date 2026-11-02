@@ -8,6 +8,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../components/ask_sheet.dart';
 import '../../components/home_screen/ios_update_banner.dart';
 import '../../components/quote_widget_intro.dart';
 import '../../components/thread/thread.dart';
@@ -29,7 +30,6 @@ import '../../riverpods/today_quote_of_the_day_provider.dart';
 import '../../riverpods/weird_fact_wednesday_provider.dart';
 import '../../service_locator/init_service_locators.dart';
 import '../../services/activity_service.dart';
-import '../../services/composer_search_service.dart';
 import '../../services/library_sync.dart';
 import '../../services/drift_fact_service.dart';
 import '../../services/drift_quote_service.dart';
@@ -276,10 +276,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _openAsk() {
-    analytics.logEvent(name: 'composer_opened');
-    showQSheet<void>(context, builder: (_) => const _AskSheet());
-  }
+  void _openAsk() => openAskSheet(context, source: AskSource.todayRail);
 
   /// Quotes with a scene woven in every fourth screen.
   List<ThreadMessage> _feed() {
@@ -702,93 +699,6 @@ class _TodayEnd extends StatelessWidget {
             wednesday ? 'Weird fact Wednesday: play' : 'True or false? Play',
             onFacts,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The ask sheet: suggestions, a prompt field, and the answers above it.
-class _AskSheet extends StatefulWidget {
-  const _AskSheet();
-
-  @override
-  State<_AskSheet> createState() => _AskSheetState();
-}
-
-class _AskSheetState extends State<_AskSheet> {
-  String? _prompt;
-  List<ThreadMessage>? _answers;
-  bool _busy = false;
-
-  Future<void> _ask(String prompt) async {
-    setState(() {
-      _prompt = prompt;
-      _answers = null;
-      _busy = true;
-    });
-    getIt.get<FirebaseAnalytics>().logEvent(
-      name: 'composer_query',
-      parameters: {'length': prompt.length},
-    );
-    // The dots show for at least ~600ms so the answer reads as a reply.
-    final results = await Future.wait([
-      ComposerSearchService.ask(prompt),
-      Future<void>.delayed(const Duration(milliseconds: 600)),
-    ]);
-    if (!mounted) return;
-    setState(() {
-      _answers = results.first as List<ThreadMessage>;
-      _busy = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.q;
-    return QSheetFrame(
-      title: 'Ask for a line',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_prompt == null)
-            Text(
-              'Name a feeling, a topic or a kind of story.',
-              style: context.qt.body,
-            )
-          else ...[
-            Text(
-              _prompt!.toUpperCase(),
-              style: context.qt.overline.copyWith(color: t.accInk),
-            ),
-            const SizedBox(height: 14),
-            if (_answers == null)
-              const AskAnswerSkeleton()
-            else if (_answers!.isEmpty)
-              Text(
-                'I couldn’t find one for that yet. Try a topic like courage, love or starting over.',
-                style: context.qt.body,
-              )
-            else
-              for (var i = 0; i < _answers!.length; i++) ...[
-                if (i > 0)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(height: 1, color: t.line),
-                  ),
-                Entrance(
-                  index: i,
-                  child: MessageBubble(
-                    message: _answers![i],
-                    variant: BubbleVariant.compact,
-                    showReactions: true,
-                  ),
-                ),
-              ],
-          ],
-          const SizedBox(height: 18),
-          Composer(onSubmit: _ask, busy: _busy, inset: 0),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../components/ask_sheet.dart';
 import '../../components/thread/thread.dart';
 import '../../components/you_avatar_button.dart';
 import '../../dtos/author_dto.dart';
@@ -365,6 +366,9 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
               pill: _query.isEmpty
                   ? 'No authors yet'
                   : 'No one called “$_query”',
+              action: _query.isEmpty
+                  ? null
+                  : AskForALinePrompt(prefill: _query),
             )
           : const SizedBox(height: 24),
     ),
@@ -400,6 +404,9 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
               pill: _query.isEmpty
                   ? 'No characters yet'
                   : 'No one called “$_query”',
+              action: _query.isEmpty
+                  ? null
+                  : AskForALinePrompt(prefill: _query),
             )
           : const SizedBox(height: 24),
     ),

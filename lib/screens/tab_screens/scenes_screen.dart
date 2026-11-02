@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../components/ask_sheet.dart';
 import '../../components/thread/thread.dart';
 import '../../components/you_avatar_button.dart';
 import '../../dtos/media_title_dto.dart';
@@ -239,6 +240,8 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
                     message: current == null
                         ? null
                         : ThreadMessage.fromScene(current),
+                    onAsk: () =>
+                        openAskSheet(context, source: AskSource.scenes),
                   ),
                 ),
               ],
@@ -293,6 +296,15 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
                         SliverToBoxAdapter(child: _SectionTitle(t.plural)),
                         SliverToBoxAdapter(child: _TypeRow(type: t)),
                       ],
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 24),
+                        child: AskForALinePrompt(
+                          text: 'Looking for a line? Ask for one',
+                          source: AskSource.scenes,
+                        ),
+                      ),
+                    ),
                     const SliverToBoxAdapter(child: SizedBox(height: 32)),
                   ],
                 ),
@@ -314,6 +326,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
         message: _type == null
             ? 'New scenes arrive every week.'
             : 'No ${_type!.plural.toLowerCase()} yet. New scenes arrive every week.',
+        action: const AskForALinePrompt(),
       );
     }
     return RefreshIndicator.adaptive(
