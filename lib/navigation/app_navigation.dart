@@ -1,4 +1,3 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -23,9 +22,9 @@ import '../screens/tab_screens/saved_screen.dart';
 import '../screens/tab_screens/scenes_screen.dart';
 import '../screens/title_detail_screen.dart';
 import '../screens/you_screen.dart';
-import '../service_locator/init_service_locators.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
 import 'routes.dart';
+import 'screen_tracking.dart';
 
 class AppNavigation {
   AppNavigation._();
@@ -39,14 +38,22 @@ class AppNavigation {
   static final _shellPeople = GlobalKey<NavigatorState>(debugLabel: 'people');
   static final _shellFacts = GlobalKey<NavigatorState>(debugLabel: 'facts');
 
-  static GoRoute _pushed(String path, Widget Function(GoRouterState) build) =>
-      GoRoute(
-        parentNavigatorKey: rootNavigatorKey,
-        path: path,
-        builder: (context, state) => build(state),
-      );
+  /// [name] is also the screen name analytics records (ScreenViewObserver).
+  static GoRoute _pushed(
+    String name,
+    String path,
+    Widget Function(GoRouterState) build,
+  ) => GoRoute(
+    parentNavigatorKey: rootNavigatorKey,
+    name: name,
+    path: path,
+    builder: (context, state) => build(state),
+  );
 
-  static GoRoute _tab(String path, Widget child) => GoRoute(
+  // Tab pages live in branch navigators the observer doesn't see; the
+  // TabScreenViewTracker around the shell logs them instead.
+  static GoRoute _tab(String name, String path, Widget child) => GoRoute(
+    name: name,
     path: path,
     pageBuilder: (context, state) =>
         NoTransitionPage(key: state.pageKey, child: child),
@@ -56,10 +63,8 @@ class AppNavigation {
     initialLocation: initial,
     debugLogDiagnostics: kDebugMode,
     navigatorKey: rootNavigatorKey,
-    observers: [
-      if (getIt.isRegistered<FirebaseAnalytics>())
-        FirebaseAnalyticsObserver(analytics: getIt.get<FirebaseAnalytics>()),
-    ],
+    // screen_view for pushed routes, named by their GoRoute name.
+    observers: [ScreenViewObserver()],
     // Old paths (still sent by notifications) land on their new homes.
     redirect: (context, state) {
       final target = kLegacyRedirects[state.uri.path];
@@ -72,12 +77,18 @@ class AppNavigation {
           .toString();
     },
     routes: [
-      _pushed(Routes.onboarding, (s) => OnboardingScreen(key: s.pageKey)),
       _pushed(
+        ScreenNames.onboarding,
+        Routes.onboarding,
+        (s) => OnboardingScreen(key: s.pageKey),
+      ),
+      _pushed(
+        ScreenNames.interests,
         Routes.interests,
         (s) => InterestsScreen(key: s.pageKey, isEditing: s.extra == true),
       ),
       _pushed(
+        ScreenNames.notificationsOnboarding,
         Routes.notificationsOnboarding,
         (s) => NotificationsOnboardingScreen(key: s.pageKey),
       ),
@@ -97,44 +108,65 @@ class AppNavigation {
           }
           return null;
         },
-        builder: (context, state, navigationShell) =>
-            BottomNavigationLayout(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) => TabScreenViewTracker(
+          index: navigationShell.currentIndex,
+          child: BottomNavigationLayout(navigationShell: navigationShell),
+        ),
         branches: [
           StatefulShellBranch(
             navigatorKey: _shellToday,
-            routes: [_tab(Routes.today, const HomeScreen())],
+            routes: [_tab(ScreenNames.today, Routes.today, const HomeScreen())],
           ),
           StatefulShellBranch(
             navigatorKey: _shellScenes,
-            routes: [_tab(Routes.scenes, const ScenesScreen())],
+            routes: [
+              _tab(ScreenNames.scenes, Routes.scenes, const ScenesScreen()),
+            ],
           ),
           StatefulShellBranch(
             navigatorKey: _shellSaved,
-            routes: [_tab(Routes.saved, const SavedScreen())],
+            routes: [
+              _tab(ScreenNames.saved, Routes.saved, const SavedScreen()),
+            ],
           ),
           StatefulShellBranch(
             navigatorKey: _shellPeople,
-            routes: [_tab(Routes.people, const PeopleScreen())],
+            routes: [
+              _tab(ScreenNames.people, Routes.people, const PeopleScreen()),
+            ],
           ),
           StatefulShellBranch(
             navigatorKey: _shellFacts,
-            routes: [_tab(Routes.facts, const FactsScreen())],
+            routes: [
+              _tab(ScreenNames.facts, Routes.facts, const FactsScreen()),
+            ],
           ),
         ],
       ),
 
-      _pushed(Routes.you, (s) => YouScreen(key: s.pageKey)),
-      _pushed(Routes.appearance, (s) => AppearanceScreen(key: s.pageKey)),
+      _pushed(ScreenNames.you, Routes.you, (s) => YouScreen(key: s.pageKey)),
       _pushed(
+        ScreenNames.appearance,
+        Routes.appearance,
+        (s) => AppearanceScreen(key: s.pageKey),
+      ),
+      _pushed(
+        ScreenNames.notificationSettings,
         Routes.notifications,
         (s) => SettingsNotificationScreen(key: s.pageKey),
       ),
       _pushed(
+        ScreenNames.offlineLibrary,
         Routes.offlineLibrary,
         (s) => OfflineLibraryScreen(key: s.pageKey),
       ),
-      _pushed(Routes.support, (s) => SupportUsScreen(key: s.pageKey)),
       _pushed(
+        ScreenNames.support,
+        Routes.support,
+        (s) => SupportUsScreen(key: s.pageKey),
+      ),
+      _pushed(
+        ScreenNames.pastMessages,
         Routes.pastMessages,
         (s) => PastMessagesScreen(
           key: s.pageKey,
@@ -144,6 +176,7 @@ class AppNavigation {
         ),
       ),
       _pushed(
+        ScreenNames.titleDetail,
         '${Routes.titleBase}/:id',
         (s) => TitleDetailScreen(
           key: s.pageKey,
@@ -153,16 +186,22 @@ class AppNavigation {
         ),
       ),
       _pushed(
+        ScreenNames.authorDetail,
         '${Routes.authorBase}/:authorSlug',
         (s) => AuthorDetailScreen(
           key: s.pageKey,
           authorSlug: s.pathParameters['authorSlug']!,
         ),
       ),
-      _pushed(Routes.search, (s) => SearchScreen(key: s.pageKey)),
+      _pushed(
+        ScreenNames.search,
+        Routes.search,
+        (s) => SearchScreen(key: s.pageKey),
+      ),
       // Component gallery: debug builds only, so it can't ship.
       if (kDebugMode)
         _pushed(
+          ScreenNames.debugComponents,
           Routes.debugComponents,
           (s) => DebugComponentsScreen(key: s.pageKey),
         ),
