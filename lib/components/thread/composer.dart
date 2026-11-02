@@ -24,7 +24,11 @@ class Composer extends StatefulWidget {
     this.busy = false,
     this.suggestions = kComposerSuggestions,
     this.inset = 16,
+    this.initialText,
   });
+
+  /// Text the field starts with (e.g. a search query carried into Ask).
+  final String? initialText;
 
   /// Side inset; 0 inside a sheet that already pads its content.
   final double inset;
@@ -34,7 +38,7 @@ class Composer extends StatefulWidget {
 }
 
 class _ComposerState extends State<Composer> {
-  final _controller = TextEditingController();
+  late final _controller = TextEditingController(text: widget.initialText);
   final _focus = FocusNode();
 
   @override

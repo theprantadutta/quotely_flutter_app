@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../components/ask_sheet.dart';
 import '../../components/thread/thread.dart';
+import '../../components/you_avatar_button.dart';
 import '../../dtos/media_title_dto.dart';
 import '../../dtos/scene_quote_dto.dart';
 import '../../navigation/bottom-navigation/bottom_navigation_layout.dart';
@@ -165,6 +167,33 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
           ),
           const Spacer(),
           CircleIconButton(
+            icon: Icons.search_rounded,
+            semanticLabel: 'Search titles',
+            onTap: () => context.push(Routes.search),
+          ),
+          const YouAvatarButton(),
+        ],
+      ),
+    );
+
+    // The spoiler shield filters what the lines show, so it sits with the
+    // type filters; the header keeps search and You, like Today's.
+    final types = Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: FilterChips<MediaType?>(
+              padding: const EdgeInsets.only(left: 22, right: 8),
+              options: [
+                const ChipOption(null, 'All'),
+                for (final t in MediaType.values) ChipOption(t, t.plural),
+              ],
+              isSelected: (t) => t == _type,
+              onSelected: _setType,
+            ),
+          ),
+          CircleIconButton(
             icon: shield ? Icons.shield_rounded : Icons.shield_outlined,
             semanticLabel: shield ? 'Spoiler shield on' : 'Spoiler shield off',
             onTap: () {
@@ -172,23 +201,8 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
               ref.read(spoilerShieldProvider.notifier).toggle();
             },
           ),
-          CircleIconButton(
-            icon: Icons.search_rounded,
-            semanticLabel: 'Search titles',
-            onTap: () => context.push(Routes.search),
-          ),
         ],
       ),
-    );
-
-    final types = FilterChips<MediaType?>(
-      padding: const EdgeInsets.symmetric(horizontal: 22),
-      options: [
-        const ChipOption(null, 'All'),
-        for (final t in MediaType.values) ChipOption(t, t.plural),
-      ],
-      isSelected: (t) => t == _type,
-      onSelected: _setType,
     );
 
     if (_mode == _Mode.watch) {
@@ -226,6 +240,8 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
                     message: current == null
                         ? null
                         : ThreadMessage.fromScene(current),
+                    onAsk: () =>
+                        openAskSheet(context, source: AskSource.scenes),
                   ),
                 ),
               ],
@@ -280,6 +296,15 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
                         SliverToBoxAdapter(child: _SectionTitle(t.plural)),
                         SliverToBoxAdapter(child: _TypeRow(type: t)),
                       ],
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 24),
+                        child: AskForALinePrompt(
+                          text: 'Looking for a line? Ask for one',
+                          source: AskSource.scenes,
+                        ),
+                      ),
+                    ),
                     const SliverToBoxAdapter(child: SizedBox(height: 32)),
                   ],
                 ),
@@ -301,6 +326,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
         message: _type == null
             ? 'New scenes arrive every week.'
             : 'No ${_type!.plural.toLowerCase()} yet. New scenes arrive every week.',
+        action: const AskForALinePrompt(),
       );
     }
     return RefreshIndicator.adaptive(

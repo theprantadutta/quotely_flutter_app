@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../components/ask_sheet.dart';
 import '../../components/thread/thread.dart';
+import '../../components/you_avatar_button.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../dtos/quote_dto.dart';
 import '../../dtos/scene_quote_dto.dart';
@@ -240,6 +242,8 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                     onChanged: (l) =>
                         ref.read(appearanceProvider.notifier).setLayout(l),
                   ),
+                  const SizedBox(width: 4),
+                  const YouAvatarButton(),
                 ],
               ),
             ),
@@ -296,6 +300,11 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                   message: _collection != null
                       ? 'Long-press any message and choose “Save to collection”.'
                       : 'Tap the heart on any ${_kind.name} to keep it here.',
+                  action: _collection != null
+                      ? null
+                      : const AskForALinePrompt(
+                          text: 'Or ask for a line to keep',
+                        ),
                 ),
               )
             else

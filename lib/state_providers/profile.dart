@@ -5,7 +5,7 @@ import '../constants/shared_preference_keys.dart';
 
 part '../generated/state_providers/profile.g.dart';
 
-/// Optional nickname. Its initial fills the You avatar on Today; with no
+/// Optional nickname. Its initial fills the You avatar on every tab; with no
 /// nickname the avatar shows a person icon.
 @Riverpod(keepAlive: true)
 class Nickname extends _$Nickname {

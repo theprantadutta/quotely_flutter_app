@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/thread/thread.dart';
+import '../../components/you_avatar_button.dart';
 import '../../constants/shared_preference_keys.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../navigation/routes.dart';
@@ -347,6 +348,8 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
                       _userPickedMode = true;
                     }),
                   ),
+                if (_gameAvailable) const SizedBox(width: 4),
+                const YouAvatarButton(),
               ],
             ),
             if (categories.isNotEmpty)
