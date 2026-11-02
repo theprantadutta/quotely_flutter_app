@@ -54,6 +54,10 @@ Widget _host() => ProviderScope(
               onPressed: () => addQuoteWidget(context),
               child: const Text('settings row'),
             ),
+            TextButton(
+              onPressed: () => chooseQuoteWidget(context),
+              child: const Text('you row'),
+            ),
           ],
         ),
       ),
@@ -62,11 +66,12 @@ Widget _host() => ProviderScope(
 );
 
 /// Answers home_widget's channel; records the calls.
-List<String> _mockPlugin({required bool pinSupported}) {
+List<String> _mockPlugin({required bool pinSupported, List<Object?>? args}) {
   final calls = <String>[];
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(_channel, (call) async {
         calls.add(call.method);
+        args?.add(call.arguments);
         if (call.method == 'isRequestPinWidgetSupported') return pinSupported;
         return null;
       });
@@ -93,10 +98,7 @@ void main() {
       await tester.pumpWidget(_host());
       await _openApp(tester);
 
-      expect(
-        find.text("Put today's quote on your home screen"),
-        findsOneWidget,
-      );
+      expect(find.text('Put Quotely on your home screen'), findsOneWidget);
       expect(find.text('Add widget'), findsOneWidget);
       expect(find.text('Not now'), findsOneWidget);
       // The preview uses today's quote.
@@ -108,7 +110,7 @@ void main() {
 
       await tester.tap(find.text('Not now'));
       await tester.pumpAndSettle();
-      expect(find.text("Put today's quote on your home screen"), findsNothing);
+      expect(find.text('Put Quotely on your home screen'), findsNothing);
       // "Not now" doesn't go on to the instructions.
       expect(find.text('Add the widget'), findsNothing);
     });
@@ -118,7 +120,7 @@ void main() {
       await tester.pumpWidget(_host());
       await _openApp(tester);
 
-      expect(find.text("Put today's quote on your home screen"), findsNothing);
+      expect(find.text('Put Quotely on your home screen'), findsNothing);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getInt(kAppOpenCountKey), 1);
       expect(prefs.getBool(kQuoteWidgetIntroShownKey), isNull);
@@ -132,7 +134,7 @@ void main() {
       await _openApp(tester);
       await _openApp(tester);
 
-      expect(find.text("Put today's quote on your home screen"), findsNothing);
+      expect(find.text('Put Quotely on your home screen'), findsNothing);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getInt(kAppOpenCountKey), 1);
     });
@@ -147,7 +149,7 @@ void main() {
       await tester.pumpWidget(_host());
       await _openApp(tester);
 
-      expect(find.text("Put today's quote on your home screen"), findsNothing);
+      expect(find.text('Put Quotely on your home screen'), findsNothing);
     });
 
     testWidgets('not again once shown', (tester) async {
@@ -157,7 +159,7 @@ void main() {
       await tester.pumpWidget(_host());
       await _openApp(tester);
 
-      expect(find.text("Put today's quote on your home screen"), findsNothing);
+      expect(find.text('Put Quotely on your home screen'), findsNothing);
     });
 
     testWidgets('Add widget pins it where the launcher supports pinning', (
@@ -172,6 +174,64 @@ void main() {
 
       expect(calls, ['isRequestPinWidgetSupported', 'requestPinWidget']);
       expect(find.text('Add the widget'), findsNothing);
+    });
+
+    testWidgets('offers all three widgets, and adds the one chosen', (
+      tester,
+    ) async {
+      final args = <Object?>[];
+      final calls = _mockPlugin(pinSupported: true, args: args);
+      SharedPreferences.setMockInitialValues(_prefs({kAppOpenCountKey: 1}));
+      await tester.pumpWidget(_host());
+      await _openApp(tester);
+
+      expect(find.text('Quote of the Day'), findsOneWidget);
+      expect(find.text('From your saved'), findsOneWidget);
+      expect(find.text('Scene of the Day'), findsOneWidget);
+      // Nothing saved yet: the saved preview shows the widget's hint.
+      expect(
+        find.text('Save a quote you love and it will live here.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('From your saved'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('a different one each day'), findsOneWidget);
+      await tester.tap(find.text('Add widget'));
+      await tester.pumpAndSettle();
+
+      expect(calls, ['isRequestPinWidgetSupported', 'requestPinWidget']);
+      expect(
+        (args.last! as Map)['qualifiedAndroidName'],
+        'com.pranta.quotely.widget.SavedQuoteWidgetProvider',
+      );
+    });
+  });
+
+  group('You row', () {
+    testWidgets('Scene of the Day, without pinning: the steps name it', (
+      tester,
+    ) async {
+      _mockPlugin(pinSupported: false);
+      SharedPreferences.setMockInitialValues(_prefs());
+      await tester.pumpWidget(_host());
+      await tester.tap(find.text('you row'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Home-screen widgets'), findsOneWidget);
+      expect(find.text('Not now'), findsNothing);
+      await tester.tap(find.text('Scene of the Day'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Add widget'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Add the widget'), findsOneWidget);
+      expect(
+        find.text(
+          'Find Quotely, then drag Scene of the Day onto your home screen.',
+        ),
+        findsOneWidget,
+      );
     });
   });
 
