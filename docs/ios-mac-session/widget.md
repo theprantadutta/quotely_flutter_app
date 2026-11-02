@@ -1,6 +1,15 @@
-# iOS: wire up the Quote of the Day widget (Mac session)
+# iOS: wire up the Quotely widgets (Mac session)
 
-The iOS widget is written but not yet part of the Xcode project. Adding an
+Quotely has **three** widgets, all in **one** widget extension
+(`QuotelyWidget`) with one `WidgetBundle`:
+
+| Widget | WidgetKit kind | Families | Tap opens |
+| --- | --- | --- | --- |
+| Quote of the Day | `QuotelyWidget` | systemSmall, systemMedium, accessoryRectangular (iOS 16+) | Today |
+| From your saved | `QuotelySavedWidget` | systemSmall, systemMedium, accessoryRectangular (iOS 16+) | Saved tab |
+| Scene of the Day | `QuotelySceneWidget` | systemSmall, systemMedium, accessoryRectangular (iOS 16+) | Today |
+
+The iOS widgets are written but not yet part of the Xcode project. Adding an
 extension target means editing `ios/Runner.xcodeproj/project.pbxproj`, which is
 only safe from Xcode, so it was left for a session on a Mac. This file is the
 complete checklist for that session.
@@ -13,29 +22,65 @@ Claude Code on the Mac, in Xcode or the terminal.
 
 | Path | What it is |
 | --- | --- |
-| `ios/QuotelyWidget/QuotelyWidget.swift` | Widget, `TimelineProvider`, entry and SwiftUI view |
-| `ios/QuotelyWidget/QuotelyWidgetBundle.swift` | `@main` `WidgetBundle` |
+| `ios/QuotelyWidget/QuotelyWidgetShared.swift` | Shared by all three: App Group id, kinds, tap URLs, fonts, palette, saved-poster loader, the day's glow (`GlowHue`, `DayGlowView`), the Home Screen card (`WidgetCard`), the Lock Screen card (`LockScreenCard`), `FamilyCard` (picks one by family), `quotelyFamilies()`, and the iOS 16/17 availability shims |
+| `ios/QuotelyWidget/QuotelyWidget.swift` | Quote of the Day: widget, `TimelineProvider`, entry, view, previews |
+| `ios/QuotelyWidget/SavedQuoteWidget.swift` | From your saved: widget, provider (daily timeline), entry, view, previews |
+| `ios/QuotelyWidget/SceneWidget.swift` | Scene of the Day: widget, provider, entry, view, previews |
+| `ios/QuotelyWidget/QuotelyWidgetBundle.swift` | `@main` `WidgetBundle` listing the three widgets |
 | `ios/QuotelyWidget/Info.plist` | Extension Info.plist (`com.apple.widgetkit-extension`, `UIAppFonts`, Flutter build name/number) |
 | `ios/QuotelyWidget/QuotelyWidget.entitlements` | App Group `group.com.pranta.quotely` |
 | `ios/QuotelyWidget/Fonts/InstrumentSerif-Regular.ttf` | Quote font (PostScript name `InstrumentSerif-Regular`) |
 | `ios/QuotelyWidget/Fonts/IBMPlexMono-Medium.ttf` | Eyebrow font (PostScript name `IBMPlexMono-Medium`) |
 | `ios/Runner/Runner.entitlements` | Now also has the App Group `group.com.pranta.quotely` |
-| `lib/services/quote_widget_service.dart` | Dart side: saves the data, calls `HomeWidget.updateWidget` |
-| `lib/components/quote_widget_bridge.dart` | Dart side: when to save, and widget taps -> Today |
+| `lib/services/home_widget_store.dart` | Dart side, shared: kinds, App Group, poster crop/blur, glow days, redraws |
+| `lib/services/quote_widget_service.dart` | Dart side: Quote of the Day data |
+| `lib/services/saved_widget_service.dart` | Dart side: From your saved data (30 days of picks) |
+| `lib/services/scene_widget_service.dart` | Dart side: Scene of the Day data |
+| `lib/services/widget_analytics.dart` | Dart side: placed / removed / opened analytics |
+| `lib/components/quote_widget_bridge.dart` | Dart side: when to save, and widget taps -> Today or Saved |
+| `lib/components/quote_widget_intro.dart` | In-app introduction, You -> Home-screen widgets chooser, "Add the widget" steps |
 
 Contract between the app and the widget (all set by the Dart side already):
 
 - `HomeWidget.setAppGroupId('group.com.pranta.quotely')` is called before any
   save on iOS.
-- UserDefaults suite `group.com.pranta.quotely`, keys:
-  `qotd_text`, `qotd_author`, `qotd_date` (yyyy-MM-dd), `qotd_poster` (absolute
-  path of a PNG in the App Group container, `.../home_widget/qotd_poster.png`,
-  already blurred), `qotd_poster_url`.
-- Widget **kind**: `QuotelyWidget` (Dart calls
-  `HomeWidget.updateWidget(iOSName: 'QuotelyWidget')`, which is
-  `WidgetCenter.shared.reloadTimelines(ofKind: "QuotelyWidget")`).
-- Tap URL: `quotely://widget/home?homeWidget`. home_widget recognises widget
-  launches by the `homeWidget` query item; the `/home` path is the Today route.
+- UserDefaults suite `group.com.pranta.quotely`. Keys (App Group keys):
+
+  | Key | Type | Written by | Read by |
+  | --- | --- | --- | --- |
+  | `qotd_text`, `qotd_author` | String | QuoteWidgetService | Quote of the Day |
+  | `qotd_date` | String yyyy-MM-dd | QuoteWidgetService | (informational) |
+  | `qotd_poster` | String: absolute path of `.../home_widget/qotd_poster.png` in the App Group container, already blurred | QuoteWidgetService | Quote of the Day |
+  | `qotd_poster_url` | String | QuoteWidgetService | (the app, to skip re-blurring) |
+  | `saved_days` | String, JSON `{"start":"yyyy-MM-dd","quotes":[{"t":text,"a":author}, ...]}`: 30 entries, entry i is the pick for start + i days; empty `quotes` when nothing is saved | SavedWidgetService | From your saved |
+  | `saved_count` | Int, number of saved quotes (0 shows the hint "Save a quote you love and it will live here.") | SavedWidgetService | From your saved |
+  | `scene_eyebrow` | String, "SCENE · <TITLE>" already upper-cased | SceneWidgetService | Scene of the Day |
+  | `scene_text`, `scene_character`, `scene_title` | String | SceneWidgetService | Scene of the Day |
+  | `scene_title_id`, `scene_date` | String | SceneWidgetService | (informational) |
+  | `scene_poster` | String: absolute path of `.../home_widget/scene_poster.png`, already blurred | SceneWidgetService | Scene of the Day |
+  | `scene_poster_url` | String | SceneWidgetService | (the app) |
+  | `glow_days` | String, JSON `{"start":"yyyy-MM-dd","light":[ARGB ints],"dark":[ARGB ints]}`: the app's day glow for 30 days | HomeWidgetStore (saved and scene services) | From your saved, Scene of the Day (when no poster) |
+
+  Past the 30 days (the app not opened for a month) the widgets wrap round:
+  `index = days since start mod count`. The glow repeats every 5 days, so it
+  stays right forever; the saved quotes repeat a 30-day cycle.
+- Widget **kinds**: `QuotelyWidget`, `QuotelySavedWidget`, `QuotelySceneWidget`.
+  Dart calls `HomeWidget.updateWidget(iOSName: <kind>)`, which is
+  `WidgetCenter.shared.reloadTimelines(ofKind: <kind>)`. The kind strings in
+  Swift (`WidgetKindName`) must match `QuotelyWidgetKind.iOSKind` in
+  `lib/services/home_widget_store.dart`.
+- Tap URLs (`LaunchURL` in `QuotelyWidgetShared.swift`):
+  `quotely://widget/home?homeWidget&kind=qotd`,
+  `quotely://widget/saved?homeWidget&kind=saved`,
+  `quotely://widget/home?homeWidget&kind=scene`. home_widget recognises widget
+  launches by the `homeWidget` query item; the path is the Flutter route
+  (`/home` Today, `/saved` Saved); `kind` is logged as `widget_opened`
+  {widget_kind}.
+- Analytics on iOS: there is no "widget added" callback, so at each app start
+  `WidgetAnalytics.flushPlacements` calls `HomeWidget.getInstalledWidgets()`
+  (`WidgetCenter.getCurrentConfigurations`) and logs `widget_placed` /
+  `widget_removed` for kinds that appeared or disappeared since the last run.
+  Nothing to set up in Xcode for this.
 - The home_widget iOS plugin is already registered through Swift Package
   Manager with the other plugins (`flutter pub get` regenerates
   `FlutterGeneratedPluginSwiftPackage`). The **app** uses it; the **extension
@@ -96,13 +141,18 @@ setup the app has shipped with so far; ask the owner first.
      deleted; nothing uses it.
    - If Xcode wrote its own `Info.plist`, restore ours from git.
    After this, `git status ios/QuotelyWidget` should show no changes to our
-   six files.
+   nine files (five Swift files, Info.plist, the entitlements, two fonts).
 4. Add our files to the target if Xcode did not pick them up: right-click the
    `QuotelyWidget` group -> Add Files to "Runner"... -> select
-   `QuotelyWidget.swift`, `QuotelyWidgetBundle.swift`, and the `Fonts` folder
-   -> "Create groups", Targets: **QuotelyWidget only** (not Runner).
+   `QuotelyWidgetShared.swift`, `QuotelyWidget.swift`,
+   `SavedQuoteWidget.swift`, `SceneWidget.swift`, `QuotelyWidgetBundle.swift`,
+   and the `Fonts` folder -> "Create groups", Targets: **QuotelyWidget only**
+   (not Runner).
    Then check QuotelyWidget target -> Build Phases:
-   - **Compile Sources**: `QuotelyWidget.swift`, `QuotelyWidgetBundle.swift`.
+   - **Compile Sources**: all five: `QuotelyWidgetShared.swift`,
+     `QuotelyWidget.swift`, `SavedQuoteWidget.swift`, `SceneWidget.swift`,
+     `QuotelyWidgetBundle.swift`. A missing one shows up as "cannot find
+     'SavedQuoteWidget' in scope" (or similar) in the bundle file.
    - **Copy Bundle Resources**: `InstrumentSerif-Regular.ttf`,
      `IBMPlexMono-Medium.ttf`. (Without this the fonts silently fall back to
      the system serif / system font.)
@@ -116,7 +166,7 @@ Set for **all three** configurations (Debug, Release, Profile):
 | Setting | Value |
 | --- | --- |
 | Product Bundle Identifier | `com.pranta.quotely.QuotelyWidget` |
-| iOS Deployment Target (General -> Minimum Deployments) | **15.0**, same as Runner. Flutter requires extension and app to match. |
+| iOS Deployment Target (General -> Minimum Deployments) | **15.0**, same as Runner. Flutter requires extension and app to match. Do NOT raise it to get the Lock Screen: the code already guards iOS 16 and 17 APIs (section "Lock Screen and iOS versions"). |
 | Info.plist File (`INFOPLIST_FILE`) | `QuotelyWidget/Info.plist` |
 | Generate Info.plist File (`GENERATE_INFOPLIST_FILE`) | No |
 | Code Signing Entitlements (`CODE_SIGN_ENTITLEMENTS`) | `QuotelyWidget/QuotelyWidget.entitlements` |
@@ -165,8 +215,10 @@ unreliable results". Then run `flutter build ios --config-only` once.
    succeed with the extension embedded (`build/ios/iphoneos/Runner.app/PlugIns/QuotelyWidget.appex`).
 2. Simulator (debug is fine here): select the Runner scheme, run on an iPhone
    simulator, let Today load (quote + poster), then go to the home screen.
-   Long-press -> Edit -> Add Widget -> Quotely -> add **small** and **medium**.
-   Check:
+   Long-press -> Edit -> Add Widget -> Quotely. The gallery must show **three**
+   widgets (Quote of the Day, From your saved, Scene of the Day), each in small
+   and medium. Add **small** and **medium** of each. Quote of the Day checks
+   (the full checklist for all three is in "Device test checklist" below):
    - eyebrow "QUOTE OF THE DAY" in IBM Plex Mono, quote in Instrument Serif,
      author below;
    - the poster shows blurred under a light wash (light mode) / dark wash (dark
@@ -185,21 +237,26 @@ unreliable results". Then run `flutter build ios --config-only` once.
 4. To debug the extension itself: choose the QuotelyWidget scheme, Run, pick
    the Home Screen as the host. If the fonts are not applied, check the Copy
    Bundle Resources step and print `UIFont.familyNames` in the provider.
-5. Check the in-app UI that tells people about the widget
+5. Check the in-app UI that tells people about the widgets
    (`lib/components/quote_widget_intro.dart`):
-   - **You -> Home-screen widget** ("Add Quote of the Day to your home
-     screen"). iOS has no API to add a widget, so on iOS it always opens the
-     "Add the widget" sheet with these steps:
+   - **You -> Home-screen widgets** ("Quote of the Day, your saved quotes, or
+     a scene") opens a chooser with the three widgets as small previews and
+     "Add widget". iOS has no API to add a widget, so on iOS "Add widget"
+     always opens the "Add the widget" sheet with these steps (`<Widget>` is
+     the chosen widget's name):
      1. "Touch and hold an empty spot on your Home Screen until the apps jiggle."
      2. "Tap + (or Edit, then Add Widget) in the top corner."
-     3. "Search for Quotely, pick a size and tap Add Widget."
+     3. "Search for Quotely, swipe to `<Widget>`, pick a size and tap Add Widget."
+     and a note: "On the Lock Screen: touch and hold it, tap Customize, pick
+     the Lock Screen, then tap the area under the clock and choose Quotely."
      **Follow them on the simulator and on the device's iOS version and make
      sure they match what iOS actually shows** (button names and placement
      changed in iOS 18: "Edit" -> "Add Widget"). If they don't, fix the
      strings in `showQuoteWidgetHowTo` and the expectations in
      `test/quote_widget_intro_test.dart`.
-   - The one-time introduction sheet on Today ("Put today's quote on your
-     home screen", Add widget / Not now). It appears once, only after
+   - The one-time introduction sheet on Today ("NEW · HOME-SCREEN WIDGETS",
+     the same three previews, "Put Quotely on your home screen", Add widget /
+     Not now). It appears once, only after
      onboarding is complete, and only from the second app open on. To see it
      again on a test install, delete the app (or clear its
      `quote-widget-intro-shown` / `app-open-count` preferences) and open it
@@ -219,6 +276,85 @@ unreliable results". Then run `flutter build ios --config-only` once.
      </dict>
    </array>
    ```
+
+## 6a. Lock Screen and iOS versions
+
+- Deployment target stays **15.0** (Runner's). Everything newer is guarded:
+  - `.accessoryRectangular` (Lock Screen, **iOS 16+**) is only added to
+    `supportedFamilies` by `quotelyFamilies()`, under
+    `if #available(iOSApplicationExtension 16.0, *)`. On iOS 15 the widgets
+    offer small and medium only.
+  - `FamilyCard` checks `family == .accessoryRectangular` only inside the
+    same `#available` check, and then shows `LockScreenCard` (eyebrow, the
+    line in the serif, the footer; no background, the system tints it).
+  - `containerBackground(for: .widget)` and `contentMarginsDisabled()` are
+    **iOS 17+** and wrapped in `widgetBackground(_:)` /
+    `contentMarginsDisabledIfAvailable()`; iOS 15/16 use `.background`.
+  - The `#Preview` blocks are `@available(iOS 17.0, *)` and inside
+    `#if DEBUG`. If this Xcode rejects `@available` on `#Preview`, delete the
+    attribute lines or the whole `#if DEBUG` blocks; they are previews only.
+- The Lock Screen widgets read the same App Group data as the Home Screen
+  ones; there is no separate data path.
+- iOS 18 tinted / clear Home Screen modes: the background is a
+  `containerBackground`, so the system can remove it; the text stays legible
+  in the system's tint. No extra code.
+
+## 6b. Fonts
+
+- The extension bundles its own copies: `ios/QuotelyWidget/Fonts/
+  InstrumentSerif-Regular.ttf` (PostScript `InstrumentSerif-Regular`, the
+  quote/line) and `IBMPlexMono-Medium.ttf` (PostScript `IBMPlexMono-Medium`,
+  the eyebrow). Both are listed under `UIAppFonts` in
+  `ios/QuotelyWidget/Info.plist` and must be in the target's **Copy Bundle
+  Resources**. The footer uses the system font (11.5pt medium, 10pt on the
+  Lock Screen).
+- Fallbacks: serif -> New York (`QuoteFont.serif`), mono -> system font.
+  If every widget shows the system font, the Copy Bundle Resources step was
+  missed; print `UIFont.familyNames` in a provider to confirm.
+
+## 6c. Previews
+
+- Each widget file ends with `#Preview` blocks (Xcode 15+ canvas, iOS 17
+  simulator runtime): small, medium and Lock Screen for every widget; From
+  your saved also previews its empty state (the hint). Open a widget file,
+  show the canvas (Editor -> Canvas), pick the QuotelyWidget scheme.
+- The widget gallery uses `placeholder` / `getSnapshot`: each shows a sample
+  (Mandela quote; Maya Angelou for From your saved; "I'm gonna make him an
+  offer he can't refuse." for Scene of the Day) until the app has saved
+  real data.
+
+## 6d. Device test checklist
+
+Run `flutter run --release` on a device (iOS 16 or later for the Lock
+Screen; also one iOS 15 device or simulator if available). Before testing,
+open the app, let Today load, and save at least two quotes (and unsave all
+of them for the empty-state checks). Do every row in **light** and **dark**
+(Settings -> Display & Brightness), and tick each cell.
+
+| Check | Small | Medium | Lock Screen |
+| --- | --- | --- | --- |
+| **Quote of the Day**: eyebrow "QUOTE OF THE DAY" in IBM Plex Mono, today's quote in Instrument Serif, "— Author" | | | |
+| QOTD: today's poster blurred under the wash (light: paper wash; dark: night wash); with no poster, plain paper `#F3EEE5` / night `#15120F` | | | n/a |
+| QOTD: a long quote shrinks, then truncates with an ellipsis; never overflows | | | |
+| QOTD: tap opens **Today** (cold start and from background) | | | |
+| **From your saved**: eyebrow "FROM YOUR SAVED", one of your saved quotes, "— Author" | | | |
+| Saved: background is the page with the day's glow (soft colour top-right and bottom-left), no poster | | | n/a |
+| Saved: unsave everything -> the widget shows "Save a quote you love and it will live here." after the app goes to the background | | | |
+| Saved: save a quote -> the widget updates after the app goes to the background | | | |
+| Saved: the next day the quote changes **without opening the app** (or change the device date forward a day and wait / re-add the widget) | | | |
+| Saved: works in Airplane mode (no network needed at all) | | | |
+| Saved: tap opens the **Saved** tab | | | |
+| **Scene of the Day**: eyebrow "SCENE · <TITLE>", the line in the serif, "— Character, Title" | | | |
+| Scene: the title's poster blurred under the wash; if the scene has no poster, the app's fallback poster; otherwise the page with the glow | | | n/a |
+| Scene: in Airplane mode, kill and reopen the app -> the widget still shows a scene, never blank | | | |
+| Scene: tap opens **Today** | | | |
+| All: VoiceOver (Settings -> Accessibility) reads the whole quote/line and the author/character, not a truncated version | | | |
+| All: the gallery shows the sample text before the app has saved anything (fresh install) | | | |
+
+Also check: You -> Home-screen widgets shows three previews and the steps
+sheet names the chosen widget; Firebase DebugView (run with
+`-FIRDebugEnabled`) shows `widget_opened` with `widget_kind` after a widget
+tap, and `widget_placed` the next app start after adding a widget.
 
 ## 7. Xcode Cloud
 
@@ -241,10 +377,16 @@ unreliable results". Then run `flutter build ios --config-only` once.
 
 ## 8. Notes
 
-- The widget never fetches anything. It shows what the app last saved and
-  is refreshed when the app loads the day's quote or goes to the background,
-  so if the app is not opened on a given day it keeps showing the last quote.
-  The timeline uses `.never`; the app calls `reloadTimelines`.
+- No widget ever fetches anything. Each shows what the app last saved and
+  is refreshed when the app loads the day's quote/scene, when the saved
+  quotes change, at app start and when it goes to the background.
+  - Quote of the Day: if the app is not opened on a given day it keeps
+    showing the last quote. Timeline `.never`; the app calls
+    `reloadTimelines`.
+  - From your saved: timeline of now + the next 7 midnights, `.atEnd`, so the
+    quote changes daily without the app (picks for 30 days are saved).
+  - Scene of the Day: keeps the last scene; the timeline still turns over at
+    midnight (7 entries, `.atEnd`) only so the glow follows the day.
 - Pre-iOS 17 uses `.background`, iOS 17+ uses `containerBackground(for: .widget)`
   and `contentMarginsDisabled()`; both are already in `QuotelyWidget.swift`.
 - If `InstrumentSerif-Regular` cannot be loaded, the quote falls back to the

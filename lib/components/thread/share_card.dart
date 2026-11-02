@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../riverpods/scene_providers.dart';
 import '../../theme/app_theme.dart';
 import 'q_image.dart';
+import 'spotlight.dart' show DayGlow;
 import 'thread_message.dart';
 
 const kBrandLogoAsset = 'assets/brand/app/logo-512.png';
@@ -207,7 +208,7 @@ class ShareCard extends StatelessWidget {
                 BackdropStyle.poster when poster != null => _Wash(
                   poster: poster!,
                 ),
-                _ => _Glow(day: day ?? DateTime.now()),
+                _ => DayGlow(day: day ?? DateTime.now()),
               },
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 34, 30, 26),
@@ -387,44 +388,6 @@ class _Wash extends StatelessWidget {
         ),
         ColoredBox(color: t.bg.withValues(alpha: t.isDark ? 0.72 : 0.7)),
       ],
-    );
-  }
-}
-
-/// The page colour with the day's glow, as [PageBackdrop] paints it.
-class _Glow extends StatelessWidget {
-  final DateTime day;
-
-  const _Glow({required this.day});
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.q;
-    final hue = t.glowFor(day);
-    final k = t.isDark ? 0.34 : 0.5;
-    RadialGradient glow(Alignment center, double radius, double strength) =>
-        RadialGradient(
-          center: center,
-          radius: radius,
-          colors: [
-            hue.withValues(alpha: strength * k),
-            hue.withValues(alpha: strength * k * 0.45),
-            hue.withValues(alpha: 0),
-          ],
-          stops: const [0, 0.5, 1],
-        );
-    return DecoratedBox(
-      decoration: BoxDecoration(color: t.bg),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: glow(const Alignment(1.0, -1.0), 1.6, 1.0),
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: glow(const Alignment(-1.1, 1.0), 1.4, 0.7),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The From your saved and Scene of the Day home-screen widgets. Colours,
+     corner radius, the author line and the fonts are shared with Quote of the
+     Day (values/qotd_widget.xml). -->
+<resources>
+    <!-- Which glow layer layout/quotely_art_widget.xml shows: 0 visible,
+         8 gone. Swapped in values-night. -->
+    <integer name="widget_glow_light_visibility">0</integer>
+    <integer name="widget_glow_dark_visibility">8</integer>
+
+    <!-- The day's glow in the picker previews (the first glow, clay, at the
+         app's paper strength). -->
+    <color name="widget_preview_glow">#80F2A07E</color>
+    <color name="widget_preview_glow_mid">#3AF2A07E</color>
+    <color name="widget_preview_glow_none">#00F2A07E</color>
+
+    <string name="saved_widget_name">From your saved</string>
+    <string name="saved_widget_description">One of your saved quotes, a different one each day. Works offline.</string>
+    <string name="saved_widget_eyebrow" translatable="false">FROM YOUR SAVED</string>
+    <string name="saved_widget_empty">Save a quote you love and it will live here.</string>
+    <string name="saved_widget_a11y">From your saved: %1$s</string>
+    <string name="saved_widget_a11y_author">From your saved: %1$s — %2$s</string>
+    <string name="saved_widget_sample_quote">Nothing will work unless you do.</string>
+    <string name="saved_widget_sample_author">— Maya Angelou</string>
+
+    <string name="scene_widget_name">Scene of the Day</string>
+    <string name="scene_widget_description">Today\'s scene line over its title\'s poster, with who said it.</string>
+    <string name="scene_widget_eyebrow" translatable="false">SCENE OF THE DAY</string>
+    <string name="scene_widget_empty">Open Quotely to bring today\'s scene here.</string>
+    <string name="scene_widget_footer">%1$s, %2$s</string>
+    <string name="scene_widget_a11y">Scene of the day from %3$s: %1$s — %2$s</string>
+    <string name="scene_widget_a11y_short">Scene of the day: %1$s</string>
+    <string name="scene_widget_sample_eyebrow" translatable="false">SCENE · THE GODFATHER</string>
+    <string name="scene_widget_sample_quote">I\'m gonna make him an offer he can\'t refuse.</string>
+    <string name="scene_widget_sample_footer">— Vito Corleone, The Godfather</string>
+</resources>

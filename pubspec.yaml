@@ -26,6 +26,9 @@ dependencies:
   # source bitmap (Wikipedia photos run to 2000px+) to paint a circle a
   # few dozen pixels wide. Play Console flagged that as a memory issue.
   cached_network_image: ^4.0.5
+  # The widgets read posters from CachedNetworkImage's disk cache first, so
+  # they get one offline when the app has shown it.
+  flutter_cache_manager: ^3.4.1
   shared_preferences: ^2.5.3
   go_router: ^18.0.1
   flutter_riverpod: ^3.0.3

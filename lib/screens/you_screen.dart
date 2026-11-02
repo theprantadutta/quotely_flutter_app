@@ -183,10 +183,11 @@ class _YouScreenState extends ConsumerState<YouScreen> {
               ),
               if (QuoteWidgetIntro.platformSupported)
                 GroupedRow(
-                  title: 'Home-screen widget',
-                  description: 'Add Quote of the Day to your home screen',
+                  title: 'Home-screen widgets',
+                  description:
+                      'Quote of the Day, your saved quotes, or a scene',
                   chevron: true,
-                  onTap: () => addQuoteWidget(context),
+                  onTap: () => chooseQuoteWidget(context),
                 ),
               GroupedRow(
                 title: 'Notifications',
