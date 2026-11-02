@@ -1,6 +1,6 @@
 # iOS work for the next Mac session
 
-Start here. Version 3.1.1 (24) was built and tested on Android from Windows,
+Start here. Version 3.2.0 (25) was built and tested on Android from Windows,
 where iOS cannot be built. Everything below needs a Mac with **Xcode 26.2 or
 newer** and a human for the Apple Developer portal steps. The details are in
 the per-topic files in `docs/ios-mac-session/`; this file gives the order.
@@ -68,7 +68,7 @@ signing profile yet. Don't ship an iOS build from master before then.
      `ios-mac-session/feedback.md`: a flag and feedback sent in Airplane Mode
      arrive once back online, and the `in_app_review` dialog (TestFlight
      never shows it; a dev build does).
-6. **App Store:** submit 3.1.1 (24) with the release notes used for Play.
+6. **App Store:** submit 3.2.0 (25) with the release notes used for Play.
 
 ## Already done on Windows (no Mac needed)
 
