@@ -5,17 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../components/supporter_thanks.dart';
 import '../components/thread/thread.dart';
 import '../constants/shared_preference_keys.dart';
 import '../navigation/routes.dart';
+import '../services/store_review.dart';
 
-/// Numeric Apple App Store ID for Quotely, from App Store Connect. Used to
-/// build the "Share the App" link on iOS. The URL is deliberately built without
-/// a locale segment so it redirects to each recipient's own storefront.
-const String kAppStoreId = '6778280010';
+// kAppStoreId (store_review.dart) builds the "Share the App" link on iOS. The
+// URL is deliberately built without a locale segment so it redirects to each
+// recipient's own storefront.
 
 class SupportUsScreen extends StatefulWidget {
   static const kRouteName = Routes.support;
@@ -277,24 +276,6 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
     );
   }
 
-  /// Opens the store listing on its review page.
-  Future<void> _rateApp() async {
-    final uri = Platform.isIOS
-        ? Uri.parse(
-            'https://apps.apple.com/app/id$kAppStoreId?action=write-review',
-          )
-        : Uri.parse('market://details?id=com.pranta.quotely');
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!ok && !Platform.isIOS) {
-      await launchUrl(
-        Uri.parse(
-          'https://play.google.com/store/apps/details?id=com.pranta.quotely',
-        ),
-        mode: LaunchMode.externalApplication,
-      );
-    }
-  }
-
   /// Store titles on Android carry the app name ("Buy me a coffee (Quotely)").
   String _cleanTitle(String title) =>
       title.replaceAll(RegExp(r'\s*\([^)]*\)\s*$'), '').trim();
@@ -370,7 +351,7 @@ class _SupportUsScreenState extends State<SupportUsScreen> {
                   label: 'Rate the app',
                   icon: Icons.star_rounded,
                   filled: true,
-                  onPressed: _rateApp,
+                  onPressed: openStoreReviewPage,
                 ),
               ),
               const SizedBox(width: 10),

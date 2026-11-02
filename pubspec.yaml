@@ -65,6 +65,7 @@ dependencies:
   # Offline library: honour the "Wi-Fi only" toggle before downloading.
   connectivity_plus: ^7.0.0
   home_widget: 0.10.0
+  in_app_review: ^2.0.12
 
 dev_dependencies:
   flutter_test:
