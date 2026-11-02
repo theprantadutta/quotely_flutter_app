@@ -64,6 +64,10 @@ signing profile yet. Don't ship an iOS build from master before then.
      bring the app back to the foreground.
    - **Ask.** Ask a question online (an answer from the server), then offline
      (the local search, with no error).
+   - **Feedback, flags and the review prompt.** See
+     `ios-mac-session/feedback.md`: a flag and feedback sent in Airplane Mode
+     arrive once back online, and the `in_app_review` dialog (TestFlight
+     never shows it; a dev build does).
 6. **App Store:** submit 3.1.1 (24) with the release notes used for Play.
 
 ## Already done on Windows (no Mac needed)

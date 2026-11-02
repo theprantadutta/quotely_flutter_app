@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../components/feedback_sheet.dart';
 import '../components/quote_widget_intro.dart';
 import '../components/thread/thread.dart';
 import '../constants/notification_types.dart';
@@ -15,6 +16,7 @@ import '../dtos/media_title_dto.dart';
 import '../navigation/routes.dart';
 import '../services/activity_service.dart';
 import '../services/notification_service.dart';
+import '../services/store_review.dart';
 import '../state_providers/profile.dart';
 import '../state_providers/scene_state.dart';
 import '../state_providers/user_interests.dart';
@@ -208,6 +210,23 @@ class _YouScreenState extends ConsumerState<YouScreen> {
                 description: 'Buy the maker a coffee',
                 chevron: true,
                 onTap: () => _go(Routes.support),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          GroupedList(
+            children: [
+              GroupedRow(
+                title: 'Send feedback or report a bug',
+                description: 'Ideas, gripes, things that broke',
+                chevron: true,
+                onTap: () => showFeedbackSheet(context),
+              ),
+              const GroupedRow(
+                title: 'Rate Quotely',
+                description: 'A review helps others find us',
+                chevron: true,
+                onTap: openStoreReviewPage,
               ),
             ],
           ),

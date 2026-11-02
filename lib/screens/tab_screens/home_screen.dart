@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../../components/ask_sheet.dart';
 import '../../components/home_screen/ios_update_banner.dart';
 import '../../components/quote_widget_intro.dart';
+import '../../components/review_prompt.dart';
 import '../../components/thread/thread.dart';
 import '../../components/you_avatar_button.dart';
 import '../../constants/selectors.dart';
@@ -102,6 +103,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await showLegalConsentIfNeeded(context);
       if (mounted) unawaited(maybeShowQuoteWidgetIntro(context));
+      // "Enjoying Quotely?": only once it's due, on Today with the day's
+      // content loaded, and never over another sheet or screen.
+      if (mounted) {
+        unawaited(
+          ReviewPrompt.maybeShow(
+            context,
+            isCalm: () =>
+                mounted &&
+                _tab == _Tab.today &&
+                ref.read(fetchTodayQuoteOfTheDayProvider).hasValue,
+          ),
+        );
+      }
       await PushNotifications.asyncQueue.start();
       // Local first: screens read the local database; this keeps it full.
       // At most once a day, respecting Offline library's Wi-Fi only switch.
