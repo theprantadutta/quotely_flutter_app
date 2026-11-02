@@ -95,7 +95,7 @@ const kRecentPeopleKey = 'recent-people';
 /// {"q": quotesViewed, "s": scenesViewed, "f": factsViewed}.
 const kActivityLogKey = 'activity-log';
 
-/// Optional nickname; its initial fills the You avatar on Today.
+/// Optional nickname; its initial fills the You avatar in the tab headers.
 const kNicknameKey = 'user-nickname';
 
 /// Notifications added by the redesign.

@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../../components/home_screen/ios_update_banner.dart';
 import '../../components/quote_widget_intro.dart';
 import '../../components/thread/thread.dart';
+import '../../components/you_avatar_button.dart';
 import '../../constants/selectors.dart';
 import '../../dtos/of_the_day_adapters.dart';
 import '../../dtos/quote_dto.dart';
@@ -35,7 +36,6 @@ import '../../services/drift_quote_service.dart';
 import '../../services/drift_scene_service.dart';
 import '../../state_providers/favorite_fact_ids.dart';
 import '../../state_providers/favorite_quote_ids.dart';
-import '../../state_providers/profile.dart';
 import '../../state_providers/scene_state.dart';
 import '../../state_providers/user_interests.dart';
 import '../../util/pagination_seed.dart';
@@ -632,7 +632,7 @@ class _Header extends StatelessWidget {
             semanticLabel: 'Search',
             onTap: () => context.push(Routes.search),
           ),
-          const _YouAvatar(),
+          const YouAvatarButton(),
         ],
       ),
     );
@@ -790,41 +790,6 @@ class _AskSheetState extends State<_AskSheet> {
           const SizedBox(height: 18),
           Composer(onSubmit: _ask, busy: _busy, inset: 0),
         ],
-      ),
-    );
-  }
-}
-
-/// Small ink circle with the nickname's initial (or a person icon) → You.
-class _YouAvatar extends ConsumerWidget {
-  const _YouAvatar();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = context.q;
-    final nickname = ref.watch(nicknameProvider);
-    return Tooltip(
-      message: 'You',
-      excludeFromSemantics: true,
-      child: HitTarget(
-        semanticLabel: 'You: settings and streak',
-        onTap: () => context.push(Routes.you),
-        child: Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(color: t.ink, shape: BoxShape.circle),
-          child: nickname == null
-              ? Icon(Icons.person_rounded, size: 17, color: t.bg)
-              : Text(
-                  nickname.characters.first.toUpperCase(),
-                  style: context.qt.chip.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: t.bg,
-                  ),
-                ),
-        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../components/thread/thread.dart';
+import '../../components/you_avatar_button.dart';
 import '../../dtos/author_dto.dart';
 import '../../dtos/character_dto.dart';
 import '../../navigation/routes.dart';
@@ -207,6 +208,7 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
                 child: ScreenHeader(
                   title: 'People',
                   subtitle: 'Authors and characters you can follow',
+                  actions: [YouAvatarButton()],
                 ),
               ),
               SliverPadding(
