@@ -375,7 +375,22 @@ class PageBackdrop extends ConsumerWidget {
         return SpotlightBackdrop(tint: t.bg, imageUrl: url);
       }
     }
-    final hue = t.glowFor(DateTime.now());
+    return DayGlow(day: DateTime.now());
+  }
+}
+
+/// The page colour with soft gradients of [day]'s hue: the Glow background.
+/// The home-screen widgets draw the same thing natively (WidgetArt.kt,
+/// QuotelyWidgetShared.swift); keep them in step.
+class DayGlow extends StatelessWidget {
+  final DateTime day;
+
+  const DayGlow({super.key, required this.day});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    final hue = t.glowFor(day);
     // Dark pages need less opacity for the same visible lift.
     final k = t.isDark ? 0.34 : 0.5;
     RadialGradient glow(Alignment center, double radius, double strength) =>
