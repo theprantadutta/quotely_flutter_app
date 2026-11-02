@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' show FlutterView;
 
@@ -19,10 +20,12 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
 import 'components/maintenance_gate.dart';
 import 'components/quote_widget_bridge.dart';
+import 'components/review_prompt.dart';
 import 'firebase_options.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
+import 'services/report_outbox.dart';
 import 'theme/app_theme.dart';
 
 Talker? talker;
@@ -69,6 +72,10 @@ void main() async {
   PushNotifications.init();
   await dotenv.load();
   initServiceLocator();
+  // Reports queued offline go out now, on resume and when the connection
+  // returns; app opens count toward the review prompt's days of use.
+  ReportOutbox.instance.start();
+  unawaited(ReviewPrompt.start());
   // Read (and migrate) appearance before the first frame so the app never
   // flashes in the wrong theme or accent.
   Appearance.bootstrap = await AppearanceSettings.load(
