@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The From your saved and Scene of the Day widgets (SavedQuoteWidgetProvider,
+     SceneOfTheDayWidgetProvider), drawn as layout/qotd_widget.xml is, with
+     one more layer for the page with the day's glow.
+
+     Layers, bottom to top: the page colour; the glow, drawn in Kotlin once
+     for paper and once for night, with only the one for the current system
+     theme shown (the visibility integers in values/ and values-night/, so it
+     switches without a redraw); the poster (pre-blurred in Dart, cropped and
+     rounded in Kotlin) and the page-colour wash over it, when there is one;
+     then the text, a bitmap drawn in white with the app's fonts and tinted
+     here with the ink colour. Only RemoteViews-safe classes are used. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/qotd_widget_background"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/art_glow_light"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:visibility="@integer/widget_glow_light_visibility" />
+
+    <ImageView
+        android:id="@+id/art_glow_dark"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:visibility="@integer/widget_glow_dark_visibility" />
+
+    <ImageView
+        android:id="@+id/art_poster"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/art_wash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/qotd_widget_wash"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/art_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:tint="@color/qotd_widget_ink"
+        android:tintMode="src_in" />
+</FrameLayout>

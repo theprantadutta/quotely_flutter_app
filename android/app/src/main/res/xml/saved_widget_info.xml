@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From your saved widget. Same sizes as Quote of the Day: opens at 4x2 and
+     resizes from 2x2 up to about 4x3.
+
+     No updatePeriodMillis: SavedQuoteWidgetProvider turns the quote over at
+     midnight with an inexact, non-waking alarm, and the app refreshes it
+     whenever the saved quotes change, at start and when it goes to the
+     background. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/saved_widget_description"
+    android:initialLayout="@layout/quotely_art_widget"
+    android:maxResizeHeight="260dp"
+    android:maxResizeWidth="420dp"
+    android:minHeight="110dp"
+    android:minResizeHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minWidth="250dp"
+    android:previewLayout="@layout/saved_widget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="4"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From your saved: the widget picker's preview (previewLayout, Android
+     12+). Static sample text over the page with a glow, laid out like the
+     real widget, which SavedQuoteWidgetProvider draws as a bitmap instead
+     (see layout/qotd_widget_preview.xml for why). Only RemoteViews-safe
+     classes are used. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_preview_glow"
+    android:clipToOutline="true"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="14dp">
+
+    <TextView
+        style="@style/QotdWidget.Eyebrow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/saved_widget_eyebrow" />
+
+    <TextView
+        style="@style/QotdWidget.Quote"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:layout_weight="1"
+        android:text="@string/saved_widget_sample_quote" />
+
+    <TextView
+        style="@style/QotdWidget.Author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/saved_widget_sample_author" />
+</LinearLayout>

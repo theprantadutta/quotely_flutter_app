@@ -93,6 +93,36 @@
                 android:resource="@xml/qotd_widget_info" />
         </receiver>
 
+        <!-- From your saved home-screen widget: one of the person's saved
+             quotes a day (lib/services/saved_widget_service.dart); see
+             widget/SavedQuoteWidgetProvider.kt. -->
+        <receiver
+            android:name=".widget.SavedQuoteWidgetProvider"
+            android:exported="false"
+            android:label="@string/saved_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/saved_widget_info" />
+        </receiver>
+
+        <!-- Scene of the Day home-screen widget
+             (lib/services/scene_widget_service.dart); see
+             widget/SceneOfTheDayWidgetProvider.kt. -->
+        <receiver
+            android:name=".widget.SceneOfTheDayWidgetProvider"
+            android:exported="false"
+            android:label="@string/scene_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/scene_widget_info" />
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
