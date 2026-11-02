@@ -78,6 +78,17 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true" />
 
+        <!-- url_launcher's in-app WebView, disabled. Every link in the app opens
+             externally (LaunchMode.externalApplication; mailto goes to the mail
+             app), so nothing ever starts this activity on purpose. Crashlytics
+             still caught it crashing in onCreate (UnsupportedOperationException,
+             3.0.1) when the system restored it with no URL to show. Disabled, it
+             can't be restored or launched at all. If an in-app WebView is ever
+             wanted, remove this and use LaunchMode.inAppBrowserView instead. -->
+        <activity
+            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+            android:enabled="false" />
+
         <!-- Quote of the Day home-screen widget. It displays what the app
              saves through home_widget (lib/services/quote_widget_service.dart);
              see widget/QuoteOfTheDayWidgetProvider.kt. -->
