@@ -23,6 +23,7 @@ import 'firebase_options.dart';
 import 'navigation/app_navigation.dart';
 import 'notifications/push_notification.dart';
 import 'service_locator/init_service_locators.dart';
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 Talker? talker;
@@ -66,6 +67,9 @@ void main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
+  // New install or upgrade? Settled before onboarding writes anything, so
+  // existing users keep their all-on defaults and new ones start calm.
+  await NotificationService.resolveDefaults();
   PushNotifications.init();
   await dotenv.load();
   initServiceLocator();

@@ -49,8 +49,10 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
     if (!mounted) return;
     setState(() {
       _prefs = prefs;
+      // Unset keys follow the install's defaults: all on for existing
+      // installs, only Quote of the day for new ones.
       for (final key in _values.keys.toList()) {
-        _values[key] = prefs.getBool(key) ?? true;
+        _values[key] = NotificationService.isEnabled(prefs, key);
       }
       _quietEnabled = quiet.enabled;
       _quietStart = quiet.start;
