@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Dark mode: the night glow layer, and the night glow in the previews. -->
 <resources>
-    <integer name="widget_glow_light_visibility">8</integer>
+    <integer name="widget_glow_light_visibility">2</integer>
     <integer name="widget_glow_dark_visibility">0</integer>
 
     <color name="widget_preview_glow">#57C0643F</color>

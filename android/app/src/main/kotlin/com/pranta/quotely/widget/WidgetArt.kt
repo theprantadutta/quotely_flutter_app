@@ -154,7 +154,21 @@ object WidgetArt {
         val path = data.getString(key, null) ?: return null
         if (!File(path).exists()) return null
         return try {
-            BitmapFactory.decodeFile(path)
+            // Read the size first, then decode only as large as the widget ever
+            // draws it (POSTER_MAX_EDGE_PX, it is a blur), and without alpha:
+            // the poster is opaque, so RGB_565 halves its memory again.
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+            var sample = 1
+            while (max(bounds.outWidth, bounds.outHeight) / (sample * 2) >= POSTER_MAX_EDGE_PX) {
+                sample *= 2
+            }
+            val options = BitmapFactory.Options().apply {
+                inSampleSize = sample
+                inPreferredConfig = Bitmap.Config.RGB_565
+            }
+            BitmapFactory.decodeFile(path, options)
         } catch (e: Exception) {
             null
         } catch (e: OutOfMemoryError) {

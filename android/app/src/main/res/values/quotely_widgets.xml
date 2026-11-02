@@ -5,8 +5,11 @@
 <resources>
     <!-- Which glow layer layout/quotely_art_widget.xml shows: 0 visible,
          8 gone. Swapped in values-night. -->
+    <!-- android:visibility enum values for XML: 0 visible, 1 invisible, 2 gone.
+         Not the View.GONE constant (8): an 8 here crashes widget inflation
+         ("Couldn't add widget"). -->
     <integer name="widget_glow_light_visibility">0</integer>
-    <integer name="widget_glow_dark_visibility">8</integer>
+    <integer name="widget_glow_dark_visibility">2</integer>
 
     <!-- The day's glow in the picker previews (the first glow, clay, at the
          app's paper strength). -->
