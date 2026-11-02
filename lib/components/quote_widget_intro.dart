@@ -20,7 +20,7 @@ import 'thread/thread.dart';
 /// saved, Scene of the Day):
 /// - [maybeShowQuoteWidgetIntro]: a one-time introduction on Today, from the
 ///   second app open on and only once onboarding is done;
-/// - [chooseQuoteWidget]: You → Home-screen widgets, the same choice of three;
+/// - [chooseQuoteWidget]: Settings → Home-screen widgets, the same choice of three;
 /// - [addQuoteWidget]: what "Add widget" does for the chosen one. Android
 ///   launchers that support it pin the widget directly; everywhere else (and
 ///   always on iOS, which has no API for it) a short sheet explains how to
@@ -77,7 +77,7 @@ Future<void> maybeShowQuoteWidgetIntro(BuildContext context) async {
   }
 }
 
-/// You → Home-screen widgets: pick one of the three, then add it.
+/// Settings → Home-screen widgets: pick one of the three, then add it.
 Future<void> chooseQuoteWidget(BuildContext context) async {
   final kind = await showQSheet<QuotelyWidgetKind>(
     context,

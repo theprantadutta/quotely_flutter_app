@@ -149,7 +149,7 @@ class _YouScreenState extends ConsumerState<YouScreen> {
     final nf = NumberFormat.decimalPattern();
 
     return ThreadPage(
-      title: 'You',
+      title: 'Settings',
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [

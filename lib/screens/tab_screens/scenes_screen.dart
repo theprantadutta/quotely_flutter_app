@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../components/ask_sheet.dart';
 import '../../components/thread/thread.dart';
-import '../../components/you_avatar_button.dart';
+import '../../components/settings_button.dart';
 import '../../dtos/media_title_dto.dart';
 import '../../dtos/scene_quote_dto.dart';
 import '../../navigation/bottom-navigation/bottom_navigation_layout.dart';
@@ -171,7 +171,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
             semanticLabel: 'Search titles',
             onTap: () => context.push(Routes.search),
           ),
-          const YouAvatarButton(),
+          const SettingsButton(),
         ],
       ),
     );

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quotely_flutter_app/components/ask_sheet.dart';
 import 'package:quotely_flutter_app/components/thread/thread.dart';
-import 'package:quotely_flutter_app/components/you_avatar_button.dart';
+import 'package:quotely_flutter_app/components/settings_button.dart';
 import 'package:quotely_flutter_app/constants/shared_preference_keys.dart';
 import 'package:quotely_flutter_app/database/database.dart';
 import 'package:quotely_flutter_app/navigation/routes.dart';
@@ -107,30 +107,26 @@ void main() {
 
   tearDown(() => getIt.reset(dispose: false));
 
-  group('You avatar', () {
-    testWidgets('opens You', (tester) async {
-      await tester.pumpWidget(_app(const Center(child: YouAvatarButton())));
+  group('Settings button', () {
+    testWidgets('opens Settings', (tester) async {
+      await tester.pumpWidget(_app(const Center(child: SettingsButton())));
       await tester.pump();
       expect(
-        find.bySemanticsLabel(YouAvatarButton.semanticLabel),
+        find.bySemanticsLabel(SettingsButton.semanticLabel),
         findsOneWidget,
       );
-      await tester.tap(find.byType(YouAvatarButton));
+      await tester.tap(find.byType(SettingsButton));
       await tester.pumpAndSettle();
       expect(find.byKey(_youScreen), findsOneWidget);
     });
 
-    testWidgets('shows the nickname initial when there is one', (tester) async {
-      SharedPreferences.setMockInitialValues({
-        ..._prefs,
-        kNicknameKey: 'pranta',
-      });
-      await tester.pumpWidget(_app(const Center(child: YouAvatarButton())));
+    testWidgets('is a gear, not an avatar', (tester) async {
+      await tester.pumpWidget(_app(const Center(child: SettingsButton())));
       await tester.pump();
       expect(
         find.descendant(
-          of: find.byType(YouAvatarButton),
-          matching: find.text('P'),
+          of: find.byType(SettingsButton),
+          matching: find.byIcon(Icons.settings_outlined),
         ),
         findsOneWidget,
       );
@@ -144,10 +140,10 @@ void main() {
       'Facts': () => const FactsScreen(),
     };
     for (final MapEntry(key: name, value: build) in tabs.entries) {
-      testWidgets('is in the $name header and opens You', (tester) async {
+      testWidgets('is in the $name header and opens Settings', (tester) async {
         await tester.pumpWidget(_app(build()));
         await _settle(tester);
-        final avatar = find.byType(YouAvatarButton);
+        final avatar = find.byType(SettingsButton);
         expect(avatar, findsOneWidget);
         // Top right, like Today's.
         final rect = tester.getRect(avatar);

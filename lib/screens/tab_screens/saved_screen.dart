@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../components/ask_sheet.dart';
 import '../../components/thread/thread.dart';
-import '../../components/you_avatar_button.dart';
+import '../../components/settings_button.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../dtos/quote_dto.dart';
 import '../../dtos/scene_quote_dto.dart';
@@ -243,7 +243,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                         ref.read(appearanceProvider.notifier).setLayout(l),
                   ),
                   const SizedBox(width: 4),
-                  const YouAvatarButton(),
+                  const SettingsButton(),
                 ],
               ),
             ),

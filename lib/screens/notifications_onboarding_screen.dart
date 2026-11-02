@@ -142,8 +142,8 @@ class _NotificationsOnboardingScreenState
                       const SizedBox(height: 6),
                       Text(
                         _calm
-                            ? 'Start with one a day. Add more anytime in You → Notifications.'
-                            : 'Change these anytime in You → Notifications.',
+                            ? 'Start with one a day. Add more anytime in Settings → Notifications.'
+                            : 'Change these anytime in Settings → Notifications.',
                         style: context.qt.meta,
                       ),
                       const SizedBox(height: 18),

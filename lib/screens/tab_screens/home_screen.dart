@@ -13,7 +13,7 @@ import '../../components/home_screen/ios_update_banner.dart';
 import '../../components/quote_widget_intro.dart';
 import '../../components/review_prompt.dart';
 import '../../components/thread/thread.dart';
-import '../../components/you_avatar_button.dart';
+import '../../components/settings_button.dart';
 import '../../constants/selectors.dart';
 import '../../dtos/of_the_day_adapters.dart';
 import '../../dtos/quote_dto.dart';
@@ -643,7 +643,7 @@ class _Header extends StatelessWidget {
             semanticLabel: 'Search',
             onTap: () => context.push(Routes.search),
           ),
-          const YouAvatarButton(),
+          const SettingsButton(),
         ],
       ),
     );

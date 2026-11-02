@@ -205,7 +205,7 @@ void main() {
 
       expect(
         find.text(
-          'Start with one a day. Add more anytime in You → Notifications.',
+          'Start with one a day. Add more anytime in Settings → Notifications.',
         ),
         findsOneWidget,
       );
@@ -226,7 +226,7 @@ void main() {
       await pump(tester);
 
       expect(
-        find.text('Change these anytime in You → Notifications.'),
+        find.text('Change these anytime in Settings → Notifications.'),
         findsOneWidget,
       );
       expect(toggle(tester, 'Fact of the day'), isFalse);
