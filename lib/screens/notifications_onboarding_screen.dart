@@ -13,8 +13,10 @@ import '../navigation/routes.dart';
 import '../notifications/push_notification.dart';
 import '../services/notification_service.dart';
 
-/// "When should we text you?" Choose notification kinds (all on by
-/// default), then ask the OS for permission with that context.
+/// "When should we text you?" Choose notification kinds, then ask the OS
+/// for permission with that context. New installs start with only Quote of
+/// the day on; installs from before keep every kind on (see
+/// [NotificationService.defaultFor]). Every kind stays visible to opt into.
 class NotificationsOnboardingScreen extends StatefulWidget {
   static const kRouteName = Routes.notificationsOnboarding;
 
@@ -27,9 +29,12 @@ class NotificationsOnboardingScreen extends StatefulWidget {
 
 class _NotificationsOnboardingScreenState
     extends State<NotificationsOnboardingScreen> {
+  // Calm until prefs load, so a new install never flashes everything on.
   final Map<String, bool> _values = {
-    for (final type in kNotificationTypes) type.prefKey: true,
+    for (final type in kNotificationTypes)
+      type.prefKey: NotificationService.calmDefaultOn.contains(type.prefKey),
   };
+  bool _calm = true;
 
   SharedPreferences? _prefs;
   bool _saving = false;
@@ -47,8 +52,12 @@ class _NotificationsOnboardingScreenState
     if (!mounted) return;
     setState(() {
       _prefs = prefs;
+      _calm = NotificationService.usesCalmDefaults(prefs);
       for (final type in kNotificationTypes) {
-        _values[type.prefKey] = prefs.getBool(type.prefKey) ?? true;
+        _values[type.prefKey] = NotificationService.isEnabled(
+          prefs,
+          type.prefKey,
+        );
       }
     });
   }
@@ -66,7 +75,7 @@ class _NotificationsOnboardingScreenState
 
     // Awaited: two of these gate routing (see the router's redirect).
     for (final type in kNotificationTypes) {
-      await prefs.setBool(type.prefKey, selection[type.prefKey] ?? true);
+      await prefs.setBool(type.prefKey, selection[type.prefKey] ?? false);
     }
     await prefs.setBool(kNotificationEnabled, anySelected);
     await prefs.setBool(kNotificationsInitializedKey, true);
@@ -89,7 +98,7 @@ class _NotificationsOnboardingScreenState
     try {
       for (final type in kNotificationTypes) {
         if (type.topic == null) continue;
-        final enabled = selection[type.prefKey] ?? true;
+        final enabled = selection[type.prefKey] ?? false;
         enabled
             ? await service.subscribeToTopic(type.topic!)
             : await service.unsubscribeFromTopic(type.topic!);
@@ -130,6 +139,13 @@ class _NotificationsOnboardingScreenState
                           style: context.qt.titleScreen,
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _calm
+                            ? 'Start with one a day. Add more anytime in You → Notifications.'
+                            : 'Change these anytime in You → Notifications.',
+                        style: context.qt.meta,
+                      ),
                       const SizedBox(height: 18),
                       const _PreviewNotification(),
                       const SizedBox(height: 16),
@@ -141,7 +157,7 @@ class _NotificationsOnboardingScreenState
                               description: type.primerDescription,
                               isNew: type.isNew,
                               trailing: QToggle(
-                                value: _values[type.prefKey] ?? true,
+                                value: _values[type.prefKey] ?? false,
                                 semanticLabel: type.title,
                                 onChanged: (v) =>
                                     setState(() => _values[type.prefKey] = v),

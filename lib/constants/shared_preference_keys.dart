@@ -50,6 +50,14 @@ const kNotificationsInitializedKey = 'notifications_preferences_initialized';
 /// preferences screen. Gates that screen the same way onboarding/interests do.
 const kHasSeenNotificationPrompt = 'has-seen-notification-prompt';
 
+/// Which defaults apply to notification prefs that have no stored value:
+/// 'legacy' (every kind on, as before) or 'calm' (only Quote of the day).
+/// Decided once per install; see [NotificationService.usesCalmDefaults].
+const kNotificationDefaultsKey = 'notification-defaults';
+
+/// Set by the router the first time onboarding is shown.
+const kOnboardingShownKey = 'onboardingShown';
+
 /// Set once the user has donated. The donation products are non-consumable, so
 /// a user can only ever buy one; this hides the donation tiles afterwards so we
 /// don't ask again. Restored from the store on open too, for reinstalls.

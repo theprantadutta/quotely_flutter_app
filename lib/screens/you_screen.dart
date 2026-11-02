@@ -65,7 +65,7 @@ class _YouScreenState extends ConsumerState<YouScreen> {
     final master = prefs.getBool(kNotificationEnabled) ?? true;
     final on = master
         ? kNotificationTypes
-              .where((t) => prefs.getBool(t.prefKey) ?? true)
+              .where((t) => NotificationService.isEnabled(prefs, t.prefKey))
               .length
         : 0;
     final quietText = quiet.enabled

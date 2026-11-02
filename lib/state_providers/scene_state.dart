@@ -129,7 +129,10 @@ class FollowedTitles extends _$FollowedTitles {
     await prefs.setStringList(kFollowedTitlesKey, next.keys.toList());
 
     // Topic sync is best effort (offline, FCM not ready): Settings re-syncs.
-    final notify = prefs.getBool(kNotificationFollowedTitles) ?? true;
+    final notify = NotificationService.isEnabled(
+      prefs,
+      kNotificationFollowedTitles,
+    );
     final enabled = prefs.getBool(kNotificationEnabled) ?? true;
     try {
       final topic = '$kNotificationTitleTopicPrefix${title.slug}';
