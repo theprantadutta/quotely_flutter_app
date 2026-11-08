@@ -8,8 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		30E4B7808F9648D25D7EAA48 /* QuotelyWidgetShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9314E5DD6808A95FAEE26B /* QuotelyWidgetShared.swift */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		3BB260EB5488D110EAC9FF9D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66C28C4BE7745F3E0F9C1F33 /* SwiftUI.framework */; };
+		46F4CA5C69C782A8C53B3153 /* SavedQuoteWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4149501ED1E354D8CD9317D3 /* SavedQuoteWidget.swift */; };
+		47DC481CC14F25214084E10E /* SceneWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02158F0FB206DADF8E26CF63 /* SceneWidget.swift */; };
+		5B85C7A7B63B244D556EB8F7 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48CF40963CE9B134C7BEECCD /* WidgetKit.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
@@ -17,7 +22,13 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		9A13F4632FD7C3DE00CAE69B /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A13F4622FD7C3DE00CAE69B /* StoreKit.framework */; };
 		9A13F4652FD7C40000CAE69B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9A13F4642FD7C40000CAE69B /* PrivacyInfo.xcprivacy */; };
+		AA0D26DA2F09323668135879 /* InstrumentSerif-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ECFA570E4E66549DD18AD235 /* InstrumentSerif-Regular.ttf */; };
+		B7E88E733F7ED73385BD23B6 /* QuotelyWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AB052724B1F1FC28FD5469 /* QuotelyWidget.swift */; };
+		BA2A8CDDEDED7EC6F1D257FD /* QuotelyWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C517D7C477FCE9C704C92748 /* QuotelyWidgetBundle.swift */; };
 		C001750F0ADE29BD1CCC1844 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0D0C7BB72903C559562C30E0 /* GoogleService-Info.plist */; };
+		D3B7FEBD7178B3C6627F06ED /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 449F2BD0B8F908AD600D9ED4 /* Foundation.framework */; };
+		EEE0700BBF0BACEA82077AD3 /* QuotelyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D9D92304E70C2FA8DBD2ECE6 /* QuotelyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F8DDA3A760A987136329FA93 /* IBMPlexMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D803D393E737E90233704679 /* IBMPlexMono-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +38,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 97C146ED1CF9000F007C117D;
 			remoteInfo = Runner;
+		};
+		BCC49B8ADEAD74B1D13E3D22 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 93C67CE6B2B22FE05977C74F;
+			remoteInfo = QuotelyWidget;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -41,15 +59,32 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4E6E6BF42376B4BF193F4AA /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EEE0700BBF0BACEA82077AD3 /* QuotelyWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		02158F0FB206DADF8E26CF63 /* SceneWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SceneWidget.swift; sourceTree = "<group>"; };
 		0D0C7BB72903C559562C30E0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Runner/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		4149501ED1E354D8CD9317D3 /* SavedQuoteWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SavedQuoteWidget.swift; sourceTree = "<group>"; };
+		449F2BD0B8F908AD600D9ED4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		45AB052724B1F1FC28FD5469 /* QuotelyWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuotelyWidget.swift; sourceTree = "<group>"; };
+		48CF40963CE9B134C7BEECCD /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/WidgetKit.framework; sourceTree = DEVELOPER_DIR; };
+		66C28C4BE7745F3E0F9C1F33 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		78E0A7A72DC9AD7400C4905E /* FlutterGeneratedPluginSwiftPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FlutterGeneratedPluginSwiftPackage; path = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage; sourceTree = "<group>"; };
@@ -64,6 +99,13 @@
 		9A13F4602FD7C3B600CAE69B /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		9A13F4622FD7C3DE00CAE69B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		9A13F4642FD7C40000CAE69B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B9EB88CD30EF2F17BB24D181 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BD36C8D73714BC1093153D54 /* QuotelyWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = QuotelyWidget.entitlements; sourceTree = "<group>"; };
+		BF9314E5DD6808A95FAEE26B /* QuotelyWidgetShared.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuotelyWidgetShared.swift; sourceTree = "<group>"; };
+		C517D7C477FCE9C704C92748 /* QuotelyWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuotelyWidgetBundle.swift; sourceTree = "<group>"; };
+		D803D393E737E90233704679 /* IBMPlexMono-Medium.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "IBMPlexMono-Medium.ttf"; sourceTree = "<group>"; };
+		D9D92304E70C2FA8DBD2ECE6 /* QuotelyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuotelyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECFA570E4E66549DD18AD235 /* InstrumentSerif-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "InstrumentSerif-Regular.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +125,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B6DBEB186DC94D5EAA6444CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3B7FEBD7178B3C6627F06ED /* Foundation.framework in Frameworks */,
+				5B85C7A7B63B244D556EB8F7 /* WidgetKit.framework in Frameworks */,
+				3BB260EB5488D110EAC9FF9D /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -92,6 +144,42 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		6BD28AED0A64337AC08A739B /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				ECFA570E4E66549DD18AD235 /* InstrumentSerif-Regular.ttf */,
+				D803D393E737E90233704679 /* IBMPlexMono-Medium.ttf */,
+			);
+			name = Fonts;
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		78DC6BD88CCCC1D21AA66EBD /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				449F2BD0B8F908AD600D9ED4 /* Foundation.framework */,
+				48CF40963CE9B134C7BEECCD /* WidgetKit.framework */,
+				66C28C4BE7745F3E0F9C1F33 /* SwiftUI.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		847268388F20135E33E6F357 /* QuotelyWidget */ = {
+			isa = PBXGroup;
+			children = (
+				BF9314E5DD6808A95FAEE26B /* QuotelyWidgetShared.swift */,
+				45AB052724B1F1FC28FD5469 /* QuotelyWidget.swift */,
+				4149501ED1E354D8CD9317D3 /* SavedQuoteWidget.swift */,
+				02158F0FB206DADF8E26CF63 /* SceneWidget.swift */,
+				C517D7C477FCE9C704C92748 /* QuotelyWidgetBundle.swift */,
+				B9EB88CD30EF2F17BB24D181 /* Info.plist */,
+				BD36C8D73714BC1093153D54 /* QuotelyWidget.entitlements */,
+				6BD28AED0A64337AC08A739B /* Fonts */,
+			);
+			name = QuotelyWidget;
+			path = QuotelyWidget;
 			sourceTree = "<group>";
 		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
@@ -115,6 +203,7 @@
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				0D0C7BB72903C559562C30E0 /* GoogleService-Info.plist */,
 				9A13F4612FD7C3DE00CAE69B /* Frameworks */,
+				847268388F20135E33E6F357 /* QuotelyWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -123,6 +212,7 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				D9D92304E70C2FA8DBD2ECE6 /* QuotelyWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -148,6 +238,7 @@
 			isa = PBXGroup;
 			children = (
 				9A13F4622FD7C3DE00CAE69B /* StoreKit.framework */,
+				78DC6BD88CCCC1D21AA66EBD /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -173,10 +264,28 @@
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		93C67CE6B2B22FE05977C74F /* QuotelyWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62E05CC69DBA5B4C8B6F43BC /* Build configuration list for PBXNativeTarget "QuotelyWidget" */;
+			buildPhases = (
+				2E4013C6C9DA70C8645B8563 /* Sources */,
+				B6DBEB186DC94D5EAA6444CE /* Frameworks */,
+				21ED8C3F5F87922DDD6CDFD2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QuotelyWidget;
+			productName = QuotelyWidget;
+			productReference = D9D92304E70C2FA8DBD2ECE6 /* QuotelyWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		97C146ED1CF9000F007C117D /* Runner */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
+				F4E6E6BF42376B4BF193F4AA /* Embed Foundation Extensions */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
@@ -188,6 +297,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				CC5B85B8C1659F0D78CE338F /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -211,6 +321,9 @@
 						CreatedOnToolsVersion = 14.0;
 						TestTargetID = 97C146ED1CF9000F007C117D;
 					};
+					93C67CE6B2B22FE05977C74F = {
+						CreatedOnToolsVersion = 26.0;
+					};
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
@@ -227,7 +340,7 @@
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
-				781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage" */,
+				781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "FlutterGeneratedPluginSwiftPackage" */,
 			);
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
 			projectDirPath = "";
@@ -235,11 +348,21 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
+				93C67CE6B2B22FE05977C74F /* QuotelyWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		21ED8C3F5F87922DDD6CDFD2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0D26DA2F09323668135879 /* InstrumentSerif-Regular.ttf in Resources */,
+				F8DDA3A760A987136329FA93 /* IBMPlexMono-Medium.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		331C807F294A63A400263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -315,6 +438,18 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2E4013C6C9DA70C8645B8563 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30E4B7808F9648D25D7EAA48 /* QuotelyWidgetShared.swift in Sources */,
+				B7E88E733F7ED73385BD23B6 /* QuotelyWidget.swift in Sources */,
+				46F4CA5C69C782A8C53B3153 /* SavedQuoteWidget.swift in Sources */,
+				47DC481CC14F25214084E10E /* SceneWidget.swift in Sources */,
+				BA2A8CDDEDED7EC6F1D257FD /* QuotelyWidgetBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		331C807D294A63A400263BE5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -340,6 +475,12 @@
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
 		};
+		CC5B85B8C1659F0D78CE338F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = QuotelyWidget;
+			target = 93C67CE6B2B22FE05977C74F /* QuotelyWidget */;
+			targetProxy = BCC49B8ADEAD74B1D13E3D22 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -362,6 +503,41 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		109F9E86E8D28795F9E40AC3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = QuotelyWidget/QuotelyWidget.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9M6X7M798T;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuotelyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pranta.quotely.QuotelyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Quotely Widget";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -488,6 +664,75 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
+			};
+			name = Profile;
+		};
+		6114418EE8101BC443EEA985 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = QuotelyWidget/QuotelyWidget.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 9M6X7M798T;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuotelyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pranta.quotely.QuotelyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9559E0423DA5169AA4EF30E4 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = QuotelyWidget/QuotelyWidget.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9M6X7M798T;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuotelyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.pranta.quotely.QuotelyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Quotely Widget";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Profile;
 		};
@@ -676,6 +921,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		62E05CC69DBA5B4C8B6F43BC /* Build configuration list for PBXNativeTarget "QuotelyWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6114418EE8101BC443EEA985 /* Debug */,
+				109F9E86E8D28795F9E40AC3 /* Release */,
+				9559E0423DA5169AA4EF30E4 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		97C146E91CF9000F007C117D /* Build configuration list for PBXProject "Runner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -699,7 +954,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage" */ = {
+		781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "FlutterGeneratedPluginSwiftPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage;
 		};
