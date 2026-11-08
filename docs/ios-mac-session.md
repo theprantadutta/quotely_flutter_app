@@ -5,18 +5,62 @@ where iOS cannot be built. Everything below needs a Mac with **Xcode 26.2 or
 newer** and a human for the Apple Developer portal steps. The details are in
 the per-topic files in `docs/ios-mac-session/`; this file gives the order.
 
-**Until steps 1 to 3 are done, Xcode Cloud builds will fail.** The Firebase
-pins are stale, and the App Group in `Runner.entitlements` isn't in the
-signing profile yet. Don't ship an iOS build from master before then.
+## Status (2026-11-08)
+
+| Step | Status |
+| --- | --- |
+| 1. Portal: App Group, widget App ID, profiles | **Done** |
+| 2. Swift package pins | **Done** (Firebase 13.1.1, openiap 4.0.9) |
+| 3. Widget target in Xcode | **Done** (commit `1f30fc6`) |
+| 4. Xcode Cloud | **Not checked**: confirm the next cloud build is green |
+| 5. Device tests | **Not done**: run them from TestFlight build 25 |
+| 6. App Store | **Done**: 3.2.0 (25) submitted for review, automatic release |
+
+What was done on the Mac:
+
+- **Portal.** Registered App Group `group.com.pranta.quotely` and enabled it
+  on `com.pranta.quotely`. Registered `com.pranta.quotely.QuotelyWidget`
+  ("Quotely Widget") with the same group. Regenerated the App Store profile
+  "New Quotely App" so it carries the App Group, and created the App Store
+  profile "Quotely Widget". Both use the "Pranta Dutta (Distribution)"
+  certificate. Copies are in
+  `~/Certificates & Documents/Apple Signing/` (`New_Quotely_App.mobileprovision`,
+  `Quotely_Widget.mobileprovision`).
+- **Packages.** Both `Package.resolved` files were re-resolved and are
+  identical: firebase-ios-sdk 13.1.1, GoogleAppMeasurement 13.0.1,
+  openiap 4.0.9.
+- **Widget target.** The `QuotelyWidget` app-extension target was added to
+  `project.pbxproj` with the `xcodeproj` Ruby gem, not the Xcode template, so
+  no template files were created. It compiles the five Swift files and copies
+  the two fonts. Its configurations use Runner's Flutter xcconfigs, so the
+  version follows `pubspec.yaml`. Deployment target is 15.0. Debug signs
+  automatically; Release and Profile sign manually with "Quotely Widget".
+  "Embed Foundation Extensions" sits before "Run Script" and "Thin Binary".
+- **Build.** `flutter build ipa --release` with an export-options plist
+  (method `app-store-connect`, manual signing, the two profiles above)
+  produced `build/ios/ipa/Quotely.ipa`. Checked: `PlugIns/QuotelyWidget.appex`
+  is embedded, the app and extension are both 3.2.0 (25), both carry the
+  App Group, and the extension bundles both fonts. Uploaded with Transporter.
+- **App Store.** Version 3.2.0 created, with new What's New and Promotional
+  Text (widgets, Ask, share cards, feedback and flags, calmer notifications,
+  supporter thank-you, Settings gear, accessibility and iPad polish; this
+  covers 3.1.x too, which never shipped on iOS). Build 25 attached and
+  submitted for review.
+
+Gotcha: the `sqlite3` package's build hook downloads a prebuilt dylib from
+GitHub releases. When GitHub returns a 504 the build fails with "Hash of
+downloaded file libsqlite3.arm64.ios.dylib is …, expected …". That is the
+HTML error page being hashed, not a real mismatch; retry once GitHub serves
+the file.
 
 ## Order of work
 
-1. **Portal (human): App Group and widget App ID.** See
+1. ✅ **Done.** **Portal (human): App Group and widget App ID.** See
    `ios-mac-session/widget.md`, "Apple Developer portal". Create the App Group
    `group.com.pranta.quotely` and enable it on `com.pranta.quotely`. Create
    `com.pranta.quotely.QuotelyWidget`. Regenerate the app's profiles and add
    one for the widget.
-2. **Dependencies: re-resolve Swift packages.** See `ios-mac-session/plugins.md`.
+2. ✅ **Done.** **Dependencies: re-resolve Swift packages.** See `ios-mac-session/plugins.md`.
    The project uses SPM, not CocoaPods. Both committed `Package.resolved`
    files must be refreshed: the workspace one is what Xcode Cloud builds.
    - Firebase moved to the 13.x Apple SDK (pinned exactly to 13.1.1).
@@ -24,7 +68,7 @@ signing profile yet. Don't ship an iOS build from master before then.
      native libraries. `plugins.md` was written for 10.7.3 / openiap 3.6.1. The
      4.x pin is now expected, not a mistake. The Dart API didn't change
      (analyze and tests are clean).
-3. **Xcode: add the widget target.** Follow `ios-mac-session/widget.md`, "Xcode".
+3. ✅ **Done.** **Xcode: add the widget target.** Follow `ios-mac-session/widget.md`, "Xcode".
    Create the Widget Extension target `QuotelyWidget` and use the existing
    Swift files in `ios/QuotelyWidget/`: there are now **five**
    (`QuotelyWidgetShared.swift`, `QuotelyWidget.swift`,
@@ -36,9 +80,9 @@ signing profile yet. Don't ship an iOS build from master before then.
    order fix. Keep the deployment target at 15.0: the Lock Screen family
    (iOS 16) and the iOS 17 APIs are already behind `#available`. Then build
    and archive locally before pushing.
-4. **Xcode Cloud.** Check the workflow uses Xcode 26.2+, and that the
+4. ⬜ **Not checked.** **Xcode Cloud.** Check the workflow uses Xcode 26.2+, and that the
    archive includes the widget extension.
-5. **Test on a device:**
+5. ⬜ **Not done.** **Test on a device:**
    - **Donations.** These now use in-app purchase 11 and a new thank-you flow.
      In the sandbox, test: buy (expect the full-screen thank-you), relaunch
      (no second thank-you), delete and reinstall then Restore (expect the
@@ -68,7 +112,7 @@ signing profile yet. Don't ship an iOS build from master before then.
      `ios-mac-session/feedback.md`: a flag and feedback sent in Airplane Mode
      arrive once back online, and the `in_app_review` dialog (TestFlight
      never shows it; a dev build does).
-6. **App Store:** submit 3.2.0 (25) with the release notes used for Play.
+6. ✅ **Done.** **App Store:** 3.2.0 (25) submitted for review on 2026-11-08 with new release notes (see Status above).
 
 ## Already done on Windows (no Mac needed)
 
