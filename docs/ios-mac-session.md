@@ -5,7 +5,7 @@ where iOS cannot be built. Everything below needs a Mac with **Xcode 26.2 or
 newer** and a human for the Apple Developer portal steps. The details are in
 the per-topic files in `docs/ios-mac-session/`; this file gives the order.
 
-## Status (2026-11-08)
+## Status (updated 2026-11-13)
 
 | Step | Status |
 | --- | --- |
@@ -14,7 +14,8 @@ the per-topic files in `docs/ios-mac-session/`; this file gives the order.
 | 3. Widget target in Xcode | **Done** (commit `1f30fc6`) |
 | 4. Xcode Cloud | **Not checked**: confirm the next cloud build is green |
 | 5. Device tests | **Not done**: run them from TestFlight build 25 |
-| 6. App Store | **Done**: 3.2.0 (25) submitted for review, automatic release |
+| 6. App Store | **Done**: 3.2.0 (25) approved and live |
+| 7. 3.3.0 (26) | **Done**: Flutter 3.50 checked on iOS, submitted for review 2026-11-13, automatic release |
 
 What was done on the Mac:
 
@@ -113,7 +114,20 @@ the file.
      arrive once back online, and the `in_app_review` dialog (TestFlight
      never shows it; a dev build does).
 6. ✅ **Done.** **App Store:** 3.2.0 (25) submitted for review on 2026-11-08 with new release notes (see Status above).
-7. **Next: 3.3.0 (26).** Built on Flutter 3.50 with the material_ui migration (no iOS-specific changes). Let Xcode Cloud build it, smoke-test the app and the three widgets on a device, then submit with the Play release notes.
+7. ✅ **Done.** **3.3.0 (26) on Flutter 3.50.** Checked on the Mac on
+   2026-11-13: all 177 tests pass, and the analyzer shows only the old warnings.
+   `flutter build ios --release` compiles with the widget embedded, and
+   `.env` is in the iOS bundle. The Android ignore-assets problem doesn't
+   affect iOS. Swift package pins are unchanged; the two `Package.resolved`
+   files were made identical again (gtm-session-fetcher 5.3.0). Smoke-tested on the
+   iPhone 17 simulator: onboarding, Today, share as image, Ask, save,
+   Settings, the widget chooser, Scenes, and the App Group widget data.
+   Fixed along the way: `DarwinInitializationSettings()` defaults to
+   requesting permission, so iOS showed the notification prompt at every
+   launch even after "Not now". It now requests nothing on initialize, and
+   only `PushNotifications.requestPermissions()` asks. Submitted for review
+   with new What's New text. Not tested: IAP, push and placed widgets on a
+   physical device.
 
 ## Already done on Windows (no Mac needed)
 
