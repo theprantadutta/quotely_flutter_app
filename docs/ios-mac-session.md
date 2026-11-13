@@ -1,6 +1,6 @@
 # iOS work for the next Mac session
 
-Start here. Version 3.2.0 (25) was built and tested on Android from Windows,
+Start here. Version 3.3.0 (26) was built and tested on Android from Windows,
 where iOS cannot be built. Everything below needs a Mac with **Xcode 26.2 or
 newer** and a human for the Apple Developer portal steps. The details are in
 the per-topic files in `docs/ios-mac-session/`; this file gives the order.
@@ -113,6 +113,7 @@ the file.
      arrive once back online, and the `in_app_review` dialog (TestFlight
      never shows it; a dev build does).
 6. ✅ **Done.** **App Store:** 3.2.0 (25) submitted for review on 2026-11-08 with new release notes (see Status above).
+7. **Next: 3.3.0 (26).** Built on Flutter 3.50 with the material_ui migration (no iOS-specific changes). Let Xcode Cloud build it, smoke-test the app and the three widgets on a device, then submit with the Play release notes.
 
 ## Already done on Windows (no Mac needed)
 
