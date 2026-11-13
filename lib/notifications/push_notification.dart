@@ -116,8 +116,15 @@ class PushNotifications {
   static Future<void> _initializeLocalNotifications() async {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@drawable/ic_notification');
+    // The Darwin defaults request alert/badge/sound permission on initialize,
+    // which raised the iOS prompt at every launch even after "Not now" in
+    // onboarding. Permission is only asked for in requestPermissions().
     const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings();
+        DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(android: androidSettings, iOS: iosSettings);
