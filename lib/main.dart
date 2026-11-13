@@ -5,15 +5,13 @@ import 'dart:ui' show FlutterView;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:material_ui/material_ui.dart' as material_ui;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
@@ -188,26 +186,24 @@ class _QuotelyAppState extends ConsumerState<QuotelyApp> {
       builder: (context, child) => MediaQuery.withClampedTextScaling(
         minScaleFactor: 0.85,
         maxScaleFactor: 1.4,
-        child: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: quotelyOverlayStyle(context.q),
-          child: MaintenanceGate(
-            child: QuoteWidgetBridge(child: child ?? const SizedBox.shrink()),
+        // The app is on package:material_ui; the bridge gives packages still
+        // written against package:flutter/material.dart the Theme and
+        // localizations they look up, so their dialogs and sheets keep working.
+        // ignore: deprecated_member_use
+        child: MaterialUiCompatibilityBridge(
+          child: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: quotelyOverlayStyle(context.q),
+            child: MaintenanceGate(
+              child: QuoteWidgetBridge(child: child ?? const SizedBox.shrink()),
+            ),
           ),
         ),
       ),
-      // Two sets of delegates on purpose. The first three satisfy
-      // package:flutter/material.dart, which this app is written against; the
-      // spread satisfies material_ui's own MaterialLocalizations type, which is
-      // a DIFFERENT Dart type that flutter_localizations cannot provide.
-      // go_router has migrated to material_ui, so without the spread its
-      // widgets throw "No MaterialLocalizations found" at runtime - and the
-      // crash surfaces far from the cause.
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        ...material_ui.GlobalMaterialLocalizations.delegates,
-      ],
+      // material_ui's delegates (Material, Cupertino and Widgets, 80 locales).
+      // flutter_localizations' Global*Localizations are deprecated in 3.50 and
+      // would collide with these; packages still on the old Material get their
+      // localizations from MaterialUiCompatibilityBridge in builder above.
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: buildQuotelyTheme(Brightness.light, appearance),
       darkTheme: buildQuotelyTheme(Brightness.dark, appearance),
       themeMode: appearance.themeMode,

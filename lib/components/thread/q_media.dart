@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../dtos/media_title_dto.dart';
 import '../../theme/app_theme.dart';

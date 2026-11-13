@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The five user-selectable accents. The enum names are what's persisted,
 /// so they stay stable; the Spotlight palette gives them new colours

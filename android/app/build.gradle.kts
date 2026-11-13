@@ -19,6 +19,14 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.pranta.quotely"
+    // Flutter 3.50 stopped overriding Android's default asset ignore list,
+    // which contains ".*", so release builds silently drop dot-files and
+    // assets/flutter_assets/.env goes missing. flutter_dotenv awaits it before
+    // runApp, so the app hangs on the splash with no crash report (debug
+    // builds are unaffected). This is the default list minus ".*".
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
     // permission_handler_android 14.1.0 requires consumers to compile against
     // API 37; the build fails at :app:checkDebugAarMetadata below that. This is
     // independent of targetSdk/minSdk, which still track flutter.* - raising

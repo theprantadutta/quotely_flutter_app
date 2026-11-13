@@ -20,7 +20,7 @@ dependencies:
   # go_router has already migrated and pulls it in transitively, so its
   # delegates must be registered in main.dart or any widget of theirs that
   # needs localizations throws at runtime.
-  material_ui: ^1.2.0
+  material_ui: 1.11.0
   cupertino_icons: ^2.0.0
   # Author avatars. Replaces Image.network, which decoded the full
   # source bitmap (Wikipedia photos run to 2000px+) to paint a circle a
@@ -70,6 +70,7 @@ dependencies:
   home_widget: 0.10.0
   in_app_review: ^2.0.12
 
+  cupertino_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
