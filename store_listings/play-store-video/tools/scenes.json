@@ -1,0 +1,12 @@
+{"segments": [
+  {"src": "rec1.mp4", "a": 0.5,  "b": 4.6,  "chip": "Quote of the day",  "title": "One line, every morning", "sub": "A quote worth keeping, set over the day's poster."},
+  {"src": "rec1.mp4", "a": 6.0,  "b": 10.6, "chip": "Today",             "title": "Quotes, scenes and facts", "sub": "Swipe through today's picks, chosen for you."},
+  {"src": "rec4.mp4", "a": 3.0,  "b": 12.5, "chip": "Ask",               "title": "Ask for the line you need", "sub": "Name a feeling or a topic and get quotes that fit."},
+  {"src": "rec2.mp4", "a": 22.6, "b": 27.8, "chip": "Scenes",            "title": "Lines from films and shows", "sub": "Movies, TV, anime and games you love."},
+  {"src": "rec2.mp4", "a": 46.6, "b": 55.2, "chip": "Browse",            "title": "Every title, every character", "sub": "Explore scenes title by title."},
+  {"src": "rec1.mp4", "a": 52.0, "b": 62.4, "chip": "True or false",     "title": "A daily facts game", "sub": "Ten strange, true facts. Can you spot the fake?"},
+  {"src": "rec1.mp4", "a": 64.0, "b": 70.4, "chip": "Saved",             "title": "Keep what moves you", "sub": "Save quotes, scenes and facts, and read them offline."},
+  {"src": "rec1.mp4", "a": 80.4, "b": 89.6, "chip": "People",            "title": "Follow the voices you love", "sub": "Authors and characters, with their best lines."},
+  {"src": "rec2.mp4", "a": 56.0, "b": 60.0, "chip": "Widgets",           "title": "On your home screen", "sub": "Today's quote, your saved lines, or a scene."},
+  {"src": "rec1.mp4", "a": 92.0, "b": 96.8, "chip": "Made your way",     "title": "Calm, private, yours", "sub": "Themes, gentle reminders and no ads."}
+]}
