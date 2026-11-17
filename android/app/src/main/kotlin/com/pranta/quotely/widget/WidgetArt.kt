@@ -69,8 +69,16 @@ object WidgetArt {
     /** Longest edge of the glow bitmaps: soft gradients scale up cleanly. */
     private const val GLOW_MAX_EDGE_PX = 240f
 
-    private const val QUOTE_MAX_SP = 22f
-    private const val QUOTE_MIN_SP = 13f
+    /**
+     * The quote grows with the widget: up to QUOTE_MAX_PER_SHORT_SIDE of its
+     * shorter side (a 4x2 phone widget ~26sp, a 4x3 or tablet one up to 40sp,
+     * like the original TextView's autosize ceiling of 30sp and above), then
+     * shrinks until it fits. A fixed 22sp ceiling left big widgets nearly empty.
+     */
+    private const val QUOTE_MAX_PER_SHORT_SIDE = 0.24f
+    private const val QUOTE_MAX_SP_FLOOR = 22f
+    private const val QUOTE_MAX_SP_CEIL = 40f
+    private const val QUOTE_MIN_SP = 12f
     private const val QUOTE_LINE_SPACING = 1.02f
 
     /** Eyebrow and author: ink at this alpha reads as the app's `mute`. */
@@ -271,12 +279,12 @@ object WidgetArt {
     // ---- Text -------------------------------------------------------------
 
     /**
-     * Eyebrow, body and footer, laid out as the widget's TextView layout
-     * once was: 16dp sides, 14dp top and bottom, the eyebrow at the top, the
-     * footer at the bottom, and the body centred between them with 6dp
-     * either side. The body shrinks from 22sp towards 13sp until it fits, and
-     * is ellipsized only if it still doesn't. White with alpha; tinted by the
-     * layout.
+     * Eyebrow, body and footer: the eyebrow at the top, the footer at the
+     * bottom, and the body centred between them. Margins and the eyebrow and
+     * footer sizes scale with the widget's shorter side, so a 2x2, a 4x3 and a
+     * tablet widget all look proportioned. The body starts as large as the
+     * widget allows and shrinks until it fits, ellipsized only as a last
+     * resort. White with alpha; tinted by the layout.
      */
     fun textBitmap(context: Context, text: Text, sizeDp: SizeF, scale: Float): Bitmap {
         val metrics = context.resources.displayMetrics
@@ -289,16 +297,22 @@ object WidgetArt {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        val left = dp(16f)
-        val right = width - dp(16f)
+        // Proportions follow the shorter side (dp), within readable bounds.
+        val shortDp = min(sizeDp.width, sizeDp.height)
+        fun scaled(perShort: Float, lo: Float, hi: Float) = (shortDp * perShort).coerceIn(lo, hi)
+        val side = dp(scaled(0.13f, 14f, 24f))
+        val gap = dp(scaled(0.05f, 6f, 10f))
+
+        val left = side
+        val right = width - side
         val contentWidth = max(1, (right - left).toInt())
-        var top = dp(14f)
-        var bottom = height - dp(14f)
+        var top = dp(scaled(0.12f, 12f, 22f))
+        var bottom = height - dp(scaled(0.12f, 12f, 22f))
 
         // Eyebrow.
         val eyebrow = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             typeface = fonts(context).mono
-            textSize = sp(9f)
+            textSize = sp(scaled(0.075f, 9f, 12f))
             letterSpacing = 0.16f
             color = Color.WHITE
             alpha = SECONDARY_ALPHA
@@ -307,14 +321,14 @@ object WidgetArt {
                 text.eyebrow, eyebrow, contentWidth.toFloat(), TextUtils.TruncateAt.END)
         val eyebrowMetrics = eyebrow.fontMetrics
         canvas.drawText(eyebrowText, 0, eyebrowText.length, left, top - eyebrowMetrics.ascent, eyebrow)
-        top += eyebrowMetrics.descent - eyebrowMetrics.ascent + dp(6f)
+        top += eyebrowMetrics.descent - eyebrowMetrics.ascent + gap
 
         // Footer ("— Author"), if any.
         val footer = text.footer
         if (!footer.isNullOrEmpty()) {
             val author = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                 typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-                textSize = sp(11.5f)
+                textSize = sp(scaled(0.095f, 11.5f, 15f))
                 color = Color.WHITE
                 alpha = SECONDARY_ALPHA
             }
@@ -323,7 +337,7 @@ object WidgetArt {
                     contentWidth.toFloat(), TextUtils.TruncateAt.END)
             val authorMetrics = author.fontMetrics
             canvas.drawText(authorText, 0, authorText.length, left, bottom - authorMetrics.descent, author)
-            bottom -= authorMetrics.descent - authorMetrics.ascent + dp(6f)
+            bottom -= authorMetrics.descent - authorMetrics.ascent + gap
         }
 
         // Body, centred in what is left.
@@ -333,7 +347,8 @@ object WidgetArt {
                 typeface = fonts(context).serif
                 color = Color.WHITE
             }
-            val layout = fitQuote(text.body, quote, contentWidth, area, sp(QUOTE_MAX_SP), sp(QUOTE_MIN_SP), sp(1f))
+            val maxSp = scaled(QUOTE_MAX_PER_SHORT_SIDE, QUOTE_MAX_SP_FLOOR, QUOTE_MAX_SP_CEIL)
+            val layout = fitQuote(text.body, quote, contentWidth, area, sp(maxSp), sp(QUOTE_MIN_SP), sp(1f))
             canvas.save()
             canvas.translate(left, top + max(0f, (area - layout.height) / 2f))
             layout.draw(canvas)
