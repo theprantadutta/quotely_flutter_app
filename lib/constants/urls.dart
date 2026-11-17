@@ -11,6 +11,7 @@ const kGetAllAuthors = 'Author/GetAllAuthors';
 const kGetAuthorDetails = 'Author/GetAuthorDetails';
 const kGetAllQuotes = 'Quote/GetAllQuotes';
 const kGetAllQuotesByAuthor = 'Quote/GetAllQuotesByAuthor';
+const kGetMostLovedQuotesByAuthor = 'Quote/GetMostLovedQuotesByAuthor';
 
 // The composer's "Ask": a question answered by tags the backend picks
 const kGetAskAnswer = 'Ask/GetAnswer';

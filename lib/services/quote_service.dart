@@ -55,50 +55,6 @@ class QuoteService {
     );
   }
 
-  Future<QuoteResponseDto> getAllQuotesByAuthorFromDatabase({
-    required String authorSlug,
-    required int pageNumber,
-    required int pageSize,
-    int? seed,
-  }) {
-    final effectiveSeed = seed ?? PaginationSeed.current;
-    return LocalFirst.load<QuoteResponseDto>(
-      key: 'quotes-by:$authorSlug:$pageNumber:$pageSize',
-      local: () async => _local(
-        await DriftQuoteService.getLocalQuotesByAuthor(
-          authorSlug: authorSlug,
-          pageNumber: pageNumber,
-          pageSize: pageSize,
-          seed: effectiveSeed,
-        ),
-      ),
-      remote: () async {
-        final uri = Uri.parse('$kApiUrl/$kGetAllQuotesByAuthor').replace(
-          queryParameters: {
-            'authorSlug': authorSlug,
-            'pageNumber': pageNumber.toString(),
-            'pageSize': pageSize.toString(),
-            'seed': effectiveSeed.toString(),
-          },
-        );
-        final response = await HttpService.get(uri.toString());
-        if (response.statusCode != 200) {
-          throw Exception('Failed to get quotes by author');
-        }
-        final dto = _clean(
-          QuoteResponseDto.fromJson(json.decode(response.data)),
-        );
-        await DriftQuoteService.saveNewQuotesToDatabase(dto.quotes);
-        final favorites = await DriftQuoteService.getAllFavoriteQuoteIds();
-        for (final q in dto.quotes) {
-          q.isFavorite = favorites.contains(q.id);
-        }
-        return dto;
-      },
-      isEmpty: (r) => r.quotes.isEmpty,
-    );
-  }
-
   static QuoteResponseDto _local(List<Quote> rows) => QuoteResponseDto(
     quotes: QuoteDto.fromQuoteList([
       for (final r in rows)
