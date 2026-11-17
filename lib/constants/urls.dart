@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final kApiProdUrl = dotenv.env['PROD_API_URL'];
 final kApiDevUrl = dotenv.env['DEV_API_URL'];
+
 /// Debug builds use the local dev API unless run with
 /// `--dart-define=PROD_API=true` (on-device checks with real content).
 final kApiUrl = kDebugMode && !const bool.fromEnvironment('PROD_API')
@@ -54,3 +55,6 @@ const kGetTodaySceneOfTheDay = 'SceneOfTheDay/GetTodaySceneOfTheDay';
 const kGetAllSceneOfTheDay = 'SceneOfTheDay/GetAllSceneOfTheDay';
 const kGetTodayFridayNightLines = 'FridayNightLines/GetTodayFridayNightLines';
 const kGetAllFridayNightLines = 'FridayNightLines/GetAllFridayNightLines';
+
+// Upcoming releases tied to titles with lines ("Before Avengers: Doomsday")
+const kGetComingSoon = 'Spotlight/GetComingSoon';
