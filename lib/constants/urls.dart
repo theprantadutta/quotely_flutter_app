@@ -3,8 +3,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final kApiProdUrl = dotenv.env['PROD_API_URL'];
 final kApiDevUrl = dotenv.env['DEV_API_URL'];
-final kApiUrl = kDebugMode ? kApiDevUrl : kApiProdUrl;
-// final kApiUrl = kApiProdUrl;
+/// Debug builds use the local dev API unless run with
+/// `--dart-define=PROD_API=true` (on-device checks with real content).
+final kApiUrl = kDebugMode && !const bool.fromEnvironment('PROD_API')
+    ? kApiDevUrl
+    : kApiProdUrl;
 
 const kGetAllTags = 'Tag/GetAllTags';
 const kGetAllAuthors = 'Author/GetAllAuthors';
