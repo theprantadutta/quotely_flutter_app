@@ -10,8 +10,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../components/ask_sheet.dart';
 import '../../components/home_screen/ios_update_banner.dart';
+import '../../components/notification_trim_sheet.dart';
 import '../../components/quote_widget_intro.dart';
 import '../../components/review_prompt.dart';
+import '../../components/starter_path_card.dart';
 import '../../components/thread/thread.dart';
 import '../../components/settings_button.dart';
 import '../../constants/selectors.dart';
@@ -102,26 +104,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await showLegalConsentIfNeeded(context);
-      if (mounted) unawaited(maybeShowQuoteWidgetIntro(context));
-      // "Enjoying Quotely?": only once it's due, on Today with the day's
-      // content loaded, and never over another sheet or screen.
-      if (mounted) {
-        unawaited(
-          ReviewPrompt.maybeShow(
-            context,
-            isCalm: () =>
-                mounted &&
-                _tab == _Tab.today &&
-                ref.read(fetchTodayQuoteOfTheDayProvider).hasValue,
-          ),
-        );
-      }
+      if (mounted) unawaited(_quietMoments());
       await PushNotifications.asyncQueue.start();
       // Local first: screens read the local database; this keeps it full.
       // At most once a day, respecting Offline library's Wi-Fi only switch.
       await Future<void>.delayed(const Duration(seconds: 4));
       unawaited(LibrarySync.maybeRunDaily());
     });
+  }
+
+  /// Today, the day's content loaded, nothing else going on.
+  bool _isCalm() =>
+      mounted &&
+      _tab == _Tab.today &&
+      ref.read(fetchTodayQuoteOfTheDayProvider).hasValue;
+
+  /// The one-time sheets, one after another and never stacked: the widget
+  /// introduction; else the notification trim (existing installs); and,
+  /// unless the trim was just shown, "Enjoying Quotely?" once it's due.
+  Future<void> _quietMoments() async {
+    final introShown = await maybeShowQuoteWidgetIntro(context);
+    if (!mounted) return;
+    final trimShown =
+        !introShown &&
+        await maybeOfferNotificationTrim(context, isCalm: _isCalm);
+    if (!mounted || trimShown) return;
+    await ReviewPrompt.maybeShow(context, isCalm: _isCalm);
   }
 
   @override
@@ -385,6 +393,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                     const IosUpdateBanner(),
+                    if (_tab == _Tab.today) const StarterPathCard(),
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(bottom: navInset),
