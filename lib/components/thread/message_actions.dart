@@ -334,8 +334,8 @@ Future<void> showMessageActions(
             ),
             SheetAction(
               icon: Icons.collections_bookmark_outlined,
-              label: 'Save to collection',
-              onTap: () => run(() => showSaveToCollection(context, m)),
+              label: 'Add to collection',
+              onTap: () => run(() => showAddToCollection(context, m)),
             ),
             if (m.kind == MessageKind.scene)
               SheetAction(
@@ -361,28 +361,22 @@ Future<void> showMessageActions(
   );
 }
 
-/// Makes sure the item exists in its own Drift table, so a collection can
-/// render it later even offline.
-Future<void> _persistItem(ThreadMessage m) => switch (m.kind) {
-  MessageKind.quote => DriftQuoteService.saveNewQuotesToDatabase([m.quote!]),
-  MessageKind.scene => DriftSceneService.saveSceneQuotes([m.scene!]),
-  MessageKind.fact => DriftFactService.saveNewFactsToDatabase([m.fact!]),
-};
-
-Future<void> showSaveToCollection(BuildContext context, ThreadMessage m) {
+/// Collections are tags on saved items, so adding to one saves the item
+/// first (which also stores it in its own Drift table for offline use).
+Future<void> showAddToCollection(BuildContext context, ThreadMessage m) {
   return showQSheet(context, builder: (_) => _CollectionPicker(message: m));
 }
 
-class _CollectionPicker extends StatefulWidget {
+class _CollectionPicker extends ConsumerStatefulWidget {
   final ThreadMessage message;
 
   const _CollectionPicker({required this.message});
 
   @override
-  State<_CollectionPicker> createState() => _CollectionPickerState();
+  ConsumerState<_CollectionPicker> createState() => _CollectionPickerState();
 }
 
-class _CollectionPickerState extends State<_CollectionPicker> {
+class _CollectionPickerState extends ConsumerState<_CollectionPicker> {
   Set<int> _member = {};
   final _newName = TextEditingController();
 
@@ -410,7 +404,7 @@ class _CollectionPickerState extends State<_CollectionPicker> {
       await DriftCollectionService.remove(id, m.collectionType, m.itemId);
       setState(() => _member = {..._member}..remove(id));
     } else {
-      await _persistItem(m);
+      if (!readIsSaved(ref, m)) await toggleSaved(ref, m);
       await DriftCollectionService.add(id, m.collectionType, m.itemId);
       setState(() => _member = {..._member, id});
     }
@@ -429,7 +423,7 @@ class _CollectionPickerState extends State<_CollectionPicker> {
   Widget build(BuildContext context) {
     final t = context.q;
     return QSheetFrame(
-      title: 'Save to collection',
+      title: 'Add to collection',
       child: StreamBuilder<List<CollectionSummary>>(
         stream: DriftCollectionService.watchCollections(),
         builder: (context, snapshot) {
@@ -441,7 +435,8 @@ class _CollectionPickerState extends State<_CollectionPicker> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
-                    'No collections yet. Name your first one below.',
+                    'No collections yet. Name your first one below. '
+                    'Adding to a collection also saves it.',
                     style: context.qt.body,
                   ),
                 ),

@@ -192,8 +192,14 @@ class DriftSceneService {
 
   static Future<void> setFavorite(SceneQuoteDto quote, bool isFavorite) async {
     await saveSceneQuotes([quote]);
-    await (_db.update(_db.sceneQuotes)..where((q) => q.id.equals(quote.id)))
-        .write(SceneQuotesCompanion(isFavorite: Value(isFavorite)));
+    await (_db.update(
+      _db.sceneQuotes,
+    )..where((q) => q.id.equals(quote.id))).write(
+      SceneQuotesCompanion(
+        isFavorite: Value(isFavorite),
+        savedAt: Value(isFavorite ? DateTime.now() : null),
+      ),
+    );
   }
 
   // --- Reads ----------------------------------------------------------------

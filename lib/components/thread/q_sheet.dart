@@ -91,7 +91,7 @@ class QSheetFrame extends StatelessWidget {
   }
 }
 
-/// One row in an action sheet (Copy, Share as image, Save to collection…).
+/// One row in an action sheet (Copy, Share as image, Add to collection…).
 class SheetAction extends StatelessWidget {
   final IconData icon;
   final String label;

@@ -37,6 +37,7 @@ class DriftQuoteService {
               isFavorite: Value(isFavorite), // This is what we're updating
               dateAdded: Value(quote.dateAdded),
               dateModified: Value(DateTime.now()), // Update modified time
+              savedAt: Value(isFavorite ? DateTime.now() : null),
             ),
           );
 

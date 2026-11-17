@@ -231,6 +231,7 @@ class DriftFactService {
               dateModified: Value(
                 DateTime.now(),
               ), // Update the modified timestamp
+              savedAt: Value(isFavorite ? DateTime.now() : null),
             ),
           );
       return true;
