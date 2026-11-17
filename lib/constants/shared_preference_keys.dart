@@ -72,9 +72,11 @@ const kAppearanceAccentKey = 'appearance-accent';
 const kAppearanceQuoteScaleKey = 'appearance-quote-scale';
 const kAppearanceReadingFontKey = 'appearance-reading-font';
 const kAppearanceLayoutKey = 'appearance-layout';
+
 /// Legacy on/off for the glow; read once to seed [kAppearanceBackdropKey].
 const kAppearanceGlowKey = 'appearance-background-glow';
 const kAppearanceBackdropKey = 'appearance-backdrop';
+
 /// The last scene poster shown behind the app; the Poster background falls
 /// back to it on a day with no scene (see backdrop_poster_provider.dart).
 const kLastBackdropPosterKey = 'backdrop-last-poster-url';
@@ -93,7 +95,9 @@ const kFollowedTitlesKey = 'followed-title-ids';
 const kFollowedTitleSlugsKey = 'followed-title-slugs';
 const kWatchedUpToKey = 'watched-up-to-episode';
 
-/// Authors the user follows (slugs). Local only; powers the People stories.
+/// Authors the user follows (slugs). Powers the People stories and the
+/// "From people you follow" strip, and each one's `author_<slug>` topic when
+/// "People you follow" is on.
 const kFollowedAuthorsKey = 'followed-author-slugs';
 
 /// Recently opened people, newest first (JSON list of {kind,id,name,image}).
@@ -109,6 +113,9 @@ const kNicknameKey = 'user-nickname';
 /// Notifications added by the redesign.
 const kNotificationFridayNightLines = 'notification-friday-night-lines';
 const kNotificationFollowedTitles = 'notification-followed-titles';
+
+/// "People you follow": a push when an author you follow gets new quotes.
+const kNotificationFollowedPeople = 'notification-followed-people';
 
 /// Quiet hours, minutes after midnight. Foreground notifications that arrive
 /// inside the window are not shown.

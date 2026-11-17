@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -9,12 +10,15 @@ import '../components/thread/thread.dart';
 import '../dtos/author_dto.dart';
 import '../dtos/quote_dto.dart';
 import '../navigation/routes.dart';
-import '../riverpods/all_quotes_by_author_provider.dart';
 import '../riverpods/get_author_detail_provider.dart';
+import '../services/author_page_service.dart';
 import '../state_providers/recent_people.dart';
 import '../state_providers/scene_state.dart';
 import '../util/pagination_seed.dart';
 
+/// An author: portrait, lifespan, bio and Follow, then "Most loved", every
+/// quote (paged), and related authors at the end. Offline first: see
+/// [AuthorPageService].
 class AuthorDetailScreen extends ConsumerStatefulWidget {
   static const kRouteName = Routes.authorBase;
 
@@ -27,13 +31,27 @@ class AuthorDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
+  static const _pageSize = 20;
+
   final _scroll = ScrollController();
+  final int _seed = PaginationSeed.current;
+
+  /// Null while loading.
+  List<QuoteDto>? _mostLoved;
+  List<AuthorDto>? _related;
+
   final List<QuoteDto> _quotes = [];
   int _page = 1;
   bool _loading = false;
   bool _hasMore = true;
   bool _error = false;
+
+  /// Paging from the device (it has every quote, or the backend is out of
+  /// reach). Decided on the first page.
+  bool? _localMode;
   bool _recorded = false;
+
+  String get _slug => widget.authorSlug;
 
   @override
   void initState() {
@@ -42,6 +60,7 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
       final p = _scroll.position;
       if (p.pixels > p.maxScrollExtent - 500) _fetch();
     });
+    _loadMostLoved();
     _fetch();
   }
 
@@ -51,6 +70,28 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
     super.dispose();
   }
 
+  Future<void> _loadMostLoved() async {
+    List<QuoteDto> quotes;
+    try {
+      quotes = await AuthorPageService.mostLoved(_slug);
+    } catch (e) {
+      if (kDebugMode) print(e);
+      quotes = const [];
+    }
+    if (mounted) setState(() => _mostLoved = quotes);
+  }
+
+  Future<void> _loadRelated() async {
+    if (_related != null) return;
+    _related = const [];
+    try {
+      final related = await AuthorPageService.related(_slug);
+      if (mounted) setState(() => _related = related);
+    } catch (e) {
+      if (kDebugMode) print(e);
+    }
+  }
+
   Future<void> _fetch() async {
     if (_loading || !_hasMore) return;
     setState(() {
@@ -58,22 +99,53 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
       _error = false;
     });
     try {
-      final res = await ref.read(
-        fetchAllQuotesByAuthorProvider(
-          widget.authorSlug,
-          _page,
-          10,
-          PaginationSeed.current,
-        ).future,
-      );
+      final shown = {for (final q in _quotes) q.id};
+      var page = (quotes: const <QuoteDto>[], fetched: 0);
+      var more = false;
+      if (_localMode == null) {
+        final author = await ref.read(fetchAuthorDetailProvider(_slug).future);
+        _localMode = AuthorPageService.localIsComplete(
+          local: await AuthorPageService.localCount(_slug),
+          expected: author?.quoteCount ?? 0,
+        );
+      }
+      if (_localMode!) {
+        page = await AuthorPageService.localPage(
+          _slug,
+          page: _page,
+          pageSize: _pageSize,
+          seed: _seed,
+        );
+        more = page.fetched == _pageSize;
+      } else {
+        try {
+          page = await AuthorPageService.remotePage(
+            _slug,
+            page: _page,
+            pageSize: _pageSize,
+            seed: _seed,
+          );
+          more = page.fetched == _pageSize;
+        } catch (e) {
+          if (kDebugMode) print(e);
+          // Offline: carry on with what this device has, minus what's shown.
+          _localMode = true;
+          page = await AuthorPageService.localPage(
+            _slug,
+            page: 1,
+            pageSize: 1000,
+            seed: _seed,
+            skip: shown,
+          );
+        }
+      }
       if (!mounted) return;
       setState(() {
-        _hasMore = res.quotes.length == 10;
+        _hasMore = more;
         _page++;
-        _quotes.addAll(
-          res.quotes.where((q) => !_quotes.any((x) => x.id == q.id)),
-        );
+        _quotes.addAll(page.quotes.where((q) => shown.add(q.id)));
       });
+      if (!more) _loadRelated();
     } catch (e) {
       if (kDebugMode) print(e);
       if (mounted) setState(() => _error = true);
@@ -99,9 +171,39 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
     );
   }
 
+  Widget _quote(QuoteDto q, int i, AuthorDto author) => Entrance(
+    key: ValueKey(q.id),
+    index: i % 8,
+    child: MessageBubble(
+      message: ThreadMessage.fromQuote(q, senderImageUrl: author.imageUrl),
+      variant: BubbleVariant.compact,
+      showSender: false,
+      avatarSize: 30,
+    ),
+  );
+
+  Widget _quoteList(List<QuoteDto> quotes, AuthorDto author) => SliverPadding(
+    padding: const EdgeInsets.symmetric(horizontal: 22),
+    sliver: SliverList.separated(
+      itemCount: quotes.length,
+      separatorBuilder: (context, _) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Divider(height: 1, color: context.q.line),
+      ),
+      itemBuilder: (context, i) => _quote(quotes[i], i, author),
+    ),
+  );
+
+  static Widget _divider(String text) => SliverToBoxAdapter(
+    child: Padding(
+      padding: const EdgeInsets.only(top: 26, bottom: 12),
+      child: TimeDivider(text),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(fetchAuthorDetailProvider(widget.authorSlug));
+    final async = ref.watch(fetchAuthorDetailProvider(_slug));
     final author = async.value;
     if (author != null) _record(author);
 
@@ -123,56 +225,53 @@ class _AuthorDetailScreenState extends ConsumerState<AuthorDetailScreen> {
           : author == null
           ? ErrorBubble(
               message: 'Failed to get author detail.',
-              onRetry: () =>
-                  ref.invalidate(fetchAuthorDetailProvider(widget.authorSlug)),
+              onRetry: () => ref.invalidate(fetchAuthorDetailProvider(_slug)),
             )
-          : CustomScrollView(
-              controller: _scroll,
-              slivers: [
-                SliverToBoxAdapter(child: _Profile(author: author)),
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 22, bottom: 12),
-                    child: TimeDivider('Most loved'),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 22),
-                  sliver: SliverList.separated(
-                    itemCount: _quotes.length,
-                    separatorBuilder: (_, _) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      child: Divider(height: 1, color: context.q.line),
-                    ),
-                    itemBuilder: (context, i) => Entrance(
-                      key: ValueKey(_quotes[i].id),
-                      index: i % 8,
-                      child: MessageBubble(
-                        message: ThreadMessage.fromQuote(
-                          _quotes[i],
-                          senderImageUrl: author.imageUrl,
-                        ),
-                        variant: BubbleVariant.compact,
-                        showSender: false,
-                        avatarSize: 30,
-                      ),
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: _error && _quotes.isEmpty
-                      ? ErrorBubble(
-                          message: 'Failed to get quotes.',
-                          onRetry: _fetch,
-                        )
-                      : _loading
-                      ? const LoadMoreIndicator()
-                      : _quotes.isEmpty
-                      ? EmptyState(pill: 'No quotes by ${author.name} yet')
-                      : const SizedBox(height: 32),
-                ),
-              ],
-            ),
+          : _body(author),
+    );
+  }
+
+  Widget _body(AuthorDto author) {
+    final loved = _mostLoved;
+    final lovedIds = {for (final q in loved ?? const <QuoteDto>[]) q.id};
+    // "All quotes" waits for Most loved so a quote never jumps between them.
+    final rest = loved == null
+        ? const <QuoteDto>[]
+        : [
+            for (final q in _quotes)
+              if (!lovedIds.contains(q.id)) q,
+          ];
+    final nothing =
+        loved != null && loved.isEmpty && _quotes.isEmpty && !_hasMore;
+    final related = _related ?? const <AuthorDto>[];
+
+    return CustomScrollView(
+      controller: _scroll,
+      slivers: [
+        SliverToBoxAdapter(child: _Profile(author: author)),
+        if (loved != null && loved.isNotEmpty) ...[
+          _divider('Most loved'),
+          _quoteList(loved, author),
+        ],
+        if (rest.isNotEmpty) ...[
+          _divider(loved!.isEmpty ? 'Quotes' : 'All quotes'),
+          _quoteList(rest, author),
+        ],
+        SliverToBoxAdapter(
+          child: _error && _quotes.isEmpty && (loved?.isEmpty ?? true)
+              ? ErrorBubble(message: 'Failed to get quotes.', onRetry: _fetch)
+              : _loading || loved == null
+              ? const LoadMoreIndicator()
+              : nothing
+              ? EmptyState(pill: 'No quotes by ${author.name} yet')
+              : const SizedBox(height: 8),
+        ),
+        if (!_hasMore && related.isNotEmpty) ...[
+          _divider('Related'),
+          SliverToBoxAdapter(child: _Related(authors: related)),
+        ],
+        const SliverToBoxAdapter(child: SizedBox(height: 32)),
+      ],
     );
   }
 }
@@ -187,6 +286,7 @@ class _Profile extends ConsumerWidget {
     final following = ref.watch(
       followedAuthorsProvider.select((s) => s.contains(author.slug)),
     );
+    final lifespan = AuthorLifespan.of(author);
     Widget pill(
       String text, {
       bool filled = false,
@@ -247,10 +347,13 @@ class _Profile extends ConsumerWidget {
               style: context.qt.titlePush,
             ),
           ),
-          if (author.description.isNotEmpty) ...[
+          if (author.description.isNotEmpty || lifespan != null) ...[
             const SizedBox(height: 4),
             Text(
-              author.description,
+              [
+                if (author.description.isNotEmpty) author.description,
+                ?lifespan,
+              ].join(' · '),
               textAlign: TextAlign.center,
               style: context.qt.meta,
             ),
@@ -274,7 +377,11 @@ class _Profile extends ConsumerWidget {
                   },
                 ),
               ),
-              pill('${author.quoteCount} quotes'),
+              pill(
+                author.quoteCount == 1
+                    ? '1 quote'
+                    : '${author.quoteCount} quotes',
+              ),
               if (link.isNotEmpty)
                 pill(
                   'Wiki',
@@ -293,13 +400,90 @@ class _Profile extends ConsumerWidget {
           ),
           if (author.bio.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(
-              author.bio,
-              textAlign: TextAlign.center,
-              style: context.qt.body.copyWith(height: 1.5),
-            ),
+            _Bio(text: author.bio),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// A short biography: four lines, then "More" if there is more.
+class _Bio extends StatefulWidget {
+  final String text;
+  const _Bio({required this.text});
+
+  @override
+  State<_Bio> createState() => _BioState();
+}
+
+class _BioState extends State<_Bio> {
+  static const _lines = 4;
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.qt.body.copyWith(height: 1.5);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = TextPainter(
+          text: TextSpan(text: widget.text, style: style),
+          maxLines: _lines,
+          textAlign: TextAlign.center,
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        final long = painter.didExceedMaxLines;
+        painter.dispose();
+        return Column(
+          children: [
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              alignment: Alignment.topCenter,
+              child: Text(
+                widget.text,
+                textAlign: TextAlign.center,
+                maxLines: _open ? null : _lines,
+                overflow: _open ? null : TextOverflow.ellipsis,
+                style: style,
+              ),
+            ),
+            if (long)
+              QTextButton(
+                label: _open ? 'Less' : 'More',
+                color: context.q.accInk,
+                onPressed: () => setState(() => _open = !_open),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Authors who share this one's subjects, as story avatars.
+class _Related extends StatelessWidget {
+  final List<AuthorDto> authors;
+  const _Related({required this.authors});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 92,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: authors.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
+        itemBuilder: (context, i) {
+          final a = authors[i];
+          return StoryAvatar(
+            name: a.name.split(' ').last,
+            imageUrl: a.imageUrl,
+            isNew: false,
+            onTap: () => context.push(Routes.author(a.slug)),
+          );
+        },
       ),
     );
   }

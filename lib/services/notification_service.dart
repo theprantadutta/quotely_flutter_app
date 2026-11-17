@@ -40,8 +40,12 @@ class NotificationService {
   static const _calmDefaults = 'calm';
   static const _legacyDefaults = 'legacy';
 
-  /// The kinds a new install starts with.
-  static const Set<String> calmDefaultOn = {kNotificationQuoteOfTheDay};
+  /// The kinds a new install starts with. "People you follow" only reaches
+  /// someone who follows an author, which they choose one by one.
+  static const Set<String> calmDefaultOn = {
+    kNotificationQuoteOfTheDay,
+    kNotificationFollowedPeople,
+  };
 
   /// Keys only an install that has already run (an older version) can have.
   static List<String> get _priorInstallKeys => [
@@ -105,8 +109,50 @@ class NotificationService {
     ];
   }
 
-  /// Every fixed topic the app can subscribe to (the per-title ones come
-  /// from [followedTitleTopics]).
+  /// The `author_<slug>` topic for an author, or null for a slug FCM would
+  /// refuse as a topic name (the backend skips those too).
+  static String? authorTopic(String slug) =>
+      RegExp(r'^[a-zA-Z0-9_.~%-]{1,880}$').hasMatch(slug)
+      ? '$kNotificationAuthorTopicPrefix$slug'
+      : null;
+
+  /// `author_<slug>` topics for every followed author.
+  static Future<List<String>> followedAuthorTopics() async {
+    final prefs = await SharedPreferences.getInstance();
+    return [
+      for (final slug in prefs.getStringList(kFollowedAuthorsKey) ?? const [])
+        ?authorTopic(slug),
+    ];
+  }
+
+  /// Whether following should subscribe to a topic right now: the master
+  /// switch and the kind's own switch ([prefKey]) are both on.
+  static bool followPushesOn(SharedPreferences prefs, String prefKey) =>
+      isEnabled(prefs, kNotificationEnabled) && isEnabled(prefs, prefKey);
+
+  /// Joins [topic] on follow (when [followPushesOn] for [prefKey]) and leaves
+  /// it on unfollow. Best effort: offline or FCM not ready, the next launch
+  /// or a Settings change re-syncs.
+  Future<void> syncFollow({
+    required String topic,
+    required bool following,
+    required String prefKey,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!following) {
+        await unsubscribeFromTopic(topic);
+      } else if (followPushesOn(prefs, prefKey)) {
+        await subscribeToTopic(topic);
+      }
+    } catch (e) {
+      debugPrint('Could not sync topic $topic: $e');
+    }
+  }
+
+  /// Every fixed topic the app can subscribe to (the per-title and
+  /// per-author ones come from [followedTitleTopics] and
+  /// [followedAuthorTopics]).
   static List<String> get allTopics => [
     kNotificationAllTopic,
     for (final t in kNotificationTypes)
@@ -118,6 +164,7 @@ class NotificationService {
       await subscribeToTopic(topic);
     }
     await syncFollowedTitleTopics(true);
+    await syncFollowedAuthorTopics(true);
   }
 
   Future<void> unsubscribeFromAllTopic() async {
@@ -125,11 +172,21 @@ class NotificationService {
       await unsubscribeFromTopic(topic);
     }
     await syncFollowedTitleTopics(false);
+    await syncFollowedAuthorTopics(false);
   }
 
   /// Subscribes to (or leaves) every followed title's topic.
   Future<void> syncFollowedTitleTopics(bool enabled) async {
     for (final topic in await followedTitleTopics()) {
+      enabled
+          ? await subscribeToTopic(topic)
+          : await unsubscribeFromTopic(topic);
+    }
+  }
+
+  /// Subscribes to (or leaves) every followed author's topic.
+  Future<void> syncFollowedAuthorTopics(bool enabled) async {
+    for (final topic in await followedAuthorTopics()) {
       enabled
           ? await subscribeToTopic(topic)
           : await unsubscribeFromTopic(topic);
@@ -154,6 +211,8 @@ class NotificationService {
         await subscribeToTopic(type.topic!);
       } else if (type.prefKey == kNotificationFollowedTitles) {
         await syncFollowedTitleTopics(true);
+      } else if (type.prefKey == kNotificationFollowedPeople) {
+        await syncFollowedAuthorTopics(true);
       }
     }
   }

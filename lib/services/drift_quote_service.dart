@@ -151,21 +151,6 @@ class DriftQuoteService {
         .go();
   }
 
-  /// Quotes by one author from the local database.
-  static Future<List<Quote>> getLocalQuotesByAuthor({
-    required String authorSlug,
-    required int pageNumber,
-    required int pageSize,
-    int? seed,
-  }) async {
-    final db = getIt.get<AppDatabase>();
-    final query = db.select(db.quotes)
-      ..where((q) => q.authorSlug.equals(authorSlug))
-      ..limit(pageSize, offset: (pageNumber - 1) * pageSize);
-    if (seed != null) query.orderBy([(_) => seededOrder(seed)]);
-    return query.get();
-  }
-
   // Helper function to get paginated quotes from local database
   static Future<List<Quote>> getLocalQuotesWithPagination({
     required int pageNumber,
