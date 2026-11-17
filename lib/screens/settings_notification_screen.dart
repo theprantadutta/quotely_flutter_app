@@ -87,6 +87,8 @@ class _SettingsNotificationState extends State<SettingsNotificationScreen> {
             : await service.unsubscribeFromTopic(type.topic!);
       } else if (key == kNotificationFollowedTitles) {
         await service.syncFollowedTitleTopics(value);
+      } else if (key == kNotificationFollowedPeople) {
+        await service.syncFollowedAuthorTopics(value);
       }
     } catch (_) {
       // Offline or FCM not ready; the next launch re-subscribes enabled ones.

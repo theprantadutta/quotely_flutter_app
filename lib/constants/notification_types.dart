@@ -25,8 +25,9 @@ class NotificationType {
   final String primerDescription;
   final String prefKey;
 
-  /// FCM topic. Null for [kNotificationFollowedTitles], which fans out to one
-  /// `title_<slug>` topic per followed title.
+  /// FCM topic. Null for [kNotificationFollowedTitles] and
+  /// [kNotificationFollowedPeople], which fan out to one `title_<slug>` or
+  /// `author_<slug>` topic per followed title or author.
   final String? topic;
   final NotificationGroup group;
   final bool isNew;
@@ -72,6 +73,16 @@ const List<NotificationType> kNotificationTypes = [
     prefKey: kNotificationMotivation,
     topic: kNotificationMotivationMondayTopic,
     group: NotificationGroup.quote,
+  ),
+  NotificationType(
+    title: 'People you follow',
+    schedule: 'When they have new quotes',
+    primerDescription: 'When they have new quotes',
+    prefKey: kNotificationFollowedPeople,
+    topic: null,
+    group: NotificationGroup.quote,
+    isNew: true,
+    inPrimer: false,
   ),
 
   // --- Scenes ---

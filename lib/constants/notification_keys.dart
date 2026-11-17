@@ -9,3 +9,6 @@ const kNotificationFridayNightLinesTopic = 'friday_night_lines';
 
 /// Per-title topics are `title_<slug>`; see docs/scenes_api.md.
 const kNotificationTitleTopicPrefix = 'title_';
+
+/// Per-author topics are `author_<slug>`, for "People you follow".
+const kNotificationAuthorTopicPrefix = 'author_';

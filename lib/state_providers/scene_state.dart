@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -176,14 +177,24 @@ class ScreenInterests extends _$ScreenInterests {
   }
 }
 
-/// Followed author slugs (local only). Shown first in the People stories.
+/// Followed author slugs. Ring the People stories, fill the "From people you
+/// follow" strip, and subscribe to the `author_<slug>` FCM topic when
+/// notifications and "People you follow" are both on.
 @Riverpod(keepAlive: true)
 class FollowedAuthors extends _$FollowedAuthors {
+  /// Replaces the FCM calls in tests.
+  @visibleForTesting
+  static NotificationService Function() notifications = NotificationService.new;
+
+  Future<void>? _loading;
+
   @override
   Set<String> build() {
-    _load();
+    _loading = _load();
     return const {};
   }
+
+  Future<void> get ready => _loading ?? Future.value();
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -191,12 +202,19 @@ class FollowedAuthors extends _$FollowedAuthors {
   }
 
   Future<void> toggle(String slug) async {
-    state = state.contains(slug)
-        ? ({...state}..remove(slug))
-        : {...state, slug};
+    await ready;
+    final following = !state.contains(slug);
+    state = following ? {...state, slug} : ({...state}..remove(slug));
     await (await SharedPreferences.getInstance()).setStringList(
       kFollowedAuthorsKey,
       state.toList(),
+    );
+    final topic = NotificationService.authorTopic(slug);
+    if (topic == null) return;
+    await notifications().syncFollow(
+      topic: topic,
+      following: following,
+      prefKey: kNotificationFollowedPeople,
     );
   }
 }

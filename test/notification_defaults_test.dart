@@ -57,7 +57,8 @@ void main() {
   group('new installs start calm', () {
     setUp(() => SharedPreferences.setMockInitialValues({}));
 
-    test('only Quote of the day is on; the decision is stored', () async {
+    test('only Quote of the day is on (and People you follow, which only '
+        'reaches followers); the decision is stored', () async {
       await NotificationService.resolveDefaults();
       final prefs = await SharedPreferences.getInstance();
 
@@ -66,7 +67,8 @@ void main() {
       for (final t in kNotificationTypes) {
         expect(
           NotificationService.isEnabled(prefs, t.prefKey),
-          t.prefKey == kNotificationQuoteOfTheDay,
+          t.prefKey == kNotificationQuoteOfTheDay ||
+              t.prefKey == kNotificationFollowedPeople,
           reason: t.title,
         );
       }
