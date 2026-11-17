@@ -369,23 +369,25 @@ class _FactsScreenState extends ConsumerState<FactsScreen>
             ScreenHeader(
               title: play ? 'True or false?' : 'Facts',
               subtitle: subtitle,
-              actions: [
-                if (_gameAvailable)
-                  MiniSegmented<_FactsMode>(
-                    options: const [
-                      ChipOption(_FactsMode.play, 'Play'),
-                      ChipOption(_FactsMode.browse, 'Browse'),
-                    ],
-                    value: _mode,
-                    onChanged: (m) => setState(() {
-                      _mode = m;
-                      _userPickedMode = true;
-                    }),
-                  ),
-                if (_gameAvailable) const SizedBox(width: 4),
-                const SettingsButton(),
-              ],
+              actions: const [SettingsButton()],
             ),
+            // Play / Browse gets its own row, like People's Authors /
+            // Characters, so the title row holds only the title and the gear.
+            if (_gameAvailable)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: SegmentedPill<_FactsMode>(
+                  options: const [
+                    ChipOption(_FactsMode.play, 'Play'),
+                    ChipOption(_FactsMode.browse, 'Browse'),
+                  ],
+                  value: _mode,
+                  onChanged: (m) => setState(() {
+                    _mode = m;
+                    _userPickedMode = true;
+                  }),
+                ),
+              ),
             if (categories.isNotEmpty)
               FilterChips<String?>(
                 options: [

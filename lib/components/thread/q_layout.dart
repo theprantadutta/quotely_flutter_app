@@ -36,8 +36,10 @@ class ThreadColumn extends StatelessWidget {
   }
 }
 
-/// Tab-screen header: big title + `meta` subtitle, up to two trailing
-/// circle buttons (or any [trailing] widget, e.g. a MiniSegmented).
+/// Tab-screen header: the big title with its actions (circle buttons, or a
+/// MiniSegmented) on one row, and the `meta` subtitle on its own full-width
+/// line below. The subtitle never shares the row with the actions, so on a
+/// 360dp phone it doesn't wrap mid-phrase beside them.
 class ScreenHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -53,29 +55,36 @@ class ScreenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 14, 12, 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      padding: const EdgeInsets.fromLTRB(22, 18, 12, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Semantics(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Semantics(
                   header: true,
-                  child: Text(title, style: context.qt.titleScreen),
+                  child: Text(
+                    title,
+                    style: context.qt.titleScreen,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 6),
-                  Text(subtitle!.toUpperCase(), style: context.qt.overline),
-                ],
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              ...actions,
+            ],
           ),
-          for (var i = 0; i < actions.length; i++) ...[
-            if (i > 0) const SizedBox(width: 0),
-            actions[i],
+          if (subtitle != null) ...[
+            const SizedBox(height: 8),
+            Padding(
+              // Line up with the title, clear of the actions' tap padding.
+              padding: const EdgeInsets.only(right: 10),
+              child: Text(subtitle!.toUpperCase(), style: context.qt.overline),
+            ),
           ],
         ],
       ),

@@ -158,7 +158,8 @@ class FactsResultCard extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: PrimaryButton(
-                        label: 'Share my score',
+                        // Short enough to fit half a 360dp phone with the icon.
+                        label: 'Share score',
                         icon: kShareIcon,
                         onPressed: onShare,
                       ),

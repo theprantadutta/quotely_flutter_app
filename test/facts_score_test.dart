@@ -182,7 +182,7 @@ void main() {
         expect(find.bySemanticsLabel('8 out of 10 today'), findsOneWidget);
         expect(find.text('Sharp!'), findsOneWidget);
         expect(find.text('6-day streak · Best 9'), findsOneWidget);
-        expect(find.text('Share my score'), findsOneWidget);
+        expect(find.text('Share score'), findsOneWidget);
         expect(find.text('Browse facts'), findsOneWidget);
       });
     }
@@ -204,7 +204,7 @@ void main() {
         ),
       );
       expect(find.text('1-day streak'), findsOneWidget);
-      await tester.tap(find.text('Share my score'));
+      await tester.tap(find.text('Share score'));
       await tester.tap(find.text('Browse facts'));
       expect(shared, 1);
       expect(browsed, 1);
