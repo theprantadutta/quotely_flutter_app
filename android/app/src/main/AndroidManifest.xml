@@ -89,6 +89,38 @@
             android:name="io.flutter.plugins.urllauncher.WebViewActivity"
             android:enabled="false" />
 
+        <!-- Glance's two list-adapter trampolines, disabled. Crashlytics:
+             IllegalArgumentException "List adapter activity trampoline invoked
+             without specifying target intent" from
+             InvisibleActionTrampolineActivity.onCreate (Pixel 8 Pro, most
+             likely Play's pre-launch robot starting every activity it finds).
+             Both activities only forward the ACTION_INTENT extra that Glance
+             puts in a lazy-list item's fill-in intent, and throw without it.
+
+             Why disabling is safe: Glance builds an intent for these only for
+             a click inside a LazyColumn / LazyVerticalGrid
+             (ApplyAction.getFillInIntentForAction, gated on
+             isLazyCollectionDescendant). Our widgets (widget/ArtWidget.kt) have
+             no lazy list; their one tap is a Box clickable that becomes a
+             direct PendingIntent to MainActivity, so widget taps never touch
+             these. test/glance_trampoline_guard_test.dart fails if a lazy list
+             is added: re-enable these then.
+
+             Considered and rejected: android:exported="false" is already what
+             the Glance AAR declares (checked in the merged manifest), so it
+             can't be the fix. A subclass that swallows the bad intent would
+             also need GlanceAppWidget.getComponents overridden on every widget
+             and a new activity to point it at, more moving parts for code that
+             never runs. Same approach as WebViewActivity above. -->
+        <activity
+            android:name="androidx.glance.appwidget.action.InvisibleActionTrampolineActivity"
+            android:enabled="false"
+            tools:replace="android:enabled" />
+        <activity
+            android:name="androidx.glance.appwidget.action.ActionTrampolineActivity"
+            android:enabled="false"
+            tools:replace="android:enabled" />
+
         <!-- Quote of the Day home-screen widget. It displays what the app
              saves through home_widget (lib/services/quote_widget_service.dart);
              see widget/QuoteOfTheDayWidgetProvider.kt. The three widgets are
