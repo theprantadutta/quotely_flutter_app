@@ -12,6 +12,7 @@ import '../../dtos/author_dto.dart';
 import '../../dtos/character_dto.dart';
 import '../../navigation/routes.dart';
 import '../../riverpods/all_author_data_provider.dart';
+import '../../riverpods/followed_people_provider.dart';
 import '../../riverpods/scene_providers.dart';
 import '../../state_providers/recent_people.dart';
 import '../../state_providers/scene_state.dart';
@@ -198,6 +199,7 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
           onRefresh: () async {
             ref.invalidate(fetchAllAuthorsProvider);
             ref.invalidate(charactersPageProvider);
+            ref.invalidate(followedPeopleQuotesProvider);
             setState(_resetLists);
             await _fetch();
           },
@@ -319,6 +321,8 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
                     ),
                   ),
                 ),
+              if (isAuthors && _query.isEmpty && followed.isNotEmpty)
+                const SliverToBoxAdapter(child: _FromPeopleYouFollow()),
               const SliverPadding(
                 padding: EdgeInsets.fromLTRB(20, 18, 16, 4),
                 sliver: SliverToBoxAdapter(
@@ -417,6 +421,97 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
           : const SizedBox(height: 24),
     ),
   ];
+}
+
+/// "From people you follow": the newest quotes on this device by followed
+/// authors, as a row of quiet cards. Hidden until there is something to show.
+class _FromPeopleYouFollow extends ConsumerWidget {
+  const _FromPeopleYouFollow();
+
+  static const _newFor = Duration(days: 7);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(followedPeopleQuotesProvider).value ?? const [];
+    if (items.isEmpty) return const SizedBox.shrink();
+    final t = context.q;
+    final now = DateTime.now();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 16, 10),
+          child: SectionOverline(
+            'From people you follow',
+            padding: EdgeInsets.zero,
+          ),
+        ),
+        SizedBox(
+          height: 156,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: items.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: (context, i) {
+              final q = items[i].quote;
+              final fresh = now.difference(q.dateAdded) < _newFor;
+              return SizedBox(
+                width: 248,
+                child: Semantics(
+                  button: true,
+                  label: '${q.content}, ${q.author}',
+                  excludeSemantics: true,
+                  child: QCard(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                    onTap: () => context.push(Routes.author(q.authorSlug)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '“${q.content}”',
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.qt.body.copyWith(
+                              height: 1.4,
+                              color: t.ink,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            QAvatar(
+                              name: q.author,
+                              imageUrl: items[i].imageUrl,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                q.author,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.qt.caption.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (fresh) const NewBadge(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// Chat-list row: 46 avatar, name, "N quotes" on the right, one-line preview.
