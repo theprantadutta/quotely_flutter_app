@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -6,17 +5,16 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../components/thread/facts_score.dart';
 import '../../components/thread/thread.dart';
 import '../../components/settings_button.dart';
-import '../../constants/shared_preference_keys.dart';
 import '../../dtos/ai_fact_dto.dart';
 import '../../navigation/routes.dart';
 import '../../riverpods/all_facts_categories_data_provider.dart';
 import '../../riverpods/all_facts_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
+import '../../services/facts_game.dart';
 import '../../state_providers/user_interests.dart';
 import '../../util/pagination_seed.dart';
 
@@ -24,9 +22,6 @@ import '../../util/pagination_seed.dart';
 /// up by itself once the backend's GenerateFactFalseVariantsJob has filled
 /// them in (a "True" only game would always be "True").
 const bool kFactsGameEnabled = false;
-
-/// Questions per day in Play.
-const int kFactsPerDay = 10;
 
 enum _FactsMode { play, browse }
 
@@ -38,7 +33,8 @@ class FactsScreen extends ConsumerStatefulWidget {
   ConsumerState<FactsScreen> createState() => _FactsScreenState();
 }
 
-class _FactsScreenState extends ConsumerState<FactsScreen> {
+class _FactsScreenState extends ConsumerState<FactsScreen>
+    with WidgetsBindingObserver {
   final analytics = getIt.get<FirebaseAnalytics>();
   final _scroll = ScrollController();
   final _random = Random();
@@ -63,9 +59,12 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
   bool _initialLoadDone = false;
   List<String> _appliedInterests = const [];
 
-  // Play state
-  int _answered = 0;
-  int _correct = 0;
+  // Play state. Only answers in Play count toward the round; once the
+  // day's round is complete, Play shows the result until midnight.
+  FactsRound _round = FactsRound(day: factsDayKey(DateTime.now()));
+  FactsStreak _streak = const FactsStreak();
+  int get _answered => _round.answered;
+  int get _correct => _round.correct;
   int _deckIndex = 0;
   bool _showingFalse = false;
   bool? _lastAnswerRight;
@@ -77,12 +76,20 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       final p = _scroll.position;
       if (p.pixels > p.maxScrollExtent - 500) _fetch();
     });
+    WidgetsBinding.instance.addObserver(this);
     _loadProgress();
     _loadInitial();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Back after midnight: a fresh round, and the streak as of today.
+    if (state == AppLifecycleState.resumed) _rollOverIfNewDay();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scroll.dispose();
     super.dispose();
   }
@@ -97,27 +104,34 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
 
   // --- Daily progress --------------------------------------------------------
 
-  String get _today => DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String get _today => factsDayKey(DateTime.now());
 
   Future<void> _loadProgress() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(kFactsGameProgressKey);
-    if (raw == null) return;
-    final j = json.decode(raw) as Map<String, dynamic>;
-    if (j['date'] != _today || !mounted) return;
+    final today = _today;
+    final round = await FactsGameStore.loadRound(today);
+    final streak = await FactsGameStore.loadStreak();
+    if (!mounted) return;
     setState(() {
-      _answered = j['answered'] as int? ?? 0;
-      _correct = j['correct'] as int? ?? 0;
+      // Answers given while this was loading win over the stored ones.
+      if (_round.day != today || round.answered > _round.answered) {
+        _round = round;
+      }
+      _streak = streak;
+      // Back later the same day: the result is the first thing in Play.
+      if (_round.complete && !_userPickedMode) _mode = _FactsMode.play;
     });
   }
 
-  Future<void> _saveProgress() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      kFactsGameProgressKey,
-      json.encode({'date': _today, 'answered': _answered, 'correct': _correct}),
-    );
+  void _rollOverIfNewDay() {
+    if (_round.day == _today) return;
+    setState(() {
+      _round = FactsRound(day: _today);
+      _lastAnswerRight = null;
+    });
   }
+
+  /// The streak to show today: zero once a whole day went by unplayed.
+  int get _currentStreak => _streak.currentOn(_today);
 
   // --- Data -----------------------------------------------------------------
 
@@ -266,7 +280,9 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
 
   List<AiFactDto> get _deck => _playFacts;
 
-  bool get _gameAvailable => kFactsGameEnabled || _deck.isNotEmpty;
+  /// A finished round keeps Play (its result) even with no deck, offline.
+  bool get _gameAvailable =>
+      kFactsGameEnabled || _deck.isNotEmpty || _round.complete;
 
   AiFactDto? get _current {
     final deck = kFactsGameEnabled && _deck.isEmpty ? _facts : _deck;
@@ -285,14 +301,25 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
 
   void _answer(bool saidTrue) {
     if (_lastAnswerRight != null) return;
+    _rollOverIfNewDay();
+    if (_round.complete) return;
     final right = saidTrue != _showingFalse;
     HapticFeedback.lightImpact();
+    final round = _round.record(right);
     setState(() {
       _lastAnswerRight = right;
-      _answered++;
-      if (right) _correct++;
+      _round = round;
     });
-    _saveProgress();
+    FactsGameStore.saveRound(round);
+    if (round.complete) {
+      final streak = _streak.complete(round.day);
+      setState(() => _streak = streak);
+      FactsGameStore.saveStreak(streak);
+      analytics.logEvent(
+        name: 'facts_round_completed',
+        parameters: {'score': round.correct, 'streak': streak.count},
+      );
+    }
     analytics.logEvent(
       name: 'facts_game_answered',
       parameters: {
@@ -323,9 +350,14 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     final categories =
         ref.watch(fetchAllFactsCategoriesProvider).value ?? const <String>[];
     final play = _mode == _FactsMode.play && _gameAvailable;
-    final subtitle = play
+    final streakLabel = factsStreakLabel(_currentStreak);
+    final subtitle = !play
+        ? 'Strange, true and worth knowing'
+        : _showResult
+        ? ['Today\u2019s round is done', ?streakLabel].join(' · ')
+        : streakLabel == null
         ? '${min(_answered, kFactsPerDay)} of $kFactsPerDay today · $_correct right so far'
-        : 'Strange, true and worth knowing';
+        : '${min(_answered, kFactsPerDay)} of $kFactsPerDay · $_correct right · $streakLabel';
 
     return SafeArea(
       bottom: false,
@@ -442,7 +474,25 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
     if (mounted) _next();
   }
 
+  /// The round is done and its last answer has been read: show the result.
+  bool get _showResult => _round.complete && _lastAnswerRight == null;
+
+  void _browse() => setState(() {
+    _mode = _FactsMode.browse;
+    _userPickedMode = true;
+  });
+
   Widget _buildPlay() {
+    if (_showResult) {
+      return FactsResultCard(
+        round: _round,
+        streak: _currentStreak,
+        best: _streak.best,
+        onShare: () =>
+            shareFactsScore(context, round: _round, streak: _currentStreak),
+        onBrowse: _browse,
+      );
+    }
     final fact = _current;
     if (fact == null) {
       return ListView(
@@ -453,7 +503,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
       );
     }
     final answered = _lastAnswerRight != null;
-    final done = _answered == kFactsPerDay && answered;
+    final done = _round.complete && answered;
     final shown = _showingFalse ? fact.falseVariant! : fact.content;
     return Padding(
       padding: const EdgeInsets.fromLTRB(22, 6, 22, 16),
@@ -483,7 +533,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
                     right: _lastAnswerRight ?? false,
                     wasFalse: _showingFalse,
                     footnote: done
-                        ? 'That\u2019s today\u2019s $kFactsPerDay. $_correct right. See you tomorrow.'
+                        ? 'That\u2019s today\u2019s $kFactsPerDay.'
                         : null,
                   ),
                 ),
@@ -513,15 +563,21 @@ class _FactsScreenState extends ConsumerState<FactsScreen> {
             Row(
               children: [
                 Expanded(
-                  child: SecondaryButton(label: 'Skip', onPressed: _next),
+                  child: SecondaryButton(
+                    label: done ? 'Keep' : 'Skip',
+                    icon: done ? Icons.favorite_border_rounded : null,
+                    onPressed: done ? () => _keep(fact) : _next,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: PrimaryButton(
-                    label: 'Keep',
-                    icon: Icons.favorite_border_rounded,
-                    onPressed: () => _keep(fact),
-                  ),
+                  child: done
+                      ? PrimaryButton(label: 'See my score', onPressed: _next)
+                      : PrimaryButton(
+                          label: 'Keep',
+                          icon: Icons.favorite_border_rounded,
+                          onPressed: () => _keep(fact),
+                        ),
                 ),
               ],
             ),
