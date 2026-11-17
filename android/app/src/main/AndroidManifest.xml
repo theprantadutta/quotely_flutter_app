@@ -136,6 +136,51 @@
                 android:resource="@xml/scene_widget_info" />
         </receiver>
 
+        <!-- Minimal quote home-screen widget: today's quote and its author,
+             nothing else (reads the Quote of the Day data); see
+             widget/MinimalQuoteWidgetProvider.kt. -->
+        <receiver
+            android:name=".widget.MinimalQuoteWidgetProvider"
+            android:exported="false"
+            android:label="@string/minimal_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/minimal_widget_info" />
+        </receiver>
+
+        <!-- Its background setting (page or transparent). Exported because
+             the launcher starts it; it only acts on our own Minimal widgets
+             (see widget/MinimalWidgetConfigureActivity.kt). -->
+        <activity
+            android:name=".widget.MinimalWidgetConfigureActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- The small square home-screen widget ("Today, small"): the mark
+             and a very short line (reads the Quote of the Day data); see
+             widget/SquareQuoteWidgetProvider.kt. -->
+        <receiver
+            android:name=".widget.SquareQuoteWidgetProvider"
+            android:exported="false"
+            android:label="@string/square_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/square_widget_info" />
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The small square: the widget picker's preview (previewLayout, Android
+     12+). The mark and a short sample quote over the page with a glow, laid
+     out like the real widget, which SquareQuoteWidget draws as a bitmap
+     instead (see layout/qotd_widget_preview.xml for why). Only
+     RemoteViews-safe classes are used. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_preview_glow"
+    android:clipToOutline="true"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <TextView
+        style="@style/QotdWidget.Quote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:autoSizeTextType="none"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:text="@string/square_widget_mark"
+        android:textSize="40sp" />
+
+    <TextView
+        style="@style/QotdWidget.Quote"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="bottom|start"
+        android:text="@string/square_widget_sample_quote" />
+</LinearLayout>

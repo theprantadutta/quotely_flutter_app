@@ -1,5 +1,6 @@
 package com.pranta.quotely.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
@@ -19,6 +20,7 @@ import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.AndroidRemoteViews
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.LocalAppWidgetOptions
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
@@ -42,7 +44,8 @@ import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
  * bitmap (see [WidgetArt] for why) over either the blurred poster under the
  * page-colour wash, the page with the day's glow, or the plain page.
  * Quote of the Day, From your saved and Scene of the Day are this, with their
- * own [content].
+ * own [content]; Minimal quote and the small square also draw their own text
+ * layout ([textBitmap]), and Minimal can leave out the page ([Content.transparent]).
  *
  * Sizing: SizeMode.Exact composes the widget once for each size the launcher
  * reports, with that size in [LocalSize], and every bitmap is drawn at that
@@ -63,12 +66,17 @@ import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
  */
 abstract class ArtWidget : GlanceAppWidget() {
 
-    /** What to draw, and what TalkBack reads. No [glow]: the plain page. */
+    /**
+     * What to draw, and what TalkBack reads. No [glow]: the plain page.
+     * [transparent]: no page at all, and the text bitmap is already coloured
+     * (so it is shown untinted on every Android version).
+     */
     class Content(
             val text: WidgetArt.Text,
             val description: String,
             val poster: Bitmap?,
             val glow: WidgetArt.Glow?,
+            val transparent: Boolean = false,
     )
 
     /** Where a tap opens the app; see [WidgetArt.launch]. */
@@ -77,14 +85,30 @@ abstract class ArtWidget : GlanceAppWidget() {
     /** Reads what the app saved. */
     protected abstract fun content(context: Context, data: SharedPreferences): Content
 
+    /** [content] for one placed widget, for widgets with per-widget settings. */
+    protected open fun content(context: Context, data: SharedPreferences, appWidgetId: Int): Content =
+            content(context, data)
+
+    /**
+     * The text, as a bitmap of [sizeDp] at [scale] x the density. The card
+     * layout (eyebrow, body, footer) unless a widget draws its own.
+     */
+    protected open fun textBitmap(context: Context, content: Content, sizeDp: SizeF, scale: Float): Bitmap =
+            WidgetArt.textBitmap(context, content.text, sizeDp, scale)
+
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override val stateDefinition = HomeWidgetGlanceStateDefinition()
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val appWidgetId = try {
+            GlanceAppWidgetManager(context).getAppWidgetId(id)
+        } catch (e: Exception) {
+            AppWidgetManager.INVALID_APPWIDGET_ID
+        }
         provideContent {
             val data = currentState<HomeWidgetGlanceState>().preferences
-            Widget(context, content(context, data))
+            Widget(context, content(context, data, appWidgetId))
         }
     }
 
@@ -96,7 +120,8 @@ abstract class ArtWidget : GlanceAppWidget() {
         val sizeCount = WidgetArt.sizeCount(LocalAppWidgetOptions.current)
         val scale = WidgetArt.bitmapScale(context, sizeDp, sizeCount)
 
-        Box(GlanceModifier.fillMaxSize().page().clickable(WidgetArt.launch(context, launchUri))) {
+        val box = GlanceModifier.fillMaxSize().let { if (content.transparent) it else it.page() }
+        Box(box.clickable(WidgetArt.launch(context, launchUri))) {
             val poster = content.poster?.let { draw { WidgetArt.posterBitmap(context, it, sizeDp, scale) } }
             val glow = content.glow
             if (poster != null) {
@@ -112,9 +137,17 @@ abstract class ArtWidget : GlanceAppWidget() {
             }
 
             // If the full-size text can't be allocated, half the pixels still read.
-            val text = draw { WidgetArt.textBitmap(context, content.text, sizeDp, scale) }
-                    ?: draw { WidgetArt.textBitmap(context, content.text, sizeDp, scale * 0.5f) }
-            if (text != null) {
+            val text = draw { textBitmap(context, content, sizeDp, scale) }
+                    ?: draw { textBitmap(context, content, sizeDp, scale * 0.5f) }
+            if (text != null && content.transparent) {
+                // Already coloured, with its shadow: shown as it is.
+                Image(
+                        ImageProvider(text),
+                        contentDescription = content.description,
+                        modifier = GlanceModifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit,
+                )
+            } else if (text != null) {
                 Ink(context, text, content.description)
             } else {
                 // Not even that: the quote in the system font, better than an error.
@@ -122,7 +155,11 @@ abstract class ArtWidget : GlanceAppWidget() {
                         content.text.body,
                         modifier = GlanceModifier.fillMaxSize().padding(16.dp),
                         style = TextStyle(
-                                color = ColorProvider(Color(WidgetArt.INK_LIGHT), Color(WidgetArt.INK_DARK)),
+                                color = if (content.transparent) {
+                                    ColorProvider(Color(WidgetArt.INK_DARK), Color(WidgetArt.INK_DARK))
+                                } else {
+                                    ColorProvider(Color(WidgetArt.INK_LIGHT), Color(WidgetArt.INK_DARK))
+                                },
                                 fontSize = 16.sp,
                         ),
                 )

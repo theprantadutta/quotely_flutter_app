@@ -58,6 +58,20 @@ class WidgetArtTest {
     }
 
     @Test
+    fun theSmallSquareIsCompactOnlyAtOneByOne() {
+        // 1x1 on phones (~40-80dp) shows the mark alone; 2x2 (110dp+) the line.
+        assertTrue(40f < WidgetArt.SQUARE_COMPACT_DP)
+        assertTrue(80f < WidgetArt.SQUARE_COMPACT_DP)
+        assertTrue(110f >= WidgetArt.SQUARE_COMPACT_DP)
+    }
+
+    @Test
+    fun minimalBackgroundFlagIsPerWidget() {
+        assertEquals("minimal_clear_42", MinimalQuoteWidget.clearKey(42))
+        assertTrue(MinimalQuoteWidget.clearKey(1) != MinimalQuoteWidget.clearKey(11))
+    }
+
+    @Test
     fun pixelSizeIsNeverEmpty() {
         assertEquals(1 to 1, WidgetArt.pixelSize(0f, 0f, 3f))
     }

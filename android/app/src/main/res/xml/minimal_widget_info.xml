@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Minimal quote widget. Opens at 4x2 and resizes from 2x1 up to about 4x3
+     (the max* and targetCell* attributes are Android 12+; older launchers use
+     minWidth/minHeight and allow any size above the minimum).
+
+     configure: the background setting (page or transparent). On Android 12+
+     it is optional at placement and offered again from the launcher's widget
+     settings; before 12 the launcher shows it once when the widget is placed.
+
+     No updatePeriodMillis: it shows the Quote of the Day data the app saves,
+     and the app redraws it whenever that changes. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.pranta.quotely.widget.MinimalWidgetConfigureActivity"
+    android:description="@string/minimal_widget_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:maxResizeHeight="260dp"
+    android:maxResizeWidth="420dp"
+    android:minHeight="110dp"
+    android:minResizeHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minWidth="250dp"
+    android:previewLayout="@layout/minimal_widget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="4"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

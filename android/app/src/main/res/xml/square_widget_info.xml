@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The small square ("Today, small"). Opens at 2x2 and resizes down to 1x1
+     (where it shows the mark alone); it stays a small square, so it grows no
+     further than 2x2.
+
+     No updatePeriodMillis: it shows the Quote of the Day data the app saves,
+     and the app redraws it whenever that changes. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/square_widget_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:maxResizeHeight="130dp"
+    android:maxResizeWidth="130dp"
+    android:minHeight="110dp"
+    android:minResizeHeight="40dp"
+    android:minResizeWidth="40dp"
+    android:minWidth="110dp"
+    android:previewLayout="@layout/square_widget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />
