@@ -1,8 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../dtos/character_dto.dart';
+import '../dtos/coming_soon_dto.dart';
 import '../dtos/media_title_dto.dart';
 import '../dtos/scene_quote_dto.dart';
+import '../services/coming_soon_service.dart';
 import '../services/drift_scene_service.dart';
 import '../services/scene_repository.dart';
 import '../services/scene_service.dart';
@@ -87,3 +89,8 @@ Future<List<CharacterDto>> charactersPage(
 /// Characters in the local cache, for the People "Characters N" count.
 @riverpod
 Future<int> localCharacterCount(Ref ref) => DriftSceneService.countCharacters();
+
+/// Scenes' Coming soon strip. Empty (never an error) when there is nothing.
+@Riverpod(keepAlive: true)
+Future<List<ComingSoonDto>> comingSoon(Ref ref) =>
+    ComingSoonService.getComingSoon();

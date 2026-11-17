@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../components/ask_sheet.dart';
+import '../../components/coming_soon.dart';
 import '../../components/thread/thread.dart';
 import '../../components/settings_button.dart';
 import '../../dtos/media_title_dto.dart';
@@ -117,6 +118,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
     ref.invalidate(sceneOfTheDayProvider);
     ref.invalidate(trendingTitlesProvider);
     ref.invalidate(sceneQuotesPageProvider);
+    ref.invalidate(comingSoonProvider);
     setState(() {
       _lines.clear();
       _page = 1;
@@ -268,6 +270,7 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
                   controller: _scroll,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
+                    const SliverToBoxAdapter(child: ComingSoonStrip()),
                     const SliverToBoxAdapter(
                       child: _SectionTitle('Trending titles'),
                     ),
