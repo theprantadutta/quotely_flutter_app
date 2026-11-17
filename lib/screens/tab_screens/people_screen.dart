@@ -197,6 +197,8 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
       child: ThreadColumn(
         child: RefreshIndicator.adaptive(
           onRefresh: () async {
+            // A fresh shuffle of the author list on pull-to-refresh.
+            PaginationSeed.refresh();
             ref.invalidate(fetchAllAuthorsProvider);
             ref.invalidate(charactersPageProvider);
             ref.invalidate(followedPeopleQuotesProvider);

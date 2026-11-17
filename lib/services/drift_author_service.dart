@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:drift/drift.dart';
 import 'package:quotely_flutter_app/dtos/author_dto.dart';
 import 'package:quotely_flutter_app/service_locator/init_service_locators.dart';
@@ -43,9 +45,22 @@ class DriftAuthorService {
     required int pageNumber,
     required int pageSize,
     required String searchTerm,
+    int? seed,
   }) async {
     final db = getIt.get<AppDatabase>();
     final offset = (pageNumber - 1) * pageSize;
+
+    // Browsing (no search) with a seed: a shuffled order that holds for the
+    // session (PaginationSeed), so People doesn't always open on the A's.
+    // SQLite has no seeded random and ids are text, so shuffle the rows here;
+    // the library holds a few hundred authors at most.
+    if (searchTerm.isEmpty && seed != null) {
+      final all = await (db.select(
+        db.authors,
+      )..orderBy([(a) => OrderingTerm(expression: a.id)])).get();
+      all.shuffle(Random(seed));
+      return all.skip(offset).take(pageSize).toList();
+    }
 
     var query = db.select(db.authors)
       ..orderBy([

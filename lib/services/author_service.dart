@@ -28,6 +28,7 @@ class AuthorService {
             pageNumber: pageNumber,
             pageSize: pageSize,
             searchTerm: search,
+            seed: effectiveSeed,
           ),
         ),
         pagination: PaginationDto(
