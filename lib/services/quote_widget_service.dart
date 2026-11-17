@@ -7,9 +7,11 @@ import 'package:intl/intl.dart';
 import '../dtos/quote_of_the_day_dto.dart';
 import 'home_widget_store.dart';
 
-/// Feeds the Quote of the Day home-screen widget: the Android AppWidget
-/// (android/app/src/main/kotlin/.../widget) and the iOS WidgetKit extension
-/// (ios/QuotelyWidget).
+/// Feeds the widgets that show today's quote: Quote of the Day, Minimal
+/// quote and the small square (Today, small), on Android
+/// (android/app/src/main/kotlin/.../widget) and in the iOS WidgetKit
+/// extension (ios/QuotelyWidget). They all read the keys below; see
+/// [QuotelyWidgetKind.quoteOfTheDayReaders].
 ///
 /// Both widgets are native and only display what is saved here: the quote,
 /// its author, the date, and the day's scene poster as a PNG that is already
@@ -19,7 +21,9 @@ import 'home_widget_store.dart';
 /// or dark mode without another round trip.
 ///
 /// The keys below are read by name on both platforms; keep them in sync with
-/// QuoteOfTheDayWidgetProvider.kt and QuotelyWidget.swift. The shared
+/// QuoteOfTheDayWidgetProvider.kt, MinimalQuoteWidgetProvider.kt,
+/// SquareQuoteWidgetProvider.kt, QuotelyWidget.swift, MinimalQuoteWidget.swift
+/// and SquareQuoteWidget.swift. The shared
 /// plumbing (App Group, posters, redraws) is in [HomeWidgetStore].
 class QuoteWidgetService {
   QuoteWidgetService._();
@@ -37,6 +41,17 @@ class QuoteWidgetService {
   static const kText = 'qotd_text';
   static const kAuthor = 'qotd_author';
   static const kDate = 'qotd_date';
+
+  /// The small square's line: the quote when it is at most [shortMax]
+  /// characters, else empty (the square then shows [kEyebrow] and "Open
+  /// today's quote"). Decided here so both platforms agree.
+  static const kShort = 'qotd_short';
+
+  /// The small square's eyebrow: the quote's day, like "TUE · NOV 17".
+  static const kEyebrow = 'qotd_eyebrow';
+
+  /// The longest quote the small square shows whole.
+  static const shortMax = 60;
 
   /// Absolute path of the blurred poster PNG, written by `HomeWidget.saveFile`.
   static const kPoster = 'qotd_poster';
@@ -58,6 +73,21 @@ class QuoteWidgetService {
   static String dateKey(DateTime quoteDate) =>
       DateFormat('yyyy-MM-dd').format(quoteDate.toUtc());
 
+  /// [text] for the small square if it is short enough to read whole there,
+  /// else null.
+  static String? shortLine(String text) {
+    final t = text.trim();
+    if (t.isEmpty || t.runes.length > shortMax) return null;
+    return t;
+  }
+
+  /// The small square's eyebrow for the quote's day ("TUE · NOV 17"), from
+  /// the UTC fields like [dateKey].
+  static String eyebrow(DateTime quoteDate) => DateFormat(
+    'EEE · MMM d',
+    'en_US',
+  ).format(quoteDate.toUtc()).toUpperCase();
+
   /// Saves [quote] (and a blurred copy of [posterUrl]) for the widget and
   /// asks it to redraw. Calls run one after another; a call that would save
   /// exactly what was saved last does nothing unless [force] is set. Never
@@ -78,12 +108,21 @@ class QuoteWidgetService {
         await HomeWidgetStore.save<String>(kText, quote.content.trim());
         await HomeWidgetStore.save<String>(kAuthor, quote.author.trim());
         await HomeWidgetStore.save<String>(kDate, date);
+        await HomeWidgetStore.save<String>(
+          kShort,
+          shortLine(quote.content) ?? '',
+        );
+        await HomeWidgetStore.save<String>(kEyebrow, eyebrow(quote.quoteDate));
         await HomeWidgetStore.keepPoster(
           pathKey: kPoster,
           urlKey: kPosterUrl,
           urls: [poster],
         );
-        await HomeWidgetStore.redraw(QuotelyWidgetKind.qotd);
+        // The small square's background.
+        await HomeWidgetStore.saveGlowDays(DateTime.now());
+        for (final kind in QuotelyWidgetKind.quoteOfTheDayReaders) {
+          await HomeWidgetStore.redraw(kind);
+        }
       },
     );
   }

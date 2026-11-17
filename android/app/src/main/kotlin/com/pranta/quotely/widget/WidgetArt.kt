@@ -420,6 +420,205 @@ object WidgetArt {
         null
     }
 
+    // ---- Minimal and the small square --------------------------------------
+
+    /**
+     * Minimal quote: the quote in the serif and "— author" just under it, the
+     * pair centred vertically, nothing else. The quote fits exactly as in
+     * [textBitmap] (as large as the widget allows, shrinking until it fits).
+     * The author is left out when the widget is too short to hold it and a
+     * readable line of the quote (a 2x1), so the quote always wins.
+     *
+     * [shadow] false: white with alpha, tinted with the ink where shown, so it
+     * follows day and night on the page. [shadow] true: for the transparent
+     * background, already coloured (parchment) with a soft dark shadow, the
+     * way launchers draw their own icon labels over any wallpaper.
+     *
+     * The bitmap is [sizeDp] at [scale] x the density: never stretched.
+     */
+    fun minimalBitmap(
+            context: Context,
+            body: String,
+            author: String?,
+            sizeDp: SizeF,
+            scale: Float,
+            shadow: Boolean,
+    ): Bitmap {
+        val metrics = context.resources.displayMetrics
+        val pxPerDp = metrics.density * scale
+        fun dp(v: Float) = v * pxPerDp
+        fun sp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, v, metrics) * scale
+
+        val (width, height) = pixelSize(sizeDp, pxPerDp)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val shortDp = min(sizeDp.width, sizeDp.height)
+        fun scaled(perShort: Float, lo: Float, hi: Float) = (shortDp * perShort).coerceIn(lo, hi)
+        val side = dp(scaled(0.1f, 14f, 20f))
+        // Shorter than the card's top and bottom margins, so a 2x1 still has room.
+        val vertical = dp(scaled(0.085f, 6f, 18f))
+        val gap = dp(scaled(0.04f, 4f, 10f))
+        val contentWidth = max(1, (width - 2 * side).toInt())
+        val area = (height - 2 * vertical).toInt()
+        if (area <= 0) return bitmap
+
+        fun TextPaint.ink(alpha: Int) {
+            if (shadow) {
+                color = INK_DARK
+                this.alpha = alpha
+                setShadowLayer(dp(2.5f), 0f, dp(0.75f), SHADOW)
+            } else {
+                color = Color.WHITE
+                this.alpha = alpha
+            }
+        }
+
+        val quote = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = fonts(context).serif
+            ink(255)
+        }
+        val minPx = sp(QUOTE_MIN_SP)
+
+        // The author, if there is room for it and at least one line of quote.
+        var authorText: CharSequence? = null
+        val authorPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            textSize = sp(scaled(0.06f, 11f, 14f))
+            ink(if (shadow) 225 else SECONDARY_ALPHA)
+        }
+        val authorMetrics = authorPaint.fontMetrics
+        val authorHeight = authorMetrics.descent - authorMetrics.ascent
+        if (!author.isNullOrEmpty()) {
+            quote.textSize = minPx
+            val oneLine = quoteLayout("A", quote, contentWidth, 1).height
+            if (area - authorHeight - gap >= oneLine) {
+                authorText = TextUtils.ellipsize(
+                        context.getString(R.string.qotd_widget_author, author), authorPaint,
+                        contentWidth.toFloat(), TextUtils.TruncateAt.END)
+            }
+        }
+        val authorSpace = if (authorText != null) authorHeight + gap else 0f
+
+        val maxSp = scaled(QUOTE_MAX_PER_SHORT_SIDE, QUOTE_MAX_SP_FLOOR, QUOTE_MAX_SP_CEIL)
+        val layout = fitQuote(
+                body, quote, contentWidth, max(1, (area - authorSpace).toInt()),
+                sp(maxSp), minPx, sp(1f))
+        val block = layout.height + authorSpace
+        val top = vertical + max(0f, (area - block) / 2f)
+        canvas.save()
+        canvas.translate(side, top)
+        layout.draw(canvas)
+        canvas.restore()
+        authorText?.let {
+            val baseline = top + layout.height + gap - authorMetrics.ascent
+            canvas.drawText(it, 0, it.length, side, baseline, authorPaint)
+        }
+        return bitmap
+    }
+
+    /** The minimal widget's text shadow over a transparent background. */
+    private const val SHADOW = 0x8C000000.toInt() // black at 55%
+
+    /** Below this shorter side (dp) the square is a 1x1: the mark alone. */
+    const val SQUARE_COMPACT_DP = 90f
+
+    /** The Quotely mark: Instrument Serif's opening quote. */
+    private const val MARK = "“"
+
+    /**
+     * The small square: the Quotely mark (Instrument Serif's opening quote)
+     * at the top left and [body] at the bottom, the quote's size fitted as in
+     * [textBitmap]; [eyebrow], if any, sits just above [body] in the mono. A
+     * 1x1 ([SQUARE_COMPACT_DP]) is too small to read a line in, so there the
+     * mark is drawn alone, centred and large. White with alpha; tinted where
+     * shown, so it follows day and night. Never stretched.
+     */
+    fun squareBitmap(
+            context: Context,
+            eyebrow: String?,
+            body: String,
+            sizeDp: SizeF,
+            scale: Float,
+    ): Bitmap {
+        val metrics = context.resources.displayMetrics
+        val pxPerDp = metrics.density * scale
+        fun dp(v: Float) = v * pxPerDp
+        fun sp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, v, metrics) * scale
+
+        val (width, height) = pixelSize(sizeDp, pxPerDp)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val shortDp = min(sizeDp.width, sizeDp.height)
+        fun scaled(perShort: Float, lo: Float, hi: Float) = (shortDp * perShort).coerceIn(lo, hi)
+
+        val mark = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = fonts(context).serif
+            color = Color.WHITE
+        }
+
+        /** Draws the mark [glyphPx] tall with its ink's top left at ([x], [y]). */
+        fun drawMark(glyphPx: Float, x: Float, y: Float): android.graphics.Rect {
+            mark.textSize = 100f
+            val probe = android.graphics.Rect()
+            mark.getTextBounds(MARK, 0, MARK.length, probe)
+            mark.textSize = 100f * glyphPx / max(1, probe.height())
+            val bounds = android.graphics.Rect()
+            mark.getTextBounds(MARK, 0, MARK.length, bounds)
+            canvas.drawText(MARK, x - bounds.left, y - bounds.top, mark)
+            return bounds
+        }
+
+        if (shortDp < SQUARE_COMPACT_DP) {
+            val glyph = dp(shortDp * 0.36f)
+            mark.textSize = 100f
+            val probe = android.graphics.Rect()
+            mark.getTextBounds(MARK, 0, MARK.length, probe)
+            val glyphWidth = glyph * probe.width() / max(1, probe.height())
+            drawMark(glyph, (width - glyphWidth) / 2f, (height - glyph) / 2f)
+            return bitmap
+        }
+
+        val pad = dp(scaled(0.1f, 12f, 18f))
+        val gap = dp(scaled(0.035f, 4f, 8f))
+        val contentWidth = max(1, (width - 2 * pad).toInt())
+        val markBounds = drawMark(dp(scaled(0.17f, 14f, 30f)), pad, pad)
+        val top = pad + markBounds.height() + gap * 2
+        val bottom = height - pad
+
+        val quote = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = fonts(context).serif
+            color = Color.WHITE
+        }
+        val eyebrowPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = fonts(context).mono
+            textSize = sp(scaled(0.06f, 8f, 10f))
+            letterSpacing = 0.12f
+            color = Color.WHITE
+            alpha = SECONDARY_ALPHA
+        }
+        val eyebrowMetrics = eyebrowPaint.fontMetrics
+        val eyebrowHeight = if (eyebrow.isNullOrEmpty()) 0f
+                else eyebrowMetrics.descent - eyebrowMetrics.ascent + gap
+
+        val area = (bottom - top - eyebrowHeight).toInt()
+        if (area <= 0) return bitmap
+        val maxSp = scaled(QUOTE_MAX_PER_SHORT_SIDE, QUOTE_MAX_SP_FLOOR, QUOTE_MAX_SP_CEIL)
+        val layout = fitQuote(body, quote, contentWidth, area, sp(maxSp), sp(QUOTE_MIN_SP), sp(1f))
+        // Bottom-aligned: the mark at the top, the words at the foot.
+        val layoutTop = bottom - layout.height
+        if (!eyebrow.isNullOrEmpty()) {
+            val text = TextUtils.ellipsize(eyebrow, eyebrowPaint, contentWidth.toFloat(), TextUtils.TruncateAt.END)
+            val baseline = layoutTop - gap - eyebrowMetrics.descent
+            canvas.drawText(text, 0, text.length, pad, baseline, eyebrowPaint)
+        }
+        canvas.save()
+        canvas.translate(pad, layoutTop)
+        layout.draw(canvas)
+        canvas.restore()
+        return bitmap
+    }
+
     // ---- Taps and analytics ----------------------------------------------
 
     /**

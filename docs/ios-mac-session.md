@@ -138,6 +138,28 @@ the file.
 - All Dart code. Accessibility labels, the tablet layout, the poster fallback,
   Ask and Maintenance mode are shared Dart code with no iOS-specific setup.
 
+## Next Mac session: two new widgets (2026-11-17)
+
+Two new widgets, **Minimal quote** (`QuotelyMinimalWidget`: the quote and
+its author on the plain page, systemSmall/Medium/Large and the Lock Screen
+rectangle) and **Today, small** (`QuotelySquareWidget`: the Quotely mark and
+a very short line, systemSmall and the Lock Screen circle), were added on
+Windows and have **not been compiled**. Same extension, bundle ID, App Group
+and fonts, so no portal or signing work.
+
+- New files `ios/QuotelyWidget/MinimalQuoteWidget.swift` and
+  `ios/QuotelyWidget/SquareQuoteWidget.swift`, already in `project.pbxproj`
+  (QuotelyWidget group and Compile Sources, hand-edited). The bundle lists
+  them; `QuotelyWidgetShared.swift` has their kinds, tap URLs and
+  `WidgetTypeScale(hasEyebrow:)`.
+- To do: open the workspace, confirm both files belong to the QuotelyWidget
+  target only and Compile Sources lists seven Swift files, build, look at the
+  previews, tune the square's mark position, then
+  `flutter build ios --release --no-codesign` and the device checklist.
+
+Full steps and the checklist: `ios-mac-session/widget.md`, section 9. Do
+this together with the text-sizing check below; both touch the same files.
+
 ## Next Mac session: widget text sizing (2026-11-17)
 
 Users reported widget text too small (and sometimes too big) for the widget's

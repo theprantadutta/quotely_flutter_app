@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The From your saved and Scene of the Day home-screen widgets. Colours,
+<!-- The From your saved, Scene of the Day, Minimal quote and small square
+     home-screen widgets. Colours,
      corner radius, the author line and the fonts are shared with Quote of the
      Day (values/qotd_widget.xml). -->
 <resources>
@@ -37,4 +38,20 @@
     <string name="scene_widget_sample_eyebrow" translatable="false">SCENE · THE GODFATHER</string>
     <string name="scene_widget_sample_quote">I\'m gonna make him an offer he can\'t refuse.</string>
     <string name="scene_widget_sample_footer">— Vito Corleone, The Godfather</string>
+
+    <string name="minimal_widget_name">Minimal quote</string>
+    <string name="minimal_widget_description">Just today\'s quote and who said it. Resize it from a slim strip to a big card.</string>
+    <string name="minimal_widget_sample_quote">Well done is better than well said.</string>
+    <string name="minimal_widget_sample_author">— Benjamin Franklin</string>
+    <string name="minimal_widget_configure_title">Background</string>
+    <string name="minimal_widget_background_page">Page (light and dark with your phone)</string>
+    <string name="minimal_widget_background_clear">Transparent (light text with a soft shadow)</string>
+
+    <string name="square_widget_name">Today, small</string>
+    <string name="square_widget_description">The Quotely mark and today\'s quote when it\'s short, a tap away when it\'s not.</string>
+    <string name="square_widget_open">Open today\'s quote</string>
+    <string name="square_widget_a11y_open">Quotely: open today\'s quote</string>
+    <!-- The Quotely mark (Instrument Serif's opening quote) in the picker preview. -->
+    <string name="square_widget_mark" translatable="false">&#8220;</string>
+    <string name="square_widget_sample_quote">Well done is better than well said.</string>
 </resources>

@@ -38,6 +38,25 @@ enum QuotelyWidgetKind {
     label: 'Scene of the Day',
     iOSKind: 'QuotelySceneWidget',
     androidClass: 'SceneOfTheDayWidgetProvider',
+  ),
+
+  /// Today's quote and its author in the serif, nothing else. Reads the
+  /// Quote of the Day data.
+  minimal(
+    id: 'minimal',
+    label: 'Minimal quote',
+    iOSKind: 'QuotelyMinimalWidget',
+    androidClass: 'MinimalQuoteWidgetProvider',
+  ),
+
+  /// The small square: the Quotely mark and a very short line (today's quote
+  /// when it is short, otherwise the date and "Open today's quote"). Reads
+  /// the Quote of the Day data.
+  square(
+    id: 'square',
+    label: 'Today, small',
+    iOSKind: 'QuotelySquareWidget',
+    androidClass: 'SquareQuoteWidgetProvider',
   );
 
   const QuotelyWidgetKind({
@@ -60,6 +79,10 @@ enum QuotelyWidgetKind {
   final String androidClass;
 
   String get androidProvider => 'com.pranta.quotely.widget.$androidClass';
+
+  /// The kinds that display the Quote of the Day data, so redraw when it
+  /// changes.
+  static const quoteOfTheDayReaders = [qotd, minimal, square];
 
   static QuotelyWidgetKind? fromId(String? id) {
     for (final k in values) {

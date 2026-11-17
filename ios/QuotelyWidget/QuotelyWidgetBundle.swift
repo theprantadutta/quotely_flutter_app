@@ -10,5 +10,7 @@ struct QuotelyWidgetBundle: WidgetBundle {
     QuotelyWidget()
     SavedQuoteWidget()
     SceneWidget()
+    MinimalQuoteWidget()
+    SquareQuoteWidget()
   }
 }

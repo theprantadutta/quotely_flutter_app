@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quotely_flutter_app/components/quote_widget_bridge.dart';
 import 'package:quotely_flutter_app/dtos/media_title_dto.dart';
+import 'package:quotely_flutter_app/dtos/quote_of_the_day_dto.dart';
 import 'package:quotely_flutter_app/dtos/scene_quote_dto.dart';
 import 'package:quotely_flutter_app/services/home_widget_store.dart';
+import 'package:quotely_flutter_app/services/quote_widget_service.dart';
 import 'package:quotely_flutter_app/services/saved_widget_service.dart';
 import 'package:quotely_flutter_app/services/scene_widget_service.dart';
 import 'package:quotely_flutter_app/services/widget_analytics.dart';
@@ -176,6 +178,46 @@ void main() {
       final days = jsonDecode(plugin.data['saved_days']! as String) as Map;
       expect(days['quotes'], isEmpty);
       expect(plugin.redrawn, hasLength(1));
+    });
+
+    test('Quote of the Day data: the quote for all three widgets that '
+        'show it, with the small square\'s line and eyebrow', () async {
+      QuoteOfTheDayDto quote(String id, String content) => QuoteOfTheDayDto(
+        quoteOfTheDayId: 1,
+        quoteDate: DateTime.utc(2026, 11, 17),
+        quoteId: id,
+        author: ' Benjamin Franklin ',
+        content: content,
+        tags: const [],
+        authorSlug: 'benjamin-franklin',
+        length: content.length,
+        quoteDateAdded: DateTime.utc(2026),
+        quoteDateModified: DateTime.utc(2026),
+      );
+      await QuoteWidgetService.instance.update(
+        quote: quote('q-short', ' Well done is better than well said. '),
+      );
+      expect(plugin.data['qotd_text'], 'Well done is better than well said.');
+      expect(plugin.data['qotd_author'], 'Benjamin Franklin');
+      expect(plugin.data['qotd_short'], 'Well done is better than well said.');
+      expect(plugin.data['qotd_eyebrow'], 'TUE · NOV 17');
+      expect(plugin.data['glow_days'], isA<String>());
+      expect(plugin.redrawn, [
+        'com.pranta.quotely.widget.QuoteOfTheDayWidgetProvider',
+        'com.pranta.quotely.widget.MinimalQuoteWidgetProvider',
+        'com.pranta.quotely.widget.SquareQuoteWidgetProvider',
+      ]);
+
+      // Too long for the square: no line, so it shows the eyebrow and
+      // "Open today's quote".
+      await QuoteWidgetService.instance.update(
+        quote: quote(
+          'q-long',
+          'The best time to plant a tree was twenty years ago. The second '
+              'best time is now.',
+        ),
+      );
+      expect(plugin.data['qotd_short'], '');
     });
 
     test('Scene of the Day: the line, who said it, the title, and no '
