@@ -132,3 +132,8 @@ const kAppOpenCountKey = 'app-open-count';
 /// When this device's supporter first supported Quotely (ISO 8601), from the
 /// store's transaction date when known. Shown as "Supporter since ...".
 const kSupporterSinceKey = 'supporter-since';
+
+/// Facts game streak: JSON {count, best, last} where last is the local
+/// yyyy-MM-dd of the most recent completed round. The round itself
+/// ([kFactsGameProgressKey]) now also keeps "results", one bool per answer.
+const kFactsGameStreakKey = 'facts-game-streak';
