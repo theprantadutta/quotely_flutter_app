@@ -139,8 +139,14 @@ These mirror `QuoteOfTheDay`.
 |---|---|---|---|
 | `SceneOfTheDayJob` | daily 12:30 UTC | *(none, in-app only; stored for Today)* | n/a |
 | `FridayNightLinesJob` | Fridays 19:00 UTC | `friday_night_lines` | `/title/{titleId}?quote={sceneQuoteId}` |
-| New lines for a title | after `GenerateAiSceneJob` adds lines to an existing title | `title_{titleSlug}` | `/title/{titleId}` |
+| New lines for a title | `FollowedPeopleDigestJob`, daily 12:00 UTC, for lines added since its last run to a title that already existed | `title_{titleSlug}` | `/title/{titleId}` |
+| New quotes by an author | the same digest | `author_{authorSlug}` | `/author-detail/{authorSlug}` |
 
 FCM topic names allow `[a-zA-Z0-9-_.~%]`. Slugs are lowercase kebab-case, so
 `title_{slug}` is always valid. The app subscribes to `title_{slug}` when the
-user follows a title (and the "New from titles you follow" toggle is on).
+user follows a title (and the "New from titles you follow" toggle is on), and
+to `author_{slug}` when they follow an author (and "People you follow" is
+on); both need the master switch. The digest sends at most one push per
+title or author per day, quotes only lines that pass `ContentGuard` and are
+not spoilers, and runs at a daytime hour rather than when the night-time AI
+jobs save (see the API README, "New from people you follow").
