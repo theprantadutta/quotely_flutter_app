@@ -56,7 +56,7 @@ abstract final class ReviewPrompt {
       await Future<void>.delayed(settle);
       for (var i = 0; i < attempts; i++) {
         if (!context.mounted || _shownThisSession) return;
-        if (isCalm() && _nothingOnTop(context)) {
+        if (isCalm() && nothingOnTop(context)) {
           await _show(context);
           return;
         }
@@ -67,7 +67,8 @@ abstract final class ReviewPrompt {
     }
   }
 
-  static bool _nothingOnTop(BuildContext context) {
+  /// No sheet, dialog or pushed screen over [context]'s screen.
+  static bool nothingOnTop(BuildContext context) {
     final route = ModalRoute.of(context);
     if (route != null && !route.isCurrent) return false;
     final root = Navigator.maybeOf(context, rootNavigator: true);
