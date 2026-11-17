@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../navigation/routes.dart';
 import '../../riverpods/author_images_provider.dart';
 import '../../service_locator/init_service_locators.dart';
+import '../../services/app_analytics.dart';
 import '../../services/drift_collection_service.dart';
 import '../../services/drift_fact_service.dart';
 import '../../services/drift_quote_service.dart';
@@ -23,6 +24,7 @@ import 'share_card.dart';
 import 'thread_message.dart';
 
 void _log(String name, Map<String, Object> params) {
+  AppEvents.emit(name, params);
   if (!getIt.isRegistered<FirebaseAnalytics>()) return;
   getIt.get<FirebaseAnalytics>().logEvent(name: name, parameters: params);
 }
