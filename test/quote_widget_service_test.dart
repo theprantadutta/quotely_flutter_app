@@ -17,6 +17,26 @@ void main() {
     );
   });
 
+  group('the small square', () {
+    test('shows a quote whole only up to 60 characters', () {
+      final sixty = 'a' * 60;
+      expect(QuoteWidgetService.shortLine('  $sixty  '), sixty);
+      expect(QuoteWidgetService.shortLine('${sixty}b'), isNull);
+      expect(QuoteWidgetService.shortLine('   '), isNull);
+    });
+
+    test('its eyebrow is the quote\'s day, in any time zone', () {
+      expect(
+        QuoteWidgetService.eyebrow(DateTime.utc(2026, 11, 17)),
+        'TUE · NOV 17',
+      );
+      expect(
+        QuoteWidgetService.eyebrow(DateTime.utc(2026, 11, 17).toLocal()),
+        'TUE · NOV 17',
+      );
+    });
+  });
+
   group('coverRect', () {
     test('crops a tall poster to the middle band of a wide target', () {
       final r = QuoteWidgetService.coverRect(

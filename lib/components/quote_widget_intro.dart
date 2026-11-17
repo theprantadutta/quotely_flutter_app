@@ -11,16 +11,17 @@ import '../riverpods/today_quote_of_the_day_provider.dart';
 import '../service_locator/init_service_locators.dart';
 import '../services/drift_quote_service.dart';
 import '../services/home_widget_store.dart';
+import '../services/quote_widget_service.dart';
 import '../services/saved_widget_service.dart';
 import '../services/scene_widget_service.dart';
 import '../services/widget_analytics.dart';
 import 'thread/thread.dart';
 
 /// Telling people the home-screen widgets exist (Quote of the Day, From your
-/// saved, Scene of the Day):
+/// saved, Scene of the Day, Minimal quote and the small square):
 /// - [maybeShowQuoteWidgetIntro]: a one-time introduction on Today, from the
 ///   second app open on and only once onboarding is done;
-/// - [chooseQuoteWidget]: Settings → Home-screen widgets, the same choice of three;
+/// - [chooseQuoteWidget]: Settings → Home-screen widgets, the same choice;
 /// - [addQuoteWidget]: what "Add widget" does for the chosen one. Android
 ///   launchers that support it pin the widget directly; everywhere else (and
 ///   always on iOS, which has no API for it) a short sheet explains how to
@@ -77,7 +78,7 @@ Future<void> maybeShowQuoteWidgetIntro(BuildContext context) async {
   }
 }
 
-/// Settings → Home-screen widgets: pick one of the three, then add it.
+/// Settings → Home-screen widgets: pick one, then add it.
 Future<void> chooseQuoteWidget(BuildContext context) async {
   final kind = await showQSheet<QuotelyWidgetKind>(
     context,
@@ -194,6 +195,8 @@ const _sampleQuote = 'It always seems impossible until it’s done.';
 const _sampleAuthor = 'Nelson Mandela';
 const _savedHint = 'Save a quote you love and it will live here.';
 const _sampleScene = 'Keep your friends close, but your enemies closer.';
+const _sampleShort = 'Well done is better than well said.';
+const _openToday = 'Open today’s quote';
 
 String _blurb(QuotelyWidgetKind kind) => switch (kind) {
   QuotelyWidgetKind.qotd =>
@@ -202,6 +205,12 @@ String _blurb(QuotelyWidgetKind kind) => switch (kind) {
     'One of the quotes you saved, a different one each day. Works offline.',
   QuotelyWidgetKind.scene =>
     "Today's scene line, over its title's poster, with who said it.",
+  QuotelyWidgetKind.minimal =>
+    "Just today's quote and who said it, in the serif. Resize it from a "
+        'slim strip to a big card; the words fill the space.',
+  QuotelyWidgetKind.square =>
+    "A small square with the Quotely mark and today's quote when it is "
+        'short, or a tap away when it is not.',
 };
 
 /// The introduction (on Today) and You's chooser: the three widgets as small
@@ -231,21 +240,28 @@ class _ChooserSheetState extends State<_ChooserSheet> {
             Text('NEW · HOME-SCREEN WIDGETS', style: qt.overline),
             const SizedBox(height: 14),
           ],
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final k in QuotelyWidgetKind.values) ...[
-                if (k != QuotelyWidgetKind.values.first)
-                  const SizedBox(width: 10),
-                Expanded(
-                  child: _ChoiceTile(
-                    kind: k,
-                    selected: k == _kind,
-                    onTap: () => setState(() => _kind = k),
+          // Five tiles don't fit across a phone at a readable size, so they
+          // scroll sideways; about three show whole, the next one peeks.
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final k in QuotelyWidgetKind.values) ...[
+                  if (k != QuotelyWidgetKind.values.first)
+                    const SizedBox(width: 10),
+                  SizedBox(
+                    width: _tileWidth,
+                    child: _ChoiceTile(
+                      kind: k,
+                      selected: k == _kind,
+                      onTap: () => setState(() => _kind = k),
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
           const SizedBox(height: 20),
           if (widget.intro) ...[
@@ -273,6 +289,9 @@ class _ChooserSheetState extends State<_ChooserSheet> {
     );
   }
 }
+
+/// Width of a chooser tile: about three to a phone's sheet.
+const _tileWidth = 96.0;
 
 class _ChoiceTile extends StatelessWidget {
   final QuotelyWidgetKind kind;
@@ -345,6 +364,24 @@ class QuoteWidgetPreview extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scene = ref.watch(sceneOfTheDayProvider).value?.sceneQuote;
+    if (kind == QuotelyWidgetKind.minimal || kind == QuotelyWidgetKind.square) {
+      final quote = ref.watch(fetchTodayQuoteOfTheDayProvider).value;
+      final text = quote?.content.trim() ?? _sampleShort;
+      final author = quote == null ? 'Benjamin Franklin' : quote.author.trim();
+      return Semantics(
+        label: '${kind.label} widget preview',
+        excludeSemantics: true,
+        child: kind == QuotelyWidgetKind.minimal
+            ? _MinimalLikeness(text: text, author: author, small: small)
+            : _SquareLikeness(
+                line: QuoteWidgetService.shortLine(text),
+                eyebrow: QuoteWidgetService.eyebrow(
+                  quote?.quoteDate ?? DateTime.now(),
+                ),
+                small: small,
+              ),
+      );
+    }
     final (eyebrow, text, footer, poster) = switch (kind) {
       QuotelyWidgetKind.qotd => () {
         final quote = ref.watch(fetchTodayQuoteOfTheDayProvider).value;
@@ -373,6 +410,9 @@ class QuoteWidgetPreview extends ConsumerWidget {
             : '${scene.characterName}, ${scene.titleName}',
         scene?.posterUrl,
       ),
+      // Drawn above.
+      QuotelyWidgetKind.minimal ||
+      QuotelyWidgetKind.square => ('', '', null, null),
     };
     return Semantics(
       label: '${kind.label} widget preview',
@@ -469,6 +509,149 @@ class _Likeness extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The frame every likeness shares: rounded, with a hairline border,
+/// [background] under [child].
+class _Frame extends StatelessWidget {
+  final Widget background;
+  final Widget child;
+  final bool small;
+
+  const _Frame({
+    required this.background,
+    required this.child,
+    required this.small,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = small ? 16.0 : 22.0;
+    return Container(
+      height: small ? null : 150,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: context.q.line),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius - 1),
+        child: Stack(fit: StackFit.expand, children: [background, child]),
+      ),
+    );
+  }
+}
+
+/// Minimal quote: the quote and its author on the plain page, nothing else.
+class _MinimalLikeness extends StatelessWidget {
+  final String text;
+  final String author;
+  final bool small;
+
+  const _MinimalLikeness({
+    required this.text,
+    required this.author,
+    required this.small,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    final qt = context.qt;
+    return _Frame(
+      small: small,
+      background: ColoredBox(color: t.surf),
+      child: Padding(
+        padding: small
+            ? const EdgeInsets.all(9)
+            : const EdgeInsets.fromLTRB(18, 14, 18, 14),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: Text(
+                text,
+                maxLines: small ? 4 : 3,
+                overflow: TextOverflow.ellipsis,
+                style: qt.quoteCompact.copyWith(
+                  fontSize: small ? 11 : 21,
+                  height: small ? 1.1 : null,
+                ),
+              ),
+            ),
+            if (author.isNotEmpty) ...[
+              SizedBox(height: small ? 4 : 8),
+              Text(
+                '— $author',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: qt.caption.copyWith(fontSize: small ? 7 : null),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The small square: the mark over the day's glow, then the short quote, or
+/// the date and "Open today's quote".
+class _SquareLikeness extends StatelessWidget {
+  final String? line;
+  final String eyebrow;
+  final bool small;
+
+  const _SquareLikeness({
+    required this.line,
+    required this.eyebrow,
+    required this.small,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.q;
+    final qt = context.qt;
+    final quote = line;
+    final body = Padding(
+      padding: EdgeInsets.all(small ? 9 : 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '“',
+            style: qt.quoteBody.copyWith(
+              color: t.ink,
+              fontSize: small ? 30 : 48,
+              height: 0.9,
+            ),
+          ),
+          const Spacer(),
+          if (quote == null)
+            Text(
+              eyebrow,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: qt.overline.copyWith(fontSize: small ? 6 : 9),
+            ),
+          Text(
+            quote ?? _openToday,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: qt.quoteCompact.copyWith(
+              fontSize: small ? 11 : 19,
+              height: small ? 1.1 : null,
+            ),
+          ),
+        ],
+      ),
+    );
+    return _Frame(
+      small: small,
+      background: DayGlow(day: DateTime.now()),
+      child: body,
     );
   }
 }

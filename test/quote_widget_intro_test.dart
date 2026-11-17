@@ -101,8 +101,9 @@ void main() {
       expect(find.text('Put Quotely on your home screen'), findsOneWidget);
       expect(find.text('Add widget'), findsOneWidget);
       expect(find.text('Not now'), findsOneWidget);
-      // The preview uses today's quote.
-      expect(find.text('Nothing will work unless you do.'), findsOneWidget);
+      // The previews use today's quote: Quote of the Day, Minimal quote, and
+      // the small square (it is short enough to show whole there).
+      expect(find.text('Nothing will work unless you do.'), findsNWidgets(3));
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(kQuoteWidgetIntroShownKey), isTrue);
@@ -176,7 +177,7 @@ void main() {
       expect(find.text('Add the widget'), findsNothing);
     });
 
-    testWidgets('offers all three widgets, and adds the one chosen', (
+    testWidgets('offers all five widgets, and adds the one chosen', (
       tester,
     ) async {
       final args = <Object?>[];
@@ -188,6 +189,8 @@ void main() {
       expect(find.text('Quote of the Day'), findsOneWidget);
       expect(find.text('From your saved'), findsOneWidget);
       expect(find.text('Scene of the Day'), findsOneWidget);
+      expect(find.text('Minimal quote'), findsOneWidget);
+      expect(find.text('Today, small'), findsOneWidget);
       // Nothing saved yet: the saved preview shows the widget's hint.
       expect(
         find.text('Save a quote you love and it will live here.'),
@@ -204,6 +207,29 @@ void main() {
       expect(
         (args.last! as Map)['qualifiedAndroidName'],
         'com.pranta.quotely.widget.SavedQuoteWidgetProvider',
+      );
+    });
+  });
+
+  group('new styles', () {
+    testWidgets('Minimal quote and the small square can be added', (
+      tester,
+    ) async {
+      final args = <Object?>[];
+      _mockPlugin(pinSupported: true, args: args);
+      SharedPreferences.setMockInitialValues(_prefs({kAppOpenCountKey: 1}));
+      await tester.pumpWidget(_host());
+      await _openApp(tester);
+
+      await tester.ensureVisible(find.text('Today, small'));
+      await tester.tap(find.text('Today, small'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Quotely mark'), findsOneWidget);
+      await tester.tap(find.text('Add widget'));
+      await tester.pumpAndSettle();
+      expect(
+        (args.last! as Map)['qualifiedAndroidName'],
+        'com.pranta.quotely.widget.SquareQuoteWidgetProvider',
       );
     });
   });

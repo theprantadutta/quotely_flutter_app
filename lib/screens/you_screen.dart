@@ -187,7 +187,8 @@ class _YouScreenState extends ConsumerState<YouScreen> {
                 GroupedRow(
                   title: 'Home-screen widgets',
                   description:
-                      'Quote of the Day, your saved quotes, or a scene',
+                      'Today’s quote three ways, your saved quotes, or a '
+                      'scene',
                   chevron: true,
                   onTap: () => chooseQuoteWidget(context),
                 ),
