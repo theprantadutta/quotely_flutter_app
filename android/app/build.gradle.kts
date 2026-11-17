@@ -125,6 +125,9 @@ dependencies {
     // declared here because the app's own code is written against it.
     implementation("androidx.glance:glance-appwidget:1.2.0")
 
+    // Plain JVM tests of the widgets' arithmetic (src/test/kotlin).
+    testImplementation("junit:junit:4.13.2")
+
     implementation("androidx.window:window:1.3.0")
     // For Java-friendly APIs to register and unregister callbacks
     implementation("androidx.window:window-java:1.3.0")
