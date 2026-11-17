@@ -12,6 +12,7 @@ import '../service_locator/init_service_locators.dart';
 import 'drift_collection_service.dart';
 import 'home_widget_store.dart';
 import 'saved_widget_service.dart';
+import 'retractions.dart';
 
 /// One saved thing in the Saved notebook.
 @immutable
@@ -293,6 +294,8 @@ class SavedFeedService {
       final at = e.savedAt;
       if (at != null && at.isAfter(cutoff)) continue;
       if (e.message.scene?.isSpoiler ?? false) continue;
+      // Never feature a line the checks found isn't genuine.
+      if (Retractions.isRetracted(e.key)) continue;
       byKey[e.key] = e;
       pool.add(
         SavedWidgetQuote(

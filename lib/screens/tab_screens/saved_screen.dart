@@ -12,6 +12,7 @@ import '../../service_locator/init_service_locators.dart';
 import '../../services/drift_collection_service.dart';
 import '../../services/saved_feed_service.dart';
 import '../../state_providers/scene_state.dart';
+import '../../services/retractions.dart';
 
 /// Saved, as a personal notebook: one calm, chronological feed of every
 /// saved quote, scene and fact under "Saved Tuesday" headers, a "Revisit"
@@ -41,9 +42,15 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
   bool _loggedRevisit = false;
 
+  void _onRetractions() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
+    Retractions.current.addListener(_onRetractions);
+    unawaited(Retractions.load());
     _sub = SavedFeedService.watch().listen(
       (feed) => setState(() {
         _feed = feed;
@@ -61,6 +68,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
 
   @override
   void dispose() {
+    Retractions.current.removeListener(_onRetractions);
     _sub?.cancel();
     _search.dispose();
     _searchFocus.dispose();
@@ -433,6 +441,8 @@ class _SavedCard extends ConsumerWidget {
     final m = entry.message;
     final saved = watchIsSaved(ref, m);
     final scene = m.scene;
+    // Hidden on the server as not genuine: kept (it's theirs) but marked.
+    final retraction = Retractions.of(entry.key);
     final text = Text(
       m.text,
       style: context.qt.quoteCompact.copyWith(
@@ -493,6 +503,21 @@ class _SavedCard extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                           style: context.qt.label,
                         ),
+                        if (retraction != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2, bottom: 2),
+                            child: Text(
+                              retraction.note(
+                                    author: m.kind == MessageKind.quote
+                                        ? m.sender
+                                        : null,
+                                  ) +
+                                  (retraction.replacementId != null
+                                      ? ' Tap for a verified one.'
+                                      : ''),
+                              style: context.qt.label.copyWith(color: t.accInk),
+                            ),
+                          ),
                         if (tags.isNotEmpty)
                           Text(
                             tags.join(' · '),

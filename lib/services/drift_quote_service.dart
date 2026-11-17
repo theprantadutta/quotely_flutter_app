@@ -152,6 +152,16 @@ class DriftQuoteService {
         .go();
   }
 
+  /// Drops local copies of quotes the backend hid (not genuine), except
+  /// saved ones: those stay and are marked instead (see Retractions).
+  static Future<int> deleteUnsaved(Set<String> ids) async {
+    if (ids.isEmpty) return 0;
+    final db = getIt.get<AppDatabase>();
+    return (db.delete(
+      db.quotes,
+    )..where((q) => q.isFavorite.equals(false) & q.id.isIn(ids.toList()))).go();
+  }
+
   // Helper function to get paginated quotes from local database
   static Future<List<Quote>> getLocalQuotesWithPagination({
     required int pageNumber,

@@ -353,6 +353,16 @@ class DriftFactService {
 
   /// After a full download: drops local facts the backend no longer has,
   /// except saved ones.
+  /// Drops local copies of facts the backend hid (not accurate), except
+  /// saved ones: those stay and are marked instead (see Retractions).
+  static Future<int> deleteUnsaved(Set<int> ids) async {
+    if (ids.isEmpty) return 0;
+    final db = getIt.get<AppDatabase>();
+    return (db.delete(
+      db.facts,
+    )..where((f) => f.isFavorite.equals(false) & f.id.isIn(ids.toList()))).go();
+  }
+
   static Future<int> pruneMissing(Set<int> keepIds) async {
     final db = getIt.get<AppDatabase>();
     return (db.delete(db.facts)..where(

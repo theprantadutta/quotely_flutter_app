@@ -17,6 +17,7 @@ import '../services/quote_widget_service.dart';
 import '../services/saved_widget_service.dart';
 import '../services/scene_widget_service.dart';
 import '../services/widget_analytics.dart';
+import '../services/retractions.dart';
 
 /// Connects the app to its home-screen widgets (Quote of the Day, From your
 /// saved, Scene of the Day):
@@ -50,6 +51,8 @@ class _QuoteWidgetBridgeState extends ConsumerState<QuoteWidgetBridge> {
   void initState() {
     super.initState();
     if (!HomeWidgetStore.supported) return;
+    Retractions.current.addListener(_onRetractions);
+    unawaited(Retractions.load());
     _lifecycle = AppLifecycleListener(onHide: () => _syncAll(force: true));
     ref.listenManual(fetchTodayQuoteOfTheDayProvider, (_, next) {
       if (next.hasValue) _syncQuote();
@@ -85,6 +88,7 @@ class _QuoteWidgetBridgeState extends ConsumerState<QuoteWidgetBridge> {
 
   @override
   void dispose() {
+    Retractions.current.removeListener(_onRetractions);
     _lifecycle?.dispose();
     _clicks?.cancel();
     _saved?.cancel();
@@ -129,8 +133,14 @@ class _QuoteWidgetBridgeState extends ConsumerState<QuoteWidgetBridge> {
   void _syncSaved({bool force = false}) {
     final saved = _savedQuotes;
     if (saved == null) return;
-    SavedWidgetService.instance.update(saved, force: force);
+    // Never put a line the checks found isn't genuine on the home screen.
+    SavedWidgetService.instance.update([
+      for (final q in saved)
+        if (!Retractions.isRetracted('quote:${q.id}')) q,
+    ], force: force);
   }
+
+  void _onRetractions() => _syncSaved(force: true);
 
   void _openedFromWidget(Uri? uri) {
     if (uri == null) return;

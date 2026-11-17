@@ -156,4 +156,9 @@ const kStarterPathKey = 'starter-path';
 
 /// Set once the one-time "Too many notifications?" sheet has been shown to an
 /// existing install, whatever the answer.
+/// Quotes and facts the backend hid as not genuine: JSON
+/// `{"quote:ID": {"r": reason, "by": probable author, "rep": replacement id},
+///  "fact:ID": {"r": reason}}` plus "at" (last sync, ISO). See Retractions.
+const kRetractionsKey = 'retractions:v1';
+
 const kNotificationTrimShownKey = 'notification-trim-shown';

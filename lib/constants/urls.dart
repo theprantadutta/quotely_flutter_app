@@ -58,3 +58,4 @@ const kGetAllFridayNightLines = 'FridayNightLines/GetAllFridayNightLines';
 
 // Upcoming releases tied to titles with lines ("Before Avengers: Doomsday")
 const kGetComingSoon = 'Spotlight/GetComingSoon';
+const kGetRetractions = 'Retractions/GetAll';

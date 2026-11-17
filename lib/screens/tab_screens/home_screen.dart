@@ -43,6 +43,7 @@ import '../../state_providers/scene_state.dart';
 import '../../state_providers/user_interests.dart';
 import '../../util/pagination_seed.dart';
 import '../../util/profanity.dart';
+import '../../services/retractions.dart';
 
 enum _Tab { today, forYou }
 
@@ -109,7 +110,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Local first: screens read the local database; this keeps it full.
       // At most once a day, respecting Offline library's Wi-Fi only switch.
       await Future<void>.delayed(const Duration(seconds: 4));
-      unawaited(LibrarySync.maybeRunDaily());
+      // Then drop or mark anything the backend hid as not genuine.
+      unawaited(
+        LibrarySync.maybeRunDaily().then((_) => Retractions.maybeSync()),
+      );
     });
   }
 
