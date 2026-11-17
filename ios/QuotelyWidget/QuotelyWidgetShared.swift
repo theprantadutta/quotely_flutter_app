@@ -40,16 +40,48 @@ enum FontName {
 }
 
 enum QuoteFont {
+  // Fixed sizes: a widget sizes its own text to its frame (WidgetCard), so
+  // Dynamic Type scaling on top would push it out of the frame and the
+  // shrink-to-fit would then make it tiny.
+
   /// Instrument Serif when it loaded, otherwise the system serif (New York).
   static func serif(size: CGFloat) -> Font {
     if UIFont(name: FontName.serif, size: size) != nil {
-      return .custom(FontName.serif, size: size, relativeTo: .title3)
+      return .custom(FontName.serif, fixedSize: size)
     }
     return .system(size: size, weight: .regular, design: .serif)
   }
 
   static func mono(size: CGFloat) -> Font {
-    .custom(FontName.mono, size: size, relativeTo: .caption2)
+    .custom(FontName.mono, fixedSize: size)
+  }
+}
+
+/// Sizes for a widget of a given frame and quote. The quote is as large as
+/// the space allows for its length (an estimate from Instrument Serif's
+/// average glyph width and line height), so a short line fills a big widget
+/// and a long one stays readable; `minimumScaleFactor` only trims what the
+/// estimate misses. The eyebrow, footer and padding follow the shorter side.
+struct WidgetTypeScale {
+  let quote: CGFloat
+  let eyebrow: CGFloat
+  let footer: CGFloat
+  let padding: CGFloat
+
+  init(size: CGSize, text: String, hasFooter: Bool, small: Bool) {
+    let short = min(size.width, size.height)
+    func scaled(_ perShort: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat {
+      min(max(short * perShort, lo), hi)
+    }
+    padding = scaled(0.1, 12, 22)
+    eyebrow = scaled(0.06, 9, 12)
+    footer = scaled(0.075, 11, 15)
+    let width = max(1, size.width - padding * 2)
+    let height = max(1, size.height - padding * 2 - eyebrow * 1.6 - (hasFooter ? footer * 1.6 : 0) - 12)
+    // Area a glyph takes at size 1pt: ~0.45 wide x ~1.2 tall; fill ~70%.
+    let chars = CGFloat(max(text.count, 12))
+    let estimate = (0.7 * width * height / (chars * 0.45 * 1.2)).squareRoot()
+    quote = min(max(estimate, 12), small ? 30 : 40)
   }
 }
 
@@ -243,10 +275,20 @@ struct WidgetCard: View {
   private var isSmall: Bool { family == .systemSmall }
 
   var body: some View {
+    GeometryReader { geo in
+      card(WidgetTypeScale(
+        size: geo.size, text: text,
+        hasFooter: !(footer ?? "").isEmpty, small: isSmall))
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(Text(accessibilityText))
+  }
+
+  private func card(_ type: WidgetTypeScale) -> some View {
     let palette = Palette(scheme)
-    VStack(alignment: .leading, spacing: 0) {
+    return VStack(alignment: .leading, spacing: 0) {
       Text(eyebrow)
-        .font(QuoteFont.mono(size: 9))
+        .font(QuoteFont.mono(size: type.eyebrow))
         .tracking(1.5)
         .foregroundColor(palette.mute)
         .lineLimit(1)
@@ -254,11 +296,10 @@ struct WidgetCard: View {
       Spacer(minLength: 6)
 
       Text(text)
-        .font(QuoteFont.serif(size: isSmall ? 18 : 21))
+        .font(QuoteFont.serif(size: type.quote))
         .foregroundColor(palette.ink)
-        .lineLimit(isSmall ? 7 : 5)
-        // Long lines shrink to fit before they are cut short.
-        .minimumScaleFactor(0.55)
+        // Sized for the frame already; this only trims an underestimate.
+        .minimumScaleFactor(0.75)
         .truncationMode(.tail)
         .layoutPriority(1)
 
@@ -266,16 +307,14 @@ struct WidgetCard: View {
 
       if let footer, !footer.isEmpty {
         Text("\u{2014} \(footer)")
-          .font(.system(size: 11.5, weight: .medium))
+          .font(.system(size: type.footer, weight: .medium))
           .foregroundColor(palette.mute)
           .lineLimit(1)
           .truncationMode(.tail)
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-    .padding(isSmall ? 14 : 16)
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(Text(accessibilityText))
+    .padding(type.padding)
   }
 }
 

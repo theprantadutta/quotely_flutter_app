@@ -137,3 +137,24 @@ the file.
   needed first).
 - All Dart code. Accessibility labels, the tablet layout, the poster fallback,
   Ask and Maintenance mode are shared Dart code with no iOS-specific setup.
+
+## Next Mac session: widget text sizing (2026-11-17)
+
+Users reported widget text too small (and sometimes too big) for the widget's
+size. `ios/QuotelyWidget/QuotelyWidgetShared.swift` changed on Windows and has
+**not been compiled**:
+
+- `QuoteFont` now uses `.custom(_, fixedSize:)` instead of `relativeTo:`, so
+  Dynamic Type no longer pushes the text out of the frame. (That made
+  `minimumScaleFactor` shrink it to as little as 55%.)
+- `WidgetCard` reads its frame with `GeometryReader`, and the new
+  `WidgetTypeScale` sizes the quote from the frame and the quote's length
+  (12 to 30pt in small, up to 40pt in medium). The eyebrow, footer and padding
+  scale with the shorter side. The fixed `lineLimit` is gone, and
+  `minimumScaleFactor` is 0.75.
+
+To do: build the QuotelyWidget target, then check every widget in small and
+medium with a short quote (about 5 words) and a long one (about 30 words), in
+light and dark, with system text size at default and at the largest. Text
+should fill the card without being clipped. Tune the constants in
+`WidgetTypeScale` if needed.
