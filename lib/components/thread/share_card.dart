@@ -59,18 +59,40 @@ Future<Uint8List?> renderShareCard(
   ThreadMessage m, {
   String? eyebrow,
 }) async {
-  final theme = Theme.of(context);
-  final overlay = Overlay.of(context, rootOverlay: true);
+  final bg = await loadShareBackground(
+    context,
+    posterUrl: () => sharePosterUrlFor(context, m),
+  );
+  if (bg == null || !context.mounted) return null;
+  return captureShareImage(
+    context,
+    ShareCard(
+      message: m,
+      eyebrow: shareEyebrowFor(m, hint: eyebrow),
+      backdrop: bg.backdrop,
+      poster: bg.poster,
+    ),
+  );
+}
 
+/// What a share card is painted on: Appearance → Background, and the
+/// poster already loaded when that is Poster (null if it didn't arrive).
+typedef ShareBackground = ({BackdropStyle backdrop, ImageProvider? poster});
+
+/// Reads Appearance → Background and, for Poster, loads the image from
+/// [posterUrl] (with a timeout) along with the brand mark, so the capture
+/// never sees a blank frame. Null if [context] went away meanwhile.
+Future<ShareBackground?> loadShareBackground(
+  BuildContext context, {
+  required Future<String?> Function() posterUrl,
+}) async {
   final backdrop = ProviderScope.containerOf(
     context,
     listen: false,
   ).read(appearanceProvider).backdrop;
 
   ImageProvider? poster;
-  final url = backdrop == BackdropStyle.poster
-      ? await sharePosterUrlFor(context, m)
-      : null;
+  final url = backdrop == BackdropStyle.poster ? await posterUrl() : null;
   if (!context.mounted) return null;
   final pending = <Future<void>>[
     precacheImage(
@@ -91,7 +113,14 @@ Future<Uint8List?> renderShareCard(
   }
   await Future.wait(pending);
   if (!context.mounted) return null;
+  return (backdrop: backdrop, poster: poster);
+}
 
+/// Lays [card] (a [ShareCard.size] widget) out offscreen in the app's
+/// theme and returns it as PNG bytes at 1080 wide, or null on failure.
+Future<Uint8List?> captureShareImage(BuildContext context, Widget card) async {
+  final theme = Theme.of(context);
+  final overlay = Overlay.of(context, rootOverlay: true);
   final key = GlobalKey();
   final entry = OverlayEntry(
     builder: (context) => Positioned(
@@ -109,15 +138,7 @@ Future<Uint8List?> renderShareCard(
                 data: MediaQuery.of(
                   context,
                 ).copyWith(textScaler: TextScaler.noScaling),
-                child: RepaintBoundary(
-                  key: key,
-                  child: ShareCard(
-                    message: m,
-                    eyebrow: shareEyebrowFor(m, hint: eyebrow),
-                    backdrop: backdrop,
-                    poster: poster,
-                  ),
-                ),
+                child: RepaintBoundary(key: key, child: card),
               ),
             ),
           ),
@@ -203,13 +224,7 @@ class ShareCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              switch (backdrop) {
-                BackdropStyle.plain => ColoredBox(color: t.bg),
-                BackdropStyle.poster when poster != null => _Wash(
-                  poster: poster!,
-                ),
-                _ => DayGlow(day: day ?? DateTime.now()),
-              },
+              ShareCardBackground(backdrop: backdrop, poster: poster, day: day),
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 34, 30, 26),
                 child: Column(
@@ -243,7 +258,7 @@ class ShareCard extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 26),
-                    _Footer(),
+                    const ShareCardMark(),
                   ],
                 ),
               ),
@@ -330,8 +345,11 @@ class _FittedLine extends StatelessWidget {
   }
 }
 
-/// The Quotely mark and wordmark, with the tagline across from it.
-class _Footer extends StatelessWidget {
+/// The Quotely mark and wordmark, with the tagline across from it: the
+/// foot of every share card.
+class ShareCardMark extends StatelessWidget {
+  const ShareCardMark({super.key});
+
   @override
   Widget build(BuildContext context) {
     final t = context.q;
@@ -390,4 +408,29 @@ class _Wash extends StatelessWidget {
       ],
     );
   }
+}
+
+/// A share card's background per Appearance → Background: the poster
+/// washed into the page colour, the day's glow, or the plain page colour.
+/// Poster without a [poster] paints the glow.
+class ShareCardBackground extends StatelessWidget {
+  final BackdropStyle backdrop;
+  final ImageProvider? poster;
+
+  /// Picks the glow hue; defaults to today.
+  final DateTime? day;
+
+  const ShareCardBackground({
+    super.key,
+    required this.backdrop,
+    this.poster,
+    this.day,
+  });
+
+  @override
+  Widget build(BuildContext context) => switch (backdrop) {
+    BackdropStyle.plain => ColoredBox(color: context.q.bg),
+    BackdropStyle.poster when poster != null => _Wash(poster: poster!),
+    _ => DayGlow(day: day ?? DateTime.now()),
+  };
 }
