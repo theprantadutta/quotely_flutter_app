@@ -314,19 +314,19 @@ object WidgetArt {
         // Proportions follow the shorter side (dp), within readable bounds.
         val shortDp = min(sizeDp.width, sizeDp.height)
         fun scaled(perShort: Float, lo: Float, hi: Float) = (shortDp * perShort).coerceIn(lo, hi)
-        val side = dp(scaled(0.13f, 14f, 24f))
-        val gap = dp(scaled(0.05f, 6f, 10f))
+        val side = dp(scaled(0.1f, 14f, 20f))
+        val gap = dp(scaled(0.035f, 5f, 8f))
 
         val left = side
         val right = width - side
         val contentWidth = max(1, (right - left).toInt())
-        var top = dp(scaled(0.12f, 12f, 22f))
-        var bottom = height - dp(scaled(0.12f, 12f, 22f))
+        var top = dp(scaled(0.085f, 12f, 18f))
+        var bottom = height - dp(scaled(0.085f, 12f, 18f))
 
         // Eyebrow.
         val eyebrow = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             typeface = fonts(context).mono
-            textSize = sp(scaled(0.075f, 9f, 12f))
+            textSize = sp(scaled(0.05f, 9f, 11f))
             letterSpacing = 0.16f
             color = Color.WHITE
             alpha = SECONDARY_ALPHA
@@ -342,7 +342,7 @@ object WidgetArt {
         if (!footer.isNullOrEmpty()) {
             val author = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                 typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-                textSize = sp(scaled(0.095f, 11.5f, 15f))
+                textSize = sp(scaled(0.06f, 11.5f, 13.5f))
                 color = Color.WHITE
                 alpha = SECONDARY_ALPHA
             }

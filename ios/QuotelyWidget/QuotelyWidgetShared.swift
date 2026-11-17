@@ -73,9 +73,9 @@ struct WidgetTypeScale {
     func scaled(_ perShort: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat {
       min(max(short * perShort, lo), hi)
     }
-    padding = scaled(0.1, 12, 22)
-    eyebrow = scaled(0.06, 9, 12)
-    footer = scaled(0.075, 11, 15)
+    padding = scaled(0.085, 12, 18)
+    eyebrow = scaled(0.05, 9, 11)
+    footer = scaled(0.06, 11, 13)
     let width = max(1, size.width - padding * 2)
     let height = max(1, size.height - padding * 2 - eyebrow * 1.6 - (hasFooter ? footer * 1.6 : 0) - 12)
     // Area a glyph takes at size 1pt: ~0.45 wide x ~1.2 tall; fill ~70%.
