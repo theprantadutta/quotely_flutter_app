@@ -3,6 +3,11 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
+    // The home-screen widgets are Glance (Compose) widgets. Only the Compose
+    // compiler is added: Kotlin itself is still applied by the Flutter Gradle
+    // Plugin (android.builtInKotlin=false, see gradle.properties), and the
+    // compiler plugin attaches to it whichever is applied first.
+    id("org.jetbrains.kotlin.plugin.compose")
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
@@ -36,6 +41,11 @@ android {
     // Pinned rather than flutter.ndkVersion (28.2.13676358 on Flutter 3.47.1).
     // Note this no longer auto-tracks the Flutter version - revisit on upgrade.
     ndkVersion = "30.0.14904198"
+
+    // Compose for the Glance home-screen widgets (widget/ArtWidget.kt).
+    buildFeatures {
+        compose = true
+    }
 
     compileOptions {
         // Flag to enable support for the new language APIs
@@ -109,6 +119,11 @@ dependencies {
     // It already resolves transitively; pinning keeps the compile classpath
     // from ever drifting below the API we call.
     implementation("androidx.core:core:1.18.0")
+
+    // The home-screen widgets. home_widget 0.10.0 already brings this version
+    // in (as an api dependency, with its Glance receiver and state); it is
+    // declared here because the app's own code is written against it.
+    implementation("androidx.glance:glance-appwidget:1.2.0")
 
     implementation("androidx.window:window:1.3.0")
     // For Java-friendly APIs to register and unregister callbacks
