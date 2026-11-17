@@ -356,6 +356,30 @@ Future<void> showAboutQuotely(BuildContext context) async {
                 ),
               ),
             ),
+            // Sourced quotes (Wikiquote) and author photos (Wikimedia
+            // Commons) are CC BY-SA, which asks for this credit; character
+            // art comes from community Fandom wikis.
+            Semantics(
+              link: true,
+              child: GestureDetector(
+                onTap: () => launchUrl(
+                  Uri.parse('https://en.wikiquote.org'),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'Quotes from Wikiquote and author photos from Wikimedia '
+                    'Commons (CC BY-SA). Character art from Fandom wikis.',
+                    textAlign: TextAlign.center,
+                    style: sheet.qt.caption.copyWith(
+                      color: t.accInk,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 6),
             Text(
               '© $year Pranta Dutta. All rights reserved.',
