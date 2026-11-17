@@ -11,6 +11,10 @@ class Quotes extends Table {
   DateTimeColumn get dateAdded => dateTime()();
   DateTimeColumn get dateModified => dateTime()();
 
+  /// When the person saved it (hearted it). Null when not saved, and for
+  /// anything saved before schema v4, when the app didn't record the time.
+  DateTimeColumn get savedAt => dateTime().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
