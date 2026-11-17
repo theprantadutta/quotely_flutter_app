@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The day's glow before Android 12 (ArtWidget.Glow). From Android 12 Glance
+     tints the glow mask with a day/night ColorProvider; before that it can
+     only resolve one colour when it draws. Here the same mask is tinted
+     once for paper and once for night in Kotlin, and only the layer for the
+     current system theme is shown (the visibility integers in values/ and
+     values-night/quotely_widgets.xml), so it switches without a redraw.
+     Only RemoteViews-safe classes are used. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_glow_light"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:visibility="@integer/widget_glow_light_visibility" />
+
+    <ImageView
+        android:id="@+id/widget_glow_dark"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:visibility="@integer/widget_glow_dark_visibility" />
+</FrameLayout>

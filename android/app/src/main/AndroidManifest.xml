@@ -91,7 +91,9 @@
 
         <!-- Quote of the Day home-screen widget. It displays what the app
              saves through home_widget (lib/services/quote_widget_service.dart);
-             see widget/QuoteOfTheDayWidgetProvider.kt. -->
+             see widget/QuoteOfTheDayWidgetProvider.kt. The three widgets are
+             Glance widgets (widget/ArtWidget.kt); their receivers keep the
+             class names Dart updates and pins (QuotelyWidgetKind). -->
         <receiver
             android:name=".widget.QuoteOfTheDayWidgetProvider"
             android:exported="false"

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The page colour at 70% (72% at night) over the poster, as PosterWash
-     does in the app. Rounded itself so it matches before Android 12, where
-     clipToOutline on the root is ignored. -->
+     does in the app, for the live widgets before Android 12 (ArtWidget; from
+     12 on Glance fills it with a day/night colour). Rounded itself because
+     Glance can't clip to the corners before Android 12. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/qotd_widget_wash" />

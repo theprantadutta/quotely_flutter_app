@@ -13,32 +13,26 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 /**
- * The "From your saved" home-screen widget: one of the person's own saved
- * quotes, a different one each day, over the page with the day's glow.
- * Entirely offline.
+ * The "From your saved" home-screen widget's receiver. The class name is the
+ * one Dart updates and pins (QuotelyWidgetKind.saved), so it is kept.
  *
- * The app (SavedWidgetService in Dart) saves the picks for the next 30 days,
- * so the quote can turn over at midnight without the app: this only indexes
- * today into them, wrapping round if the app hasn't run for longer. It
- * redraws at the first moment the device is awake after local midnight,
- * through an inexact, non-waking alarm (no WorkManager, no exact-alarm
- * permission), re-armed on every update. Reboots are covered because the
- * system sends every widget an update after boot.
- *
- * A tap opens the Saved tab.
+ * It redraws the widget at the first moment the device is awake after local
+ * midnight, through an inexact, non-waking alarm (no WorkManager, no
+ * exact-alarm permission), re-armed on every update. Reboots are covered
+ * because the system sends every widget an update after boot.
  */
-class SavedQuoteWidgetProvider : ArtWidgetProvider() {
+class SavedQuoteWidgetProvider : ArtWidgetReceiver<SavedQuoteWidget>() {
+    override val glanceAppWidget = SavedQuoteWidget()
 
+    /** QuotelyWidgetKind.saved.id, for analytics. */
     override val kind = "saved"
-    override val launchUri = "quotely://widget/saved?homeWidget&kind=saved"
 
     override fun onUpdate(
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetIds: IntArray,
-            widgetData: SharedPreferences,
     ) {
-        super.onUpdate(context, appWidgetManager, appWidgetIds, widgetData)
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
         scheduleMidnight(context)
     }
 
@@ -50,6 +44,50 @@ class SavedQuoteWidgetProvider : ArtWidgetProvider() {
             // Nothing scheduled.
         }
     }
+
+    /** Redraw once the day has turned (a minute past midnight, inexact). */
+    private fun scheduleMidnight(context: Context) {
+        try {
+            val alarms = context.getSystemService(AlarmManager::class.java) ?: return
+            val zone = ZoneId.systemDefault()
+            val next = LocalDate.now(zone).plusDays(1).atStartOfDay(zone).plusMinutes(1)
+            alarms.set(AlarmManager.RTC, next.toInstant().toEpochMilli(), midnightIntent(context))
+        } catch (e: Exception) {
+            // The next app run or system update redraws it instead.
+        }
+    }
+
+    private fun midnightIntent(context: Context): PendingIntent {
+        val component = ComponentName(context, SavedQuoteWidgetProvider::class.java)
+        val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(component)
+        val intent = Intent(context, SavedQuoteWidgetProvider::class.java)
+                .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        return PendingIntent.getBroadcast(
+                context, MIDNIGHT_REQUEST, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    companion object {
+        private const val MIDNIGHT_REQUEST = 7401
+    }
+}
+
+/**
+ * The "From your saved" home-screen widget: one of the person's own saved
+ * quotes, a different one each day, over the page with the day's glow.
+ * Entirely offline.
+ *
+ * The app (SavedWidgetService in Dart) saves the picks for the next 30 days,
+ * so the quote can turn over at midnight without the app: this only indexes
+ * today into them, wrapping round if the app hasn't run for longer. The
+ * receiver's midnight alarm makes it redraw when the day turns.
+ *
+ * A tap opens the Saved tab.
+ */
+class SavedQuoteWidget : ArtWidget() {
+
+    override val launchUri = "quotely://widget/saved?homeWidget&kind=saved"
 
     override fun content(context: Context, data: SharedPreferences): Content {
         val glow = WidgetArt.glowToday(data)
@@ -84,34 +122,9 @@ class SavedQuoteWidgetProvider : ArtWidgetProvider() {
         null
     }
 
-    /** Redraw once the day has turned (a minute past midnight, inexact). */
-    private fun scheduleMidnight(context: Context) {
-        try {
-            val alarms = context.getSystemService(AlarmManager::class.java) ?: return
-            val zone = ZoneId.systemDefault()
-            val next = LocalDate.now(zone).plusDays(1).atStartOfDay(zone).plusMinutes(1)
-            alarms.set(AlarmManager.RTC, next.toInstant().toEpochMilli(), midnightIntent(context))
-        } catch (e: Exception) {
-            // The next app run or system update redraws it instead.
-        }
-    }
-
-    private fun midnightIntent(context: Context): PendingIntent {
-        val component = ComponentName(context, SavedQuoteWidgetProvider::class.java)
-        val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(component)
-        val intent = Intent(context, SavedQuoteWidgetProvider::class.java)
-                .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-        return PendingIntent.getBroadcast(
-                context, MIDNIGHT_REQUEST, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-    }
-
     companion object {
         // Keep in sync with SavedWidgetService (lib/services/saved_widget_service.dart).
         private const val KEY_DAYS = "saved_days"
         private const val KEY_COUNT = "saved_count"
-
-        private const val MIDNIGHT_REQUEST = 7401
     }
 }

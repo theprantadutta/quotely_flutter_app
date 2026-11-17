@@ -7,7 +7,7 @@
      to the background. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/scene_widget_description"
-    android:initialLayout="@layout/quotely_art_widget"
+    android:initialLayout="@layout/glance_default_loading_layout"
     android:maxResizeHeight="260dp"
     android:maxResizeWidth="420dp"
     android:minHeight="110dp"

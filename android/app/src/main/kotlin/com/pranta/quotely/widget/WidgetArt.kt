@@ -23,13 +23,13 @@ import android.text.TextPaint
 import android.text.TextUtils
 import android.util.SizeF
 import android.util.TypedValue
-import android.widget.RemoteViews
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.os.BundleCompat
+import androidx.glance.action.Action
 import com.pranta.quotely.MainActivity
 import com.pranta.quotely.R
-import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetPlugin
+import es.antonborri.home_widget.actionStartActivity
 import org.json.JSONObject
 import java.io.File
 import java.time.LocalDate
@@ -40,33 +40,27 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
- * What Quotely's home-screen widgets share: per-size RemoteViews within the
- * bitmap memory limit, the app's fonts, the text drawn into a bitmap, the
- * poster cropped and rounded, the page with the day's glow, tap intents, and
- * the placement log for analytics.
+ * What Quotely's home-screen widgets share: the bitmap memory budget, the
+ * app's fonts, the text drawn into a bitmap, the poster cropped and rounded,
+ * the day's glow, the colours, the tap action, and the placement log for
+ * analytics. [ArtWidget] puts them together in Glance.
  *
- * Why the text is a bitmap: RemoteViews are inflated in the launcher's
+ * Why the text is a bitmap: a widget's views are inflated in the launcher's
  * process, and launchers don't reliably load an app's res/font fonts there
  * (One UI falls back to the system sans). Drawing here, in the app's process,
- * always gets Instrument Serif and IBM Plex Mono. The text is drawn white
- * with alpha and tinted with the ink colour by the layout, so it still
- * follows the system's dark mode without a redraw.
+ * always gets Instrument Serif and IBM Plex Mono. The text and the glow are
+ * drawn white with alpha and tinted with a day and a night colour where they
+ * are shown, so they still follow the system's dark mode without a redraw.
  */
 object WidgetArt {
 
     /** The three lines every widget draws. [footer] is drawn after "— ". */
     class Text(val eyebrow: String, val body: String, val footer: String?)
 
-    /** Used until the launcher reports a size: the default 4x2. */
-    private val DEFAULT_SIZE = SizeF(250f, 110f)
-
-    /** RemoteViews accepts at most 16 sizes; launchers report one or two. */
-    private const val MAX_SIZES = 4
-
     /** Longest edge of the poster bitmap in pixels: plenty for a blur. */
     private const val POSTER_MAX_EDGE_PX = 360f
 
-    /** Longest edge of the glow bitmaps: soft gradients scale up cleanly. */
+    /** Longest edge of the glow bitmap: soft gradients scale up cleanly. */
     private const val GLOW_MAX_EDGE_PX = 240f
 
     /**
@@ -88,9 +82,21 @@ object WidgetArt {
     const val PAGE_LIGHT = 0xFFF3EEE5.toInt()
     const val PAGE_DARK = 0xFF15120F.toInt()
 
+    /** The text colours (ink, and parchment at night), as values/qotd_widget.xml. */
+    const val INK_LIGHT = 0xFF1D1915.toInt()
+    const val INK_DARK = 0xFFEEE7DB.toInt()
+
+    /** The page colour over the poster: paper at 70%, night at 72% (PosterWash). */
+    const val WASH_LIGHT = 0xB3F3EEE5.toInt()
+    const val WASH_DARK = 0xB815120F.toInt()
+
     /** The first glow (clay), for when the app hasn't saved any yet. */
     private const val GLOW_LIGHT_DEFAULT = 0xFFF2A07E.toInt()
     private const val GLOW_DARK_DEFAULT = 0xFFC0643F.toInt()
+
+    /** The glow's strength (k in [glowMask]) on paper and at night. */
+    private const val GLOW_K_LIGHT = 0.5f
+    private const val GLOW_K_DARK = 0.34f
 
     // Keep in sync with HomeWidgetStore / WidgetAnalytics (lib/services/).
     private const val KEY_GLOW_DAYS = "glow_days"
@@ -99,50 +105,29 @@ object WidgetArt {
     // ---- Sizes ------------------------------------------------------------
 
     /**
-     * Gives [appWidgetId] one RemoteViews per size the launcher may show
-     * (Android 12+: the sizes it reports; before that: landscape and
-     * portrait), each from [build] with the size in dp and the number of
-     * sizes sharing the bitmap budget, so text is never stretched.
+     * How many sizes Glance draws a SizeMode.Exact widget at, for them to
+     * share the bitmap budget. Mirrors Glance's own choice: on Android 12+
+     * the sizes the launcher reports, else (and before Android 12) landscape
+     * and portrait, else one.
      */
-    fun update(manager: AppWidgetManager, appWidgetId: Int, build: (SizeF, Int) -> RemoteViews) {
-        val options = manager.getAppWidgetOptions(appWidgetId)
-        val sized = try {
-            sizedViews(options, build)
-        } catch (e: Exception) {
-            null
-        } catch (e: OutOfMemoryError) {
-            null
-        }
-        manager.updateAppWidget(appWidgetId, sized ?: build(DEFAULT_SIZE, 1))
-    }
-
-    private fun sizedViews(options: Bundle, build: (SizeF, Int) -> RemoteViews): RemoteViews? {
+    fun sizeCount(options: Bundle): Int {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val sizes = BundleCompat.getParcelableArrayList(
                     options, AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java)
-                    ?.filter { it.width > 0f && it.height > 0f }
-                    ?.distinct()
-                    ?.take(MAX_SIZES)
-            if (!sizes.isNullOrEmpty()) {
-                return RemoteViews(sizes.associateWith { build(it, sizes.size) })
-            }
+            if (!sizes.isNullOrEmpty()) return sizes.distinct().size
         }
         val minW = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
         val maxW = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0)
         val minH = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
         val maxH = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
-        if (minW <= 0 || maxW <= 0 || minH <= 0 || maxH <= 0) return null
-        return RemoteViews(
-                build(SizeF(maxW.toFloat(), minH.toFloat()), 2),
-                build(SizeF(minW.toFloat(), maxH.toFloat()), 2),
-        )
+        return if (minW <= 0 || maxW <= 0 || minH <= 0 || maxH <= 0) 1 else 2
     }
 
     /**
      * Pixels per widget pixel for this size's bitmaps: 1 (the widget's real
-     * pixel size) unless that would push the RemoteViews past the system's
-     * bitmap memory limit (screen width x height x 4 bytes x 1.5, shared by
-     * every size). Half of that limit is used, split across the sizes.
+     * pixel size) unless that would push the widget past the system's bitmap
+     * memory limit (screen width x height x 4 bytes x 1.5, shared by every
+     * size). Half of that limit is used, split across the sizes.
      */
     fun bitmapScale(context: Context, sizeDp: SizeF, sizeCount: Int): Float {
         val metrics = context.resources.displayMetrics
@@ -154,6 +139,17 @@ object WidgetArt {
         val bytes = wPx * hPx * 4f
         return if (bytes <= budgetBytes) 1f else sqrt(budgetBytes / bytes)
     }
+
+    /**
+     * Width and height in pixels of a bitmap for a box of [widthDp] x
+     * [heightDp] at [pxPerDp]. Both come from the same scale, so the bitmap
+     * has the box's aspect ratio to within a pixel's rounding.
+     */
+    fun pixelSize(widthDp: Float, heightDp: Float, pxPerDp: Float): Pair<Int, Int> =
+            max(1, (widthDp * pxPerDp).roundToInt()) to max(1, (heightDp * pxPerDp).roundToInt())
+
+    private fun pixelSize(sizeDp: SizeF, pxPerDp: Float) =
+            pixelSize(sizeDp.width, sizeDp.height, pxPerDp)
 
     // ---- Backgrounds ------------------------------------------------------
 
@@ -187,14 +183,13 @@ object WidgetArt {
     /**
      * The poster cropped to this size's aspect ratio with the widget's corner
      * radius, so it lines up with the rounded page and wash on every Android
-     * version (clipToOutline only rounds it from Android 12). Kept small: it is
-     * a blur.
+     * version (Glance only clips to the corners from Android 12). Kept small:
+     * it is a blur.
      */
     fun posterBitmap(context: Context, poster: Bitmap, sizeDp: SizeF, scale: Float): Bitmap {
         val density = context.resources.displayMetrics.density
         val pxPerDp = min(density * scale, POSTER_MAX_EDGE_PX / max(sizeDp.width, sizeDp.height))
-        val outW = max(1, (sizeDp.width * pxPerDp).roundToInt())
-        val outH = max(1, (sizeDp.height * pxPerDp).roundToInt())
+        val (outW, outH) = pixelSize(sizeDp, pxPerDp)
         val radius = context.resources.getDimension(R.dimen.qotd_widget_radius) / density * pxPerDp
 
         val matrix = Matrix()
@@ -235,36 +230,34 @@ object WidgetArt {
             (LocalDate.now().toEpochDay() - LocalDate.parse(start).toEpochDay()).toInt()
 
     /**
-     * The page with the day's glow, as the app's Glow background paints it
-     * (DayGlow in lib/components/thread/spotlight.dart): the page colour, a
+     * The day's glow as the app's Glow background paints it (DayGlow in
+     * lib/components/thread/spotlight.dart), minus the page and the hue: a
      * glow from the top-right corner (radius 1.6 x the shortest side, full
      * strength) and one from just past the bottom-left (1.4 x, 70%), each
-     * fading from hue x strength x k through 45% of that at mid-radius to
-     * nothing. k is 0.5 on paper and 0.34 at night. Rounded like the page.
+     * fading from strength x k through 45% of that at mid-radius to nothing,
+     * with paper's k (0.5). Drawn white with alpha, to be tinted with
+     * [Glow.light] on paper and [glowNightTint] at night over the page
+     * colour. Rounded like the page.
      */
-    fun glowBitmap(context: Context, sizeDp: SizeF, dark: Boolean, hue: Int): Bitmap {
+    fun glowMask(context: Context, sizeDp: SizeF): Bitmap {
         val density = context.resources.displayMetrics.density
         val pxPerDp = min(density, GLOW_MAX_EDGE_PX / max(sizeDp.width, sizeDp.height))
-        val w = max(1, (sizeDp.width * pxPerDp).roundToInt())
-        val h = max(1, (sizeDp.height * pxPerDp).roundToInt())
+        val (w, h) = pixelSize(sizeDp, pxPerDp)
         val radius = context.resources.getDimension(R.dimen.qotd_widget_radius) / density * pxPerDp
         val rect = RectF(0f, 0f, w.toFloat(), h.toFloat())
         val shortest = min(w, h).toFloat()
-        val k = if (dark) 0.34f else 0.5f
 
         val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.color = if (dark) PAGE_DARK else PAGE_LIGHT
-        canvas.drawRoundRect(rect, radius, radius, paint)
 
         fun glow(cx: Float, cy: Float, r: Float, strength: Float) {
-            fun tone(alpha: Float) =
-                    Color.argb((alpha * 255f).roundToInt().coerceIn(0, 255),
-                            Color.red(hue), Color.green(hue), Color.blue(hue))
+            fun white(alpha: Float) =
+                    Color.argb((alpha * 255f).roundToInt().coerceIn(0, 255), 255, 255, 255)
+            val k = GLOW_K_LIGHT
             paint.shader = RadialGradient(
                     cx, cy, max(1f, r),
-                    intArrayOf(tone(strength * k), tone(strength * k * 0.45f), tone(0f)),
+                    intArrayOf(white(strength * k), white(strength * k * 0.45f), white(0f)),
                     floatArrayOf(0f, 0.5f, 1f),
                     Shader.TileMode.CLAMP)
             canvas.drawRoundRect(rect, radius, radius, paint)
@@ -276,6 +269,25 @@ object WidgetArt {
         return out
     }
 
+    /**
+     * What to tint the [glowMask] with at night. The mask carries paper's
+     * strength, so the night hue is pre-mixed with the night page by the
+     * ratio of the strengths: the page under the mask's alpha a in this
+     * colour is the page under the night hue at a x 0.34 / 0.5, which is
+     * what the app paints at night.
+     */
+    fun glowNightTint(hue: Int): Int = mix(PAGE_DARK, hue, GLOW_K_DARK / GLOW_K_LIGHT)
+
+    /** Opaque [from] moved [t] of the way to [to], channel by channel (ARGB ints). */
+    fun mix(from: Int, to: Int, t: Float): Int {
+        fun channel(shift: Int): Int {
+            val a = (from shr shift) and 0xFF
+            val b = (to shr shift) and 0xFF
+            return (a + (b - a) * t).roundToInt().coerceIn(0, 255) shl shift
+        }
+        return (0xFF shl 24) or channel(16) or channel(8) or channel(0)
+    }
+
     // ---- Text -------------------------------------------------------------
 
     /**
@@ -284,7 +296,10 @@ object WidgetArt {
      * footer sizes scale with the widget's shorter side, so a 2x2, a 4x3 and a
      * tablet widget all look proportioned. The body starts as large as the
      * widget allows and shrinks until it fits, ellipsized only as a last
-     * resort. White with alpha; tinted by the layout.
+     * resort. White with alpha; tinted where it is shown.
+     *
+     * The bitmap is [sizeDp] at [scale] x the density, so in a box of
+     * [sizeDp] it has the box's aspect ratio and is never stretched.
      */
     fun textBitmap(context: Context, text: Text, sizeDp: SizeF, scale: Float): Bitmap {
         val metrics = context.resources.displayMetrics
@@ -292,8 +307,7 @@ object WidgetArt {
         fun dp(v: Float) = v * pxPerDp
         fun sp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, v, metrics) * scale
 
-        val width = max(1, (sizeDp.width * pxPerDp).roundToInt())
-        val height = max(1, (sizeDp.height * pxPerDp).roundToInt())
+        val (width, height) = pixelSize(sizeDp, pxPerDp)
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
@@ -409,12 +423,14 @@ object WidgetArt {
     // ---- Taps and analytics ----------------------------------------------
 
     /**
-     * Opens the app at [uri]. Its path is a Flutter route, so Flutter's own
-     * deep linking lands there too; the `homeWidget` query marks it as a
-     * widget launch for home_widget, and `kind` says which widget it was.
+     * Opens the app at [uri], as home_widget's launch intent
+     * (HomeWidgetLaunchIntent's action, with [uri] as the data) in a Glance
+     * action. Its path is a Flutter route, so Flutter's own deep linking
+     * lands there too; the `homeWidget` query marks it as a widget launch for
+     * home_widget, and `kind` says which widget it was.
      */
-    fun launch(context: Context, uri: String) =
-            HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java, Uri.parse(uri))
+    fun launch(context: Context, uri: String): Action =
+            actionStartActivity<MainActivity>(context, Uri.parse(uri))
 
     /**
      * Notes that the first widget of [kind] was placed, or the last one

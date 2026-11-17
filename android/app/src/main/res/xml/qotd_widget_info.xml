@@ -8,7 +8,7 @@
      loads the day's quote and whenever it goes to the background. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/qotd_widget_description"
-    android:initialLayout="@layout/qotd_widget"
+    android:initialLayout="@layout/glance_default_loading_layout"
     android:maxResizeHeight="260dp"
     android:maxResizeWidth="420dp"
     android:minHeight="110dp"

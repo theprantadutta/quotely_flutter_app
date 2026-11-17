@@ -2,7 +2,7 @@
 <!-- Scene of the Day: the widget picker's preview (previewLayout, Android
      12+). Static sample text over the page with a glow (the live widget
      shows the title's blurred poster when it has one), laid out like the
-     real widget, which SceneOfTheDayWidgetProvider draws as a bitmap instead
+     real widget, which SceneOfTheDayWidget draws as a bitmap instead
      (see layout/qotd_widget_preview.xml for why). Only RemoteViews-safe
      classes are used. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"

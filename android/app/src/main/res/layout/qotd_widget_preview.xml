@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Quote of the Day widget: the widget picker's preview (previewLayout,
      Android 12+). Static sample text, laid out like the real widget, which
-     QuoteOfTheDayWidgetProvider draws as a bitmap instead (layout/qotd_widget.xml)
+     QuoteOfTheDayWidget draws as a bitmap instead (widget/ArtWidget.kt)
      because launchers don't reliably load an app's res/font fonts inside
      RemoteViews. Here the styles' fonts may fall back to the system's; that is
      fine for a preview. Only RemoteViews-safe classes are used. -->

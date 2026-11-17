@@ -3,8 +3,9 @@
      corner radius, the author line and the fonts are shared with Quote of the
      Day (values/qotd_widget.xml). -->
 <resources>
-    <!-- Which glow layer layout/quotely_art_widget.xml shows: 0 visible,
-         8 gone. Swapped in values-night. -->
+    <!-- Which glow layer layout/widget_glow_layer.xml shows before Android
+         12 (from 12 on Glance tints the glow by the theme itself). Swapped
+         in values-night. -->
     <!-- android:visibility enum values for XML: 0 visible, 1 invisible, 2 gone.
          Not the View.GONE constant (8): an 8 here crashes widget inflation
          ("Couldn't add widget"). -->

@@ -5,6 +5,17 @@ import android.content.SharedPreferences
 import com.pranta.quotely.R
 
 /**
+ * The "Scene of the Day" home-screen widget's receiver. The class name is the
+ * one Dart updates and pins (QuotelyWidgetKind.scene), so it is kept.
+ */
+class SceneOfTheDayWidgetProvider : ArtWidgetReceiver<SceneOfTheDayWidget>() {
+    override val glanceAppWidget = SceneOfTheDayWidget()
+
+    /** QuotelyWidgetKind.scene.id, for analytics. */
+    override val kind = "scene"
+}
+
+/**
  * The "Scene of the Day" home-screen widget: today's scene line, with
  * "SCENE · <TITLE>" above it and the character and title below, over the
  * title's poster blurred and washed exactly as Quote of the Day's is.
@@ -16,9 +27,8 @@ import com.pranta.quotely.R
  *
  * A tap opens Today, where the scene is.
  */
-class SceneOfTheDayWidgetProvider : ArtWidgetProvider() {
+class SceneOfTheDayWidget : ArtWidget() {
 
-    override val kind = "scene"
     override val launchUri = "quotely://widget/home?homeWidget&kind=scene"
 
     override fun content(context: Context, data: SharedPreferences): Content {

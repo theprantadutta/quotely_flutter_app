@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widgets' text before Android 12 (ArtWidget.Ink). From Android 12
+     Glance tints the text with a day/night ColorProvider; before that it can
+     only resolve one colour when it draws, so this layer keeps the text
+     following the system's dark mode the way the widgets always did: the
+     bitmap is drawn in white with alpha in Kotlin and tinted here with the
+     ink colour, which values-night swaps. Only RemoteViews-safe classes are
+     used. -->
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_text"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="fitCenter"
+    android:tint="@color/qotd_widget_ink"
+    android:tintMode="src_in" />
