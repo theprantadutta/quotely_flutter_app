@@ -7,6 +7,7 @@ class Routes {
   static const onboarding = '/onboarding';
   static const interests = '/interests';
   static const notificationsOnboarding = '/notifications-onboarding';
+  static const widgetOnboarding = '/widget-onboarding';
 
   // Tabs
   static const today = '/home';

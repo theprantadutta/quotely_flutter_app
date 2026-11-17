@@ -21,7 +21,9 @@ import '../screens/tab_screens/people_screen.dart';
 import '../screens/tab_screens/saved_screen.dart';
 import '../screens/tab_screens/scenes_screen.dart';
 import '../screens/title_detail_screen.dart';
+import '../screens/widget_onboarding_screen.dart';
 import '../screens/you_screen.dart';
+import '../services/starter_path.dart';
 import 'bottom-navigation/bottom_navigation_layout.dart';
 import 'routes.dart';
 import 'screen_tracking.dart';
@@ -92,9 +94,16 @@ class AppNavigation {
         Routes.notificationsOnboarding,
         (s) => NotificationsOnboardingScreen(key: s.pageKey),
       ),
+      _pushed(
+        ScreenNames.widgetOnboarding,
+        Routes.widgetOnboarding,
+        (s) => WidgetOnboardingScreen(key: s.pageKey),
+      ),
 
       StatefulShellRoute.indexedStack(
         redirect: (context, state) async {
+          // Listening before any tab logs its screen view.
+          await StarterPath.instance.start();
           final preferences = await SharedPreferences.getInstance();
           if (!(preferences.getBool('onboardingShown') ?? false)) {
             await preferences.setBool('onboardingShown', true);

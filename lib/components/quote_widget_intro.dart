@@ -60,14 +60,15 @@ class QuoteWidgetIntro {
 }
 
 /// Counts the open and, if it is time, shows the introduction once. Called
-/// by Today after the legal consent sheet, so the two never stack.
-Future<void> maybeShowQuoteWidgetIntro(BuildContext context) async {
+/// by Today after the legal consent sheet, so the two never stack. Returns
+/// whether it was shown. Onboarding's widget step marks it shown too.
+Future<bool> maybeShowQuoteWidgetIntro(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
   await QuoteWidgetIntro.recordAppOpen(prefs);
-  if (!QuoteWidgetIntro.shouldShow(prefs) || !context.mounted) return;
+  if (!QuoteWidgetIntro.shouldShow(prefs) || !context.mounted) return false;
   // Remembered as soon as it is shown: dismissing it by swiping counts too.
   await prefs.setBool(kQuoteWidgetIntroShownKey, true);
-  if (!context.mounted) return;
+  if (!context.mounted) return true;
   final kind = await showQSheet<QuotelyWidgetKind>(
     context,
     builder: (sheet) => const _ChooserSheet(intro: true),
@@ -75,6 +76,7 @@ Future<void> maybeShowQuoteWidgetIntro(BuildContext context) async {
   if (kind != null && context.mounted) {
     await addQuoteWidget(context, kind: kind, source: 'intro');
   }
+  return true;
 }
 
 /// Settings → Home-screen widgets: pick one of the three, then add it.
@@ -195,7 +197,8 @@ const _sampleAuthor = 'Nelson Mandela';
 const _savedHint = 'Save a quote you love and it will live here.';
 const _sampleScene = 'Keep your friends close, but your enemies closer.';
 
-String _blurb(QuotelyWidgetKind kind) => switch (kind) {
+/// One line on what [kind] shows.
+String quoteWidgetBlurb(QuotelyWidgetKind kind) => switch (kind) {
   QuotelyWidgetKind.qotd =>
     "Today's quote, over the day's poster. A new line every day.",
   QuotelyWidgetKind.saved =>
@@ -231,21 +234,9 @@ class _ChooserSheetState extends State<_ChooserSheet> {
             Text('NEW · HOME-SCREEN WIDGETS', style: qt.overline),
             const SizedBox(height: 14),
           ],
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final k in QuotelyWidgetKind.values) ...[
-                if (k != QuotelyWidgetKind.values.first)
-                  const SizedBox(width: 10),
-                Expanded(
-                  child: _ChoiceTile(
-                    kind: k,
-                    selected: k == _kind,
-                    onTap: () => setState(() => _kind = k),
-                  ),
-                ),
-              ],
-            ],
+          QuoteWidgetChoices(
+            selected: _kind,
+            onChanged: (k) => setState(() => _kind = k),
           ),
           const SizedBox(height: 20),
           if (widget.intro) ...[
@@ -255,7 +246,7 @@ class _ChooserSheetState extends State<_ChooserSheet> {
             ),
             const SizedBox(height: 8),
           ],
-          Text(_blurb(_kind), style: qt.body.copyWith(color: t.mute)),
+          Text(quoteWidgetBlurb(_kind), style: qt.body.copyWith(color: t.mute)),
           const SizedBox(height: 20),
           PrimaryButton(
             label: 'Add widget',
@@ -272,6 +263,36 @@ class _ChooserSheetState extends State<_ChooserSheet> {
       ),
     );
   }
+}
+
+/// The three widgets side by side as small previews; tapping one selects it.
+/// Shared by the chooser sheet and onboarding's widget step.
+class QuoteWidgetChoices extends StatelessWidget {
+  final QuotelyWidgetKind selected;
+  final ValueChanged<QuotelyWidgetKind> onChanged;
+
+  const QuoteWidgetChoices({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      for (final k in QuotelyWidgetKind.values) ...[
+        if (k != QuotelyWidgetKind.values.first) const SizedBox(width: 10),
+        Expanded(
+          child: _ChoiceTile(
+            kind: k,
+            selected: k == selected,
+            onTap: () => onChanged(k),
+          ),
+        ),
+      ],
+    ],
+  );
 }
 
 class _ChoiceTile extends StatelessWidget {
