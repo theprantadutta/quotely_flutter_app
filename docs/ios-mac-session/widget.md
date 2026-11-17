@@ -1,6 +1,6 @@
 # iOS: wire up the Quotely widgets (Mac session)
 
-Quotely has **three** widgets, all in **one** widget extension
+Quotely has **five** widgets, all in **one** widget extension
 (`QuotelyWidget`) with one `WidgetBundle`:
 
 | Widget | WidgetKit kind | Families | Tap opens |
@@ -8,6 +8,13 @@ Quotely has **three** widgets, all in **one** widget extension
 | Quote of the Day | `QuotelyWidget` | systemSmall, systemMedium, accessoryRectangular (iOS 16+) | Today |
 | From your saved | `QuotelySavedWidget` | systemSmall, systemMedium, accessoryRectangular (iOS 16+) | Saved tab |
 | Scene of the Day | `QuotelySceneWidget` | systemSmall, systemMedium, accessoryRectangular (iOS 16+) | Today |
+| Minimal quote (new, 2026-11-17) | `QuotelyMinimalWidget` | systemSmall, systemMedium, systemLarge, accessoryRectangular (iOS 16+) | Today |
+| Today, small (new, 2026-11-17) | `QuotelySquareWidget` | systemSmall, accessoryCircular (iOS 16+) | Today |
+
+> **Next Mac session: the two new widgets.** Minimal quote and Today, small
+> were written on Windows and have **not been compiled**. The exact steps and
+> the device checklist are in section 9 at the end of this file. Sections 1
+> to 8 below are the original setup, already done (commit `1f30fc6`).
 
 The iOS widgets are written but not yet part of the Xcode project. Adding an
 extension target means editing `ios/Runner.xcodeproj/project.pbxproj`, which is
@@ -26,7 +33,9 @@ Claude Code on the Mac, in Xcode or the terminal.
 | `ios/QuotelyWidget/QuotelyWidget.swift` | Quote of the Day: widget, `TimelineProvider`, entry, view, previews |
 | `ios/QuotelyWidget/SavedQuoteWidget.swift` | From your saved: widget, provider (daily timeline), entry, view, previews |
 | `ios/QuotelyWidget/SceneWidget.swift` | Scene of the Day: widget, provider, entry, view, previews |
-| `ios/QuotelyWidget/QuotelyWidgetBundle.swift` | `@main` `WidgetBundle` listing the three widgets |
+| `ios/QuotelyWidget/MinimalQuoteWidget.swift` | Minimal quote: widget, provider (reads the Quote of the Day keys), entry, `MinimalCard`, `MinimalLockScreenCard`, previews |
+| `ios/QuotelyWidget/SquareQuoteWidget.swift` | Today, small: widget, provider (daily timeline for the glow), entry, `SquareCard`, `SquareLockScreenMark`, previews |
+| `ios/QuotelyWidget/QuotelyWidgetBundle.swift` | `@main` `WidgetBundle` listing the five widgets |
 | `ios/QuotelyWidget/Info.plist` | Extension Info.plist (`com.apple.widgetkit-extension`, `UIAppFonts`, Flutter build name/number) |
 | `ios/QuotelyWidget/QuotelyWidget.entitlements` | App Group `group.com.pranta.quotely` |
 | `ios/QuotelyWidget/Fonts/InstrumentSerif-Regular.ttf` | Quote font (PostScript name `InstrumentSerif-Regular`) |
@@ -48,8 +57,10 @@ Contract between the app and the widget (all set by the Dart side already):
 
   | Key | Type | Written by | Read by |
   | --- | --- | --- | --- |
-  | `qotd_text`, `qotd_author` | String | QuoteWidgetService | Quote of the Day |
+  | `qotd_text`, `qotd_author` | String | QuoteWidgetService | Quote of the Day, Minimal quote, Today, small |
   | `qotd_date` | String yyyy-MM-dd | QuoteWidgetService | (informational) |
+  | `qotd_short` | String: the quote when it is at most 60 characters, else empty | QuoteWidgetService (`shortLine`) | Today, small |
+  | `qotd_eyebrow` | String: the quote's day, "TUE · NOV 17" | QuoteWidgetService (`eyebrow`) | Today, small (when `qotd_short` is empty) |
   | `qotd_poster` | String: absolute path of `.../home_widget/qotd_poster.png` in the App Group container, already blurred | QuoteWidgetService | Quote of the Day |
   | `qotd_poster_url` | String | QuoteWidgetService | (the app, to skip re-blurring) |
   | `saved_days` | String, JSON `{"start":"yyyy-MM-dd","quotes":[{"t":text,"a":author}, ...]}`: 30 entries, entry i is the pick for start + i days; empty `quotes` when nothing is saved | SavedWidgetService | From your saved |
@@ -59,12 +70,14 @@ Contract between the app and the widget (all set by the Dart side already):
   | `scene_title_id`, `scene_date` | String | SceneWidgetService | (informational) |
   | `scene_poster` | String: absolute path of `.../home_widget/scene_poster.png`, already blurred | SceneWidgetService | Scene of the Day |
   | `scene_poster_url` | String | SceneWidgetService | (the app) |
-  | `glow_days` | String, JSON `{"start":"yyyy-MM-dd","light":[ARGB ints],"dark":[ARGB ints]}`: the app's day glow for 30 days | HomeWidgetStore (saved and scene services) | From your saved, Scene of the Day (when no poster) |
+  | `glow_days` | String, JSON `{"start":"yyyy-MM-dd","light":[ARGB ints],"dark":[ARGB ints]}`: the app's day glow for 30 days | HomeWidgetStore (saved, scene and quote services) | From your saved, Scene of the Day (when no poster), Today, small |
 
   Past the 30 days (the app not opened for a month) the widgets wrap round:
   `index = days since start mod count`. The glow repeats every 5 days, so it
   stays right forever; the saved quotes repeat a 30-day cycle.
-- Widget **kinds**: `QuotelyWidget`, `QuotelySavedWidget`, `QuotelySceneWidget`.
+- Widget **kinds**: `QuotelyWidget`, `QuotelySavedWidget`, `QuotelySceneWidget`,
+  `QuotelyMinimalWidget`, `QuotelySquareWidget`. When the quote changes, Dart
+  reloads all three kinds that show it (`QuotelyWidgetKind.quoteOfTheDayReaders`).
   Dart calls `HomeWidget.updateWidget(iOSName: <kind>)`, which is
   `WidgetCenter.shared.reloadTimelines(ofKind: <kind>)`. The kind strings in
   Swift (`WidgetKindName`) must match `QuotelyWidgetKind.iOSKind` in
@@ -72,7 +85,9 @@ Contract between the app and the widget (all set by the Dart side already):
 - Tap URLs (`LaunchURL` in `QuotelyWidgetShared.swift`):
   `quotely://widget/home?homeWidget&kind=qotd`,
   `quotely://widget/saved?homeWidget&kind=saved`,
-  `quotely://widget/home?homeWidget&kind=scene`. home_widget recognises widget
+  `quotely://widget/home?homeWidget&kind=scene`,
+  `quotely://widget/home?homeWidget&kind=minimal`,
+  `quotely://widget/home?homeWidget&kind=square`. home_widget recognises widget
   launches by the `homeWidget` query item; the path is the Flutter route
   (`/home` Today, `/saved` Saved); `kind` is logged as `widget_opened`
   {widget_kind}.
@@ -391,3 +406,106 @@ tap, and `widget_placed` the next app start after adding a widget.
   and `contentMarginsDisabled()`; both are already in `QuotelyWidget.swift`.
 - If `InstrumentSerif-Regular` cannot be loaded, the quote falls back to the
   system serif (New York); the eyebrow falls back to the system font.
+
+## 9. Next Mac session: Minimal quote and Today, small (added 2026-11-17)
+
+Two more widgets in the same extension, written on Windows and **not yet
+compiled**. No portal, signing, App Group or Xcode Cloud change is needed:
+same target, same bundle ID, same App Group, same fonts. Android has both
+too (Glance, verified with a release build).
+
+### What they are
+
+- **Minimal quote** (`QuotelyMinimalWidget`, `MinimalQuoteWidget.swift`):
+  today's quote in Instrument Serif and "— author" under it, the pair centred
+  vertically. No poster, no glow, no eyebrow. The background is the plain
+  page (paper `#F3EEE5` by day, night `#15120F` by night), set as the
+  container background, so iOS 17+ removes it in StandBy and iOS 18 in the
+  tinted and clear Home Screen styles. iOS has no transparent Home Screen
+  widgets otherwise, so there is no transparency setting on iOS (Android has
+  one). Text size: `WidgetTypeScale(..., hasEyebrow: false)`, the same
+  estimate as the other widgets, so a short quote fills a large widget.
+  Families: systemSmall, systemMedium, systemLarge; accessoryRectangular
+  (quote and author, no eyebrow) from iOS 16. Timeline `.never`; the app
+  reloads it with Quote of the Day.
+- **Today, small** (`QuotelySquareWidget`, `SquareQuoteWidget.swift`): the
+  Quotely mark (the serif's opening quote, U+201C, in ink) top left over the
+  page with the day's glow, and at the foot either today's quote (when
+  `qotd_short` is not empty, so 60 characters or fewer) or the eyebrow
+  `qotd_eyebrow` ("TUE · NOV 17") over "Open today's quote". Families:
+  systemSmall; accessoryCircular (the mark alone over
+  `AccessoryWidgetBackground`) from iOS 16. Timeline: now plus the next 7
+  midnights, `.atEnd`, so the glow follows the day.
+
+### Files
+
+| File | Change |
+| --- | --- |
+| `ios/QuotelyWidget/MinimalQuoteWidget.swift` | **New** |
+| `ios/QuotelyWidget/SquareQuoteWidget.swift` | **New** |
+| `ios/QuotelyWidget/QuotelyWidgetBundle.swift` | Lists `MinimalQuoteWidget()` and `SquareQuoteWidget()` after `SceneWidget()` |
+| `ios/QuotelyWidget/QuotelyWidgetShared.swift` | `WidgetKindName.minimal` / `.square`, `LaunchURL.minimal` / `.square`, and `WidgetTypeScale`'s new `hasEyebrow:` parameter (default `true`, so the other widgets are unchanged) |
+| `ios/Runner.xcodeproj/project.pbxproj` | The two new files are already added to the `QuotelyWidget` group and to the QuotelyWidget target's **Compile Sources** (hand-edited on Windows, IDs `A1B2C3D4E5F60718293A4B5C` to `…5F`) |
+
+### Steps
+
+1. `git pull`, `flutter pub get`, `open ios/Runner.xcworkspace`.
+2. In the Project navigator, check that `MinimalQuoteWidget.swift` and
+   `SquareQuoteWidget.swift` show under `QuotelyWidget` (not red). Select each
+   and check File inspector -> Target Membership: **QuotelyWidget only**, not
+   Runner.
+   - If Xcode refuses to open the project ("damaged" / parse error), the
+     hand edit is at fault: `git checkout ios/Runner.xcodeproj/project.pbxproj`
+     from before this change, then add the two files by hand: right-click the
+     `QuotelyWidget` group -> Add Files to "Runner"... -> select both ->
+     "Create groups", Targets: **QuotelyWidget** only.
+3. QuotelyWidget target -> Build Phases -> **Compile Sources** must list
+   seven files: `QuotelyWidgetShared.swift`, `QuotelyWidget.swift`,
+   `SavedQuoteWidget.swift`, `SceneWidget.swift`, `MinimalQuoteWidget.swift`,
+   `SquareQuoteWidget.swift`, `QuotelyWidgetBundle.swift`. A missing one
+   shows as "cannot find 'MinimalQuoteWidget' in scope" in the bundle.
+4. Build the QuotelyWidget scheme for an iPhone simulator (Cmd-B). Likely
+   compile fixes, if any:
+   - `#Preview` with `@available`: as for the other widgets (section 6a),
+     drop the attribute or the `#if DEBUG` block if this Xcode rejects it.
+   - `AccessoryWidgetBackground` is iOS 16+; it is only used inside
+     `SquareLockScreenMark`, which is `@available(iOSApplicationExtension 16.0, *)`.
+5. Open both files with the canvas (Editor -> Canvas, QuotelyWidget scheme):
+   previews for Minimal (small, medium, large, Lock Screen) and Today, small
+   (a short quote and the long-quote fallback, and the Lock Screen circle).
+6. Tune by eye, if needed:
+   - the mark's size and position in `SquareCard` (`markFont = short * 0.42`,
+     `markSpace = markFont * 0.55`, `.offset(y: -markFont * 0.12)`): its top
+     should line up with the padding, like the Android widget, and the line
+     at the foot must never collide with it;
+   - the circle's mark (`SquareLockScreenMark`: size 44, `offset(y: 8)`),
+     visually centred in the circle.
+7. `flutter build ios --release --no-codesign` from the repo root must
+   succeed with the extension embedded.
+8. Run the app on a simulator, let Today load, then add both widgets
+   (Edit -> Add Widget -> Quotely: the gallery now shows **five** widgets).
+   Then the device checklist below on a phone with `flutter run --release`.
+
+### Device checklist (light and dark, tick each cell)
+
+| Check | Small | Medium | Large | Lock Screen |
+| --- | --- | --- | --- | --- |
+| **Minimal quote**: today's quote in Instrument Serif, "— Author" under it; no eyebrow, no poster, no glow | | | | |
+| Minimal: plain paper by day, night by night; switches with the system appearance without opening the app | | | | n/a |
+| Minimal: a short quote (about 5 words) fills the card; a long one (about 30 words) shrinks and never overflows or clips | | | | |
+| Minimal: iOS 18 Home Screen "Tinted" and "Clear" styles, and StandBy (iOS 17): the background goes and the text stays legible | | | | n/a |
+| Minimal: tap opens **Today** | | | | |
+| **Today, small**: the mark top left over the page with the day's glow | | n/a | n/a | n/a |
+| Square: a quote of 60 characters or fewer shows whole at the foot | | n/a | n/a | n/a |
+| Square: a longer quote shows "TUE · NOV 17" (the quote's day) and "Open today's quote" | | n/a | n/a | n/a |
+| Square: the Lock Screen circle shows the mark, centred | n/a | n/a | n/a | |
+| Square: tap opens **Today** (both families) | | n/a | n/a | |
+| Both: after a new day's quote loads in the app and the app goes to the background, both widgets update with Quote of the Day | | | | |
+| Both: VoiceOver reads the whole quote and author ("Quotely: open today's quote" for the square's fallback and the circle) | | | | |
+| Both: the gallery shows the sample (Benjamin Franklin) on a fresh install | | | | |
+
+Also check: Settings (You) -> Home-screen widgets shows **five** previews
+(they scroll sideways); choosing Minimal quote or Today, small and tapping
+"Add widget" opens the steps sheet naming it; after adding one,
+`widget_placed` with `widget_kind` `minimal` / `square` appears at the next
+app start, and a tap logs `widget_opened` with the same kind.
