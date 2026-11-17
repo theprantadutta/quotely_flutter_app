@@ -14,6 +14,8 @@
 		3BB260EB5488D110EAC9FF9D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66C28C4BE7745F3E0F9C1F33 /* SwiftUI.framework */; };
 		46F4CA5C69C782A8C53B3153 /* SavedQuoteWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4149501ED1E354D8CD9317D3 /* SavedQuoteWidget.swift */; };
 		47DC481CC14F25214084E10E /* SceneWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02158F0FB206DADF8E26CF63 /* SceneWidget.swift */; };
+		A1B2C3D4E5F60718293A4B5D /* MinimalQuoteWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* MinimalQuoteWidget.swift */; };
+		A1B2C3D4E5F60718293A4B5F /* SquareQuoteWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5E /* SquareQuoteWidget.swift */; };
 		5B85C7A7B63B244D556EB8F7 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48CF40963CE9B134C7BEECCD /* WidgetKit.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
@@ -74,6 +76,8 @@
 
 /* Begin PBXFileReference section */
 		02158F0FB206DADF8E26CF63 /* SceneWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SceneWidget.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* MinimalQuoteWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MinimalQuoteWidget.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5E /* SquareQuoteWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SquareQuoteWidget.swift; sourceTree = "<group>"; };
 		0D0C7BB72903C559562C30E0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Runner/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
@@ -173,6 +177,8 @@
 				45AB052724B1F1FC28FD5469 /* QuotelyWidget.swift */,
 				4149501ED1E354D8CD9317D3 /* SavedQuoteWidget.swift */,
 				02158F0FB206DADF8E26CF63 /* SceneWidget.swift */,
+				A1B2C3D4E5F60718293A4B5C /* MinimalQuoteWidget.swift */,
+				A1B2C3D4E5F60718293A4B5E /* SquareQuoteWidget.swift */,
 				C517D7C477FCE9C704C92748 /* QuotelyWidgetBundle.swift */,
 				B9EB88CD30EF2F17BB24D181 /* Info.plist */,
 				BD36C8D73714BC1093153D54 /* QuotelyWidget.entitlements */,
@@ -446,6 +452,8 @@
 				B7E88E733F7ED73385BD23B6 /* QuotelyWidget.swift in Sources */,
 				46F4CA5C69C782A8C53B3153 /* SavedQuoteWidget.swift in Sources */,
 				47DC481CC14F25214084E10E /* SceneWidget.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5D /* MinimalQuoteWidget.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5F /* SquareQuoteWidget.swift in Sources */,
 				BA2A8CDDEDED7EC6F1D257FD /* QuotelyWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

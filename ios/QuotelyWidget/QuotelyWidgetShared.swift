@@ -19,6 +19,8 @@ enum WidgetKindName {
   static let qotd = "QuotelyWidget"
   static let saved = "QuotelySavedWidget"
   static let scene = "QuotelySceneWidget"
+  static let minimal = "QuotelyMinimalWidget"
+  static let square = "QuotelySquareWidget"
 }
 
 /// Where a tap opens the app. The path is a Flutter route (/home is Today,
@@ -29,6 +31,8 @@ enum LaunchURL {
   static let qotd = URL(string: "quotely://widget/home?homeWidget&kind=qotd")!
   static let saved = URL(string: "quotely://widget/saved?homeWidget&kind=saved")!
   static let scene = URL(string: "quotely://widget/home?homeWidget&kind=scene")!
+  static let minimal = URL(string: "quotely://widget/home?homeWidget&kind=minimal")!
+  static let square = URL(string: "quotely://widget/home?homeWidget&kind=square")!
 }
 
 /// PostScript names of the fonts bundled with the extension (UIAppFonts in
@@ -68,7 +72,9 @@ struct WidgetTypeScale {
   let footer: CGFloat
   let padding: CGFloat
 
-  init(size: CGSize, text: String, hasFooter: Bool, small: Bool) {
+  /// `hasEyebrow` false: no eyebrow line (Minimal quote, the small square),
+  /// so the quote gets its space.
+  init(size: CGSize, text: String, hasFooter: Bool, small: Bool, hasEyebrow: Bool = true) {
     let short = min(size.width, size.height)
     func scaled(_ perShort: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat {
       min(max(short * perShort, lo), hi)
@@ -77,7 +83,10 @@ struct WidgetTypeScale {
     eyebrow = scaled(0.05, 9, 11)
     footer = scaled(0.06, 11, 13)
     let width = max(1, size.width - padding * 2)
-    let height = max(1, size.height - padding * 2 - eyebrow * 1.6 - (hasFooter ? footer * 1.6 : 0) - 12)
+    let height = max(
+      1,
+      size.height - padding * 2 - (hasEyebrow ? eyebrow * 1.6 : 0)
+        - (hasFooter ? footer * 1.6 : 0) - 12)
     // Area a glyph takes at size 1pt: ~0.45 wide x ~1.2 tall; fill ~70%.
     let chars = CGFloat(max(text.count, 12))
     let estimate = (0.7 * width * height / (chars * 0.45 * 1.2)).squareRoot()
