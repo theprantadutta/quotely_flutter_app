@@ -17,6 +17,7 @@ import 'package:quotely_flutter_app/services/drift_collection_service.dart';
 import 'package:quotely_flutter_app/services/drift_fact_service.dart';
 import 'package:quotely_flutter_app/services/drift_quote_service.dart';
 import 'package:quotely_flutter_app/services/drift_scene_service.dart';
+import 'package:quotely_flutter_app/services/retractions.dart';
 import 'package:quotely_flutter_app/services/saved_feed_service.dart';
 import 'package:quotely_flutter_app/services/saved_widget_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -524,6 +525,39 @@ void main() {
       expect(find.text('Cards'), findsNothing);
       expect(find.text('+ New'), findsNothing);
       expect(find.byType(SettingsButton), findsOneWidget);
+      await teardown(tester);
+    });
+
+    testWidgets('saved items the checks hid stay, with an honest note', (
+      tester,
+    ) async {
+      Retractions.resetForTest({
+        'quote:q': const Retraction(
+          reason: 'misattributed',
+          probablyBy: 'Mark Twain',
+          replacementId: 'r1',
+        ),
+        'fact:1': const Retraction(reason: 'not_accurate'),
+      });
+      addTearDown(Retractions.resetForTest);
+      await seed(tester);
+      await tester.pumpWidget(app());
+      await settle(tester);
+
+      // Still saved and shown; nothing a person saved is removed.
+      expect(find.text('Quote q'), findsOneWidget);
+      expect(find.text('Fact 1'), findsOneWidget);
+      expect(
+        find.text(
+          'Our checks found this is probably by Mark Twain, not Author q. '
+          'Tap for a verified one.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Our fact-check found this isn’t accurate.'),
+        findsOneWidget,
+      );
       await teardown(tester);
     });
 
