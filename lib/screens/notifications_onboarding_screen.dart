@@ -12,6 +12,7 @@ import '../constants/shared_preference_keys.dart';
 import '../navigation/routes.dart';
 import '../notifications/push_notification.dart';
 import '../services/notification_service.dart';
+import 'widget_onboarding_screen.dart';
 
 /// "When should we text you?" Choose notification kinds, then ask the OS
 /// for permission with that context. New installs start with only Quote of
@@ -85,7 +86,11 @@ class _NotificationsOnboardingScreenState
     unawaited(_syncTopics(selection, anySelected));
 
     if (!mounted) return;
-    context.go(Routes.today);
+    context.go(
+      WidgetOnboardingScreen.shouldShow(prefs)
+          ? Routes.widgetOnboarding
+          : Routes.today,
+    );
   }
 
   /// Subscribes on, unsubscribes off. Static and argument-only because it
@@ -125,7 +130,7 @@ class _NotificationsOnboardingScreenState
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                     children: [
                       Text(
-                        'Step 3 of 3',
+                        'Step 3 of ${onboardingStepCount()}',
                         style: context.qt.label.copyWith(
                           color: t.accInk,
                           fontWeight: FontWeight.w600,

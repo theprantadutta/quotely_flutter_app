@@ -4,6 +4,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/widgets.dart';
 
 import '../service_locator/init_service_locators.dart';
+import '../services/app_analytics.dart';
 
 /// GA screen names. Pushed screens use them as their GoRoute `name`; the
 /// tabs log them from [TabScreenViewTracker].
@@ -14,6 +15,7 @@ class ScreenNames {
   static const onboarding = 'onboarding';
   static const interests = 'interests';
   static const notificationsOnboarding = 'notifications_onboarding';
+  static const widgetOnboarding = 'widget_onboarding';
 
   // Tabs, in branch order (see [tabs]).
   static const today = 'today';
@@ -78,6 +80,7 @@ class ScreenAnalytics {
   /// Android reports every view as "MainActivity" in GA's default
   /// "Page title and screen class" dimension.
   static void log(String screenName) {
+    AppEvents.emit('screen_view', {'screen_name': screenName});
     try {
       final sink = _sink;
       if (sink == null) return;

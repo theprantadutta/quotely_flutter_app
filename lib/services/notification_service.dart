@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/notification_keys.dart';
 import '../constants/notification_types.dart';
 import '../constants/shared_preference_keys.dart';
+import 'install_cohort.dart';
 
 typedef TopicAction = Future<void> Function(String topic);
 
@@ -77,9 +78,11 @@ class NotificationService {
 
   /// Decides and persists [usesCalmDefaults] now. Called from main() before
   /// the first frame, so onboarding can't be mistaken for an earlier run.
+  /// Settles the [InstallCohort] at the same moment, for the same reason.
   static Future<void> resolveDefaults() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      await InstallCohort.resolve(prefs);
       if (prefs.containsKey(kNotificationDefaultsKey)) return;
       await _store(prefs, !_priorInstallKeys.any(prefs.containsKey));
     } catch (e) {

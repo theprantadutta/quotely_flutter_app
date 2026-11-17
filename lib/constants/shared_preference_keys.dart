@@ -144,3 +144,16 @@ const kSupporterSinceKey = 'supporter-since';
 /// yyyy-MM-dd of the most recent completed round. The round itself
 /// ([kFactsGameProgressKey]) now also keeps "results", one bool per answer.
 const kFactsGameStreakKey = 'facts-game-streak';
+
+/// Which side of 3.4.0 this install started on: 'new' (first launched on
+/// 3.4.0 or later) or 'existing' (had run an older version). Decided once, on
+/// the first launch of 3.4.0; see InstallCohort.
+const kInstallCohortKey = 'install-cohort';
+
+/// The 3-day starter path on Today, new installs only: JSON with the active
+/// days and the steps done and dismissed. See StarterPath.
+const kStarterPathKey = 'starter-path';
+
+/// Set once the one-time "Too many notifications?" sheet has been shown to an
+/// existing install, whatever the answer.
+const kNotificationTrimShownKey = 'notification-trim-shown';

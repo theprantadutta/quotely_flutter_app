@@ -13,6 +13,7 @@ import '../riverpods/interest_options_provider.dart';
 import '../state_providers/scene_state.dart';
 import '../state_providers/user_interests.dart';
 import '../util/pagination_seed.dart';
+import 'widget_onboarding_screen.dart';
 
 /// "What should we talk about?" Quote topics, SCREEN types and fact
 /// categories. At least [UserInterests.minInterests] picks in total.
@@ -202,7 +203,7 @@ class _InterestsScreenState extends ConsumerState<InterestsScreen> {
                     children: [
                       if (!widget.isEditing)
                         Text(
-                          'Step 2 of 3',
+                          'Step 2 of ${onboardingStepCount()}',
                           style: context.qt.label.copyWith(
                             color: t.accInk,
                             fontWeight: FontWeight.w600,

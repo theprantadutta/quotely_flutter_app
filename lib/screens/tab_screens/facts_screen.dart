@@ -14,6 +14,7 @@ import '../../navigation/routes.dart';
 import '../../riverpods/all_facts_categories_data_provider.dart';
 import '../../riverpods/all_facts_data_provider.dart';
 import '../../service_locator/init_service_locators.dart';
+import '../../services/app_analytics.dart';
 import '../../services/facts_game.dart';
 import '../../state_providers/user_interests.dart';
 import '../../util/pagination_seed.dart';
@@ -320,6 +321,7 @@ class _FactsScreenState extends ConsumerState<FactsScreen>
         parameters: {'score': round.correct, 'streak': streak.count},
       );
     }
+    AppEvents.emit('facts_game_answered');
     analytics.logEvent(
       name: 'facts_game_answered',
       parameters: {
