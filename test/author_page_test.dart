@@ -7,6 +7,7 @@ import 'package:quotely_flutter_app/service_locator/init_service_locators.dart';
 import 'package:quotely_flutter_app/services/author_page_service.dart';
 import 'package:quotely_flutter_app/services/drift_author_service.dart';
 import 'package:quotely_flutter_app/services/drift_quote_service.dart';
+import 'package:quotely_flutter_app/services/retractions.dart';
 
 final _t0 = DateTime.utc(2026, 11, 1);
 
@@ -101,6 +102,19 @@ void main() {
         count: 5,
       );
       expect(merged.map((q) => q.id), ['s1', 'r1', 'r2']);
+    });
+
+    test('leaves out a saved quote the checks retracted', () {
+      Retractions.resetForTest({
+        'quote:s1': const Retraction(reason: 'misattributed'),
+      });
+      addTearDown(Retractions.resetForTest);
+      final merged = AuthorPageService.mergeMostLoved(
+        saved: [_q('s1'), _q('s2')],
+        ranked: [_q('r1')],
+        count: 5,
+      );
+      expect(merged.map((q) => q.id), ['s2', 'r1']);
     });
 
     test('keeps to the count', () {

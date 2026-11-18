@@ -14,6 +14,7 @@ import '../util/profanity.dart';
 import 'drift_quote_service.dart';
 import 'http_service.dart';
 import 'local_first.dart';
+import 'retractions.dart';
 
 /// Everything below the author page's header, offline first.
 ///
@@ -88,14 +89,19 @@ class AuthorPageService {
     final seen = <String>{};
     return [
       for (final q in [...saved, ...ranked])
-        if (isClean(q.content) && seen.add(q.id)) q,
+        if (shown(q) && seen.add(q.id)) q,
     ].take(count).toList();
   }
+
+  /// Clean, and not hidden by the checks (a saved copy of a retracted quote
+  /// stays on Saved with a note, but never leads the author's page).
+  static bool shown(QuoteDto q) =>
+      isClean(q.content) && !Retractions.isRetracted('quote:${q.id}');
 
   /// The quotes closest to [idealLength], ties broken by id.
   static List<QuoteDto> mostQuotable(List<QuoteDto> quotes, int count) {
     int distance(QuoteDto q) => (q.content.trim().length - idealLength).abs();
-    final sorted = [...quotes.where((q) => isClean(q.content))]
+    final sorted = [...quotes.where(shown)]
       ..sort((a, b) {
         final d = distance(a).compareTo(distance(b));
         return d != 0 ? d : a.id.compareTo(b.id);
@@ -140,7 +146,7 @@ class AuthorPageService {
     return (
       quotes: [
         for (final q in QuoteDto.fromQuoteList(rows))
-          if (isClean(q.content)) q,
+          if (shown(q)) q,
       ],
       fetched: rows.length,
     );
@@ -171,7 +177,7 @@ class AuthorPageService {
     return (
       quotes: [
         for (final q in dto.quotes)
-          if (isClean(q.content)) q,
+          if (shown(q)) q,
       ],
       fetched: dto.quotes.length,
     );
