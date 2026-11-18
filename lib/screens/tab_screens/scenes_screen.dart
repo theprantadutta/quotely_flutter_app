@@ -131,7 +131,14 @@ class _ScenesScreenState extends ConsumerState<ScenesScreen> {
   Widget build(BuildContext context) {
     final shield = ref.watch(spoilerShieldProvider);
     final t = context.q;
-    final sotd = ref.watch(sceneOfTheDayProvider).value?.sceneQuote;
+    final dayScene = ref.watch(sceneOfTheDayProvider).value?.sceneQuote;
+    // Scene of the Day leads the feed only under All or its own type, so
+    // switching to Movies, TV or Anime visibly changes the first card
+    // instead of always opening on the same scene.
+    final sotd =
+        dayScene != null && (_type == null || dayScene.titleType == _type)
+        ? dayScene
+        : null;
     final feed = [
       ?sotd,
       for (final l in _lines)
