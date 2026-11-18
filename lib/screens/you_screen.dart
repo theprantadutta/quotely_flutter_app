@@ -330,55 +330,53 @@ Future<void> showAboutQuotely(BuildContext context) async {
               ),
             ),
             const SizedBox(height: 10),
-            // Poster and cover art credits, as each provider's terms require.
+            // Credits, as each provider's terms require: TMDB's notice,
+            // AniList, RAWG (with a link), and CC BY-SA for Wikiquote quotes
+            // and Wikimedia Commons photos (with a link). One quiet
+            // paragraph, then the two links in the same style as the maker
+            // link above.
             Text(
-              'This product uses the TMDB API but is not endorsed or certified by TMDB. '
-              'Anime data and cover art from AniList.',
+              'This product uses the TMDB API but is not endorsed or certified '
+              'by TMDB. Anime data and cover art from AniList; game data and '
+              'images from RAWG. Quotes from Wikiquote and author photos from '
+              'Wikimedia Commons (CC BY-SA); character art from Fandom wikis.',
               textAlign: TextAlign.center,
               style: sheet.qt.caption,
             ),
-            Semantics(
-              link: true,
-              child: GestureDetector(
-                onTap: () => launchUrl(
-                  Uri.parse('https://rawg.io'),
-                  mode: LaunchMode.externalApplication,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    'Game data and images from RAWG',
-                    style: sheet.qt.caption.copyWith(
-                      color: t.accInk,
-                      decoration: TextDecoration.underline,
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (final (label, url) in const [
+                  ('RAWG', 'https://rawg.io'),
+                  ('Wikiquote', 'https://en.wikiquote.org'),
+                ])
+                  HitTarget(
+                    semanticLabel: '$label, opens in the browser',
+                    onTap: () => launchUrl(
+                      Uri.parse(url),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            label,
+                            style: sheet.qt.caption.copyWith(color: t.accInk),
+                          ),
+                          const SizedBox(width: 3),
+                          Icon(
+                            Icons.north_east_rounded,
+                            size: 13,
+                            color: t.accInk,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
-            // Sourced quotes (Wikiquote) and author photos (Wikimedia
-            // Commons) are CC BY-SA, which asks for this credit; character
-            // art comes from community Fandom wikis.
-            Semantics(
-              link: true,
-              child: GestureDetector(
-                onTap: () => launchUrl(
-                  Uri.parse('https://en.wikiquote.org'),
-                  mode: LaunchMode.externalApplication,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    'Quotes from Wikiquote and author photos from Wikimedia '
-                    'Commons (CC BY-SA). Character art from Fandom wikis.',
-                    textAlign: TextAlign.center,
-                    style: sheet.qt.caption.copyWith(
-                      color: t.accInk,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
+              ],
             ),
             const SizedBox(height: 6),
             Text(
