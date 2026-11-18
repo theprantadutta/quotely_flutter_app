@@ -3,7 +3,7 @@ description: "Quotely: wisdom, one message at a time."
 
 publish_to: 'none' 
 
-version: 3.6.0+30
+version: 3.5.2+30
 
 environment:
   sdk: ^3.8.0
