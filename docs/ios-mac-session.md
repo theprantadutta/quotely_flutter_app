@@ -5,7 +5,7 @@ where iOS cannot be built. Everything below needs a Mac with **Xcode 26.2 or
 newer** and a human for the Apple Developer portal steps. The details are in
 the per-topic files in `docs/ios-mac-session/`; this file gives the order.
 
-## Status (updated 2026-11-13)
+## Status (updated 2026-11-21)
 
 | Step | Status |
 | --- | --- |
@@ -15,7 +15,8 @@ the per-topic files in `docs/ios-mac-session/`; this file gives the order.
 | 4. Xcode Cloud | **Not checked**: confirm the next cloud build is green |
 | 5. Device tests | **Not done**: run them from TestFlight build 25 |
 | 6. App Store | **Done**: 3.2.0 (25) approved and live |
-| 7. 3.3.0 (26) | **Done**: Flutter 3.50 checked on iOS, submitted for review 2026-11-13, automatic release |
+| 7. 3.3.0 (26) | **Done**: approved and live |
+| 8. 3.5.2 (30) | **Done**: new widgets and text sizing compiled and previewed, submitted for review 2026-11-21, automatic release |
 
 What was done on the Mac:
 
@@ -140,6 +141,15 @@ the file.
 
 ## Next Mac session: two new widgets (2026-11-17)
 
+> ✅ **Done 2026-11-21.** Both files are in the QuotelyWidget target only, and
+> Compile Sources lists all seven Swift files. `flutter build ios --release`
+> and `flutter build ipa` compile them, and the 3.5.2 (30) extension contains
+> all five kinds (`QuotelyWidget`, `QuotelySavedWidget`, `QuotelySceneWidget`,
+> `QuotelyMinimalWidget`, `QuotelySquareWidget`). The Xcode previews
+> "Minimal quote, small" and "Today, small" render correctly. The square's
+> mark position looked right and was not tuned. Still open: placed widgets on
+> a physical device (the device checklist in `widget.md` section 9).
+
 Two new widgets, **Minimal quote** (`QuotelyMinimalWidget`: the quote and
 its author on the plain page, systemSmall/Medium/Large and the Lock Screen
 rectangle) and **Today, small** (`QuotelySquareWidget`: the Quotely mark and
@@ -161,6 +171,12 @@ Full steps and the checklist: `ios-mac-session/widget.md`, section 9. Do
 this together with the text-sizing check below; both touch the same files.
 
 ## Next Mac session: widget text sizing (2026-11-17)
+
+> ✅ **Compiled and spot-checked 2026-11-21.** The "Quote of the Day, small"
+> preview at Dynamic Type AX 5 in dark mode fits the card without clipping,
+> and the Minimal and square previews fill their cards at default size.
+> `WidgetTypeScale` was not tuned. Not yet checked: every widget with a ~30-word
+> quote in small and medium on a device.
 
 Users reported widget text too small (and sometimes too big) for the widget's
 size. `ios/QuotelyWidget/QuotelyWidgetShared.swift` changed on Windows and has
